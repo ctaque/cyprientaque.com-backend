@@ -9,5 +9,6 @@ create table if not exists projects (
   likes_count integer DEFAULT 0 NOT NULL,
   deleted_at timestamp(0) without time zone,
   created_at timestamp(0) without time zone,
-  updated_at timestamp(0) without time zone
+  updated_at timestamp(0) without time zone,
+  sketchfab_model_number character varying(255)
 );
