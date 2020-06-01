@@ -8,7 +8,7 @@ use self::ctprods::establish_connection;
 use self::diesel::prelude::*;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
-use self::ctprods::models::Project;
+use self::ctprods::models::{ Project, Model };
 
 struct AppState {
     db: PgConnection
@@ -19,8 +19,7 @@ struct GetProjectInfo{
 }
 #[get("/projects/{id}")]
 async fn get_project(data: web::Data<AppState>, info: web::Path<GetProjectInfo>) -> Result<HttpResponse, HttpResponse> {
-    use ctprods::schema::projects::dsl::{ projects, deleted_at };
-    let result: Result<Project, Error> = projects.filter(deleted_at.is_null()).find::<i32>(info.id.into()).first(&data.db);
+    let result: Result<Project, Error> = Project::find(&data.db, info.id);
 
     match result {
         Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
