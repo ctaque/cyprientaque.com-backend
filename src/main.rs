@@ -24,10 +24,7 @@ async fn get_project(data: web::Data<AppState>, info: web::Path<GetProjectInfo>)
 
     match result {
         Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
-        Err(err) => match err {
-            Error::NotFound => Err(HttpResponse::NotFound().body(err.to_string())),
-            _ => Err(HttpResponse::InternalServerError().body(err.to_string()))
-        }
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
     }
 }
 
@@ -53,10 +50,7 @@ async fn add_view(data: web::Data<AppState>, info: web::Path<AddViewInfo>) -> Re
                 Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
             }
         },
-        Err(err) => match err {
-            Error::NotFound => Err(HttpResponse::NotFound().body(err.to_string())),
-            _ => Err(HttpResponse::InternalServerError().body(err.to_string()))
-        }
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
     }
 }
 
