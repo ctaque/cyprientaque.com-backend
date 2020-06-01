@@ -54,6 +54,29 @@ async fn add_view(data: web::Data<AppState>, info: web::Path<AddViewInfo>) -> Re
     }
 }
 
+#[derive(Deserialize)]
+struct AddLikeInfo{
+    id: i32,
+}
+
+#[put("/projects/{id}/addLike")]
+async fn add_like (data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
+    use ctprods::schema::projects::dsl::{ projects, id,  deleted_at, likes_count };
+    let result: Result<Project, Error> = projects.filter(deleted_at.is_null()).find::<i32>(info.id.into()).first(&data.db);
+    match result {
+        Ok(mut project) => {
+            project.likes_count = project.likes_count + 1;
+            let updated_row: Result<Project, Error> = diesel::update(projects.filter(id.eq(info.id)).or_filter(deleted_at.is_null()))
+                .set(likes_count.eq(project.likes_count))
+                .get_result(&data.db);
+            match updated_row {
+                Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
+                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+            }
+        },
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
+    }
+}
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -61,6 +84,7 @@ async fn main() -> std::io::Result<()> {
         || App::new().data(AppState{db: establish_connection()}
         ).service(get_project)
             .service(add_view)
+            .service(add_like)
     ).bind("127.0.0.1:8088")?
         .run()
         .await
