@@ -2,7 +2,7 @@ extern crate ctprods;
 extern crate diesel;
 extern crate slugify;
 
-use actix_web::{ get, put, post, web, App, HttpServer, HttpResponse };
+use actix_web::{ get, put, post, web, delete, App, HttpServer, HttpResponse };
 use serde_json::json;
 use serde::Deserialize;
 use self::ctprods::establish_connection;
@@ -25,6 +25,25 @@ async fn get_project(data: web::Data<AppState>, info: web::Path<GetProjectInfo>)
 
     match result {
         Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
+    }
+}
+
+#[derive(Deserialize)]
+struct DeleteProjectInfo{
+    id: i32,
+}
+#[delete("/projects/{id}")]
+async fn delete_project(data: web::Data<AppState>, info: web::Path<DeleteProjectInfo>) -> Result<HttpResponse, HttpResponse> {
+    let result: Result<Project, Error> = Project::find(&data.db, info.id);
+
+    match result {
+        Ok(project) => {
+            match project.delete(&data.db) {
+                Ok(p) => Ok(HttpResponse::Ok().body(json!(p))),
+                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+            }
+        }
         Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
     }
 }
@@ -103,6 +122,7 @@ async fn main() -> std::io::Result<()> {
             .service(create_project)
             .service(add_view)
             .service(add_like)
+            .service(delete_project)
     ).bind("127.0.0.1:8088")?
         .run()
         .await

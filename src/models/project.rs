@@ -33,7 +33,7 @@ pub struct NewProject {
     pub user_id: i32
 }
 
-impl Model<Project, NewProject> for Project {
+impl Model<Project> for Project {
     fn find(db: &PgConnection, id: i32) -> Result<Project, Error> {
         use super::super::schema::projects::dsl::{ projects, deleted_at };
         projects.filter(deleted_at.is_null()).find::<i32>(id.into()).first(db)
@@ -44,8 +44,11 @@ impl Model<Project, NewProject> for Project {
             .set::<Project>(self.into())
             .get_result(db)
     }
-    fn delete(self, db: &PgConnection) -> Result<(), Error>{
-        Ok(())
+    fn delete(self, db: &PgConnection) -> Result<Project, Error>{
+        use super::super::schema::projects::dsl::{ projects, id,  deleted_at };
+        diesel::update(projects.filter(id.eq(self.id)))
+            .set(deleted_at.eq(Option::Some(chrono::offset::Local::now().naive_local())))
+            .get_result(db)
     }
 }
 
