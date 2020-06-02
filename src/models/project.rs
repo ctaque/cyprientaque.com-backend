@@ -30,6 +30,7 @@ pub struct NewProject {
     pub slug: Option<String>,
     pub content: String,
     pub sketchfab_model_number: Option<String>,
+    pub user_id: i32
 }
 
 impl Model<Project, NewProject> for Project {
