@@ -1,14 +1,16 @@
 extern crate ctprods;
 extern crate diesel;
+extern crate slugify;
 
-use actix_web::{ get, put, web, App, HttpServer, HttpResponse };
+use actix_web::{ get, put, post, web, App, HttpServer, HttpResponse };
 use serde_json::json;
 use serde::Deserialize;
 use self::ctprods::establish_connection;
 use self::diesel::prelude::*;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
-use self::ctprods::models::{ Project, Model };
+use self::ctprods::models::{ Project, NewProject, Model, NewModel };
+use slugify::slugify;
 
 struct AppState {
     db: PgConnection
@@ -24,6 +26,22 @@ async fn get_project(data: web::Data<AppState>, info: web::Path<GetProjectInfo>)
     match result {
         Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
         Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
+    }
+}
+
+#[post("/projects")]
+async fn create_project(data: web::Data<AppState>, mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
+    let slug: String = slugify!(&new_project.title);
+    let is_unique = new_project.clone().check_slug_unique(slug.clone(), &data.db);
+    if !is_unique {
+        Err(HttpResponse::BadRequest().body("Slug already used"))
+    } else {
+        new_project.slug = Some(slug);
+        let result = new_project.clone().save(&data.db);
+        match result {
+            Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
+            Err(err) => Err(HttpResponse::BadRequest().body(err.to_string()))
+        }
     }
 }
 
@@ -82,6 +100,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(
         || App::new().data(AppState{db: establish_connection()}
         ).service(get_project)
+            .service(create_project)
             .service(add_view)
             .service(add_like)
     ).bind("127.0.0.1:8088")?

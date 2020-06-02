@@ -1,6 +1,6 @@
 use chrono::naive::NaiveDateTime;
 use diesel::result::Error;
-use crate::models::model::Model;
+use crate::models::model::{ Model, NewModel };
 use diesel::pg::PgConnection;
 use super::super::diesel::prelude::*;
 use crate::schema::projects;
@@ -21,13 +21,20 @@ pub struct Project {
     pub sketchfab_model_number: Option<String>,
 }
 
-impl Model<Project> for Project {
+#[derive(Clone, Insertable, serde::Serialize, serde::Deserialize)]
+#[table_name="projects"]
+pub struct NewProject {
+    pub category_id: i32,
+    pub title: String,
+    pub slug: Option<String>,
+    pub content: String,
+    pub sketchfab_model_number: Option<String>,
+}
+
+impl Model<Project, NewProject> for Project {
     fn find(db: &PgConnection, id: i32) -> Result<Project, Error> {
         use super::super::schema::projects::dsl::{ projects, deleted_at };
         projects.filter(deleted_at.is_null()).find::<i32>(id.into()).first(db)
-    }
-    fn save(self, db: &PgConnection) -> Result<Project, Error> {
-        Ok(self)
     }
     fn update(self, db: &PgConnection) -> Result<Project, Error> {
         use super::super::schema::projects::dsl::{ projects, id,  deleted_at };
@@ -40,3 +47,18 @@ impl Model<Project> for Project {
     }
 }
 
+impl NewModel<Project> for NewProject {
+    fn save(self, db: &PgConnection) -> Result<Project, Error> {
+        use super::super::schema::projects::dsl::{ projects };
+        diesel::insert_into(projects)
+            .values(&self)
+            .get_result(db)
+    }
+}
+
+impl NewProject {
+    pub fn check_slug_unique(self, slug_to_find: String, db: &PgConnection)-> bool {
+        use super::super::schema::projects::dsl::{ projects, slug };
+        projects.filter(slug.eq(slug_to_find)).first::<Project>(db).is_err()
+    }
+}
