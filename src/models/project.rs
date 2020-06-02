@@ -19,6 +19,7 @@ pub struct Project {
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
     pub sketchfab_model_number: Option<String>,
+    pub user_id: i32
 }
 
 #[derive(Clone, Insertable, serde::Serialize, serde::Deserialize)]

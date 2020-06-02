@@ -34,14 +34,36 @@ table! {
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
         sketchfab_model_number -> Nullable<Varchar>,
+        user_id -> Int4,
+    }
+}
+
+table! {
+    users (id) {
+        id -> Int4,
+        name -> Varchar,
+        slug -> Varchar,
+        email -> Varchar,
+        password -> Varchar,
+        punchline -> Nullable<Varchar>,
+        website_url -> Nullable<Text>,
+        admin -> Bool,
+        active -> Bool,
+        deleted_at -> Nullable<Timestamp>,
+        remember_token -> Nullable<Varchar>,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+        api_token -> Nullable<Varchar>,
     }
 }
 
 joinable!(project_images -> projects (project_id));
 joinable!(projects -> project_categories (category_id));
+joinable!(projects -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     project_categories,
     project_images,
     projects,
+    users,
 );
