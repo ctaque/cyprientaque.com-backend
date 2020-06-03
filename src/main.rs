@@ -71,17 +71,15 @@ struct AddViewInfo{
 
 #[put("/projects/{id}/addView")]
 async fn add_view(data: web::Data<AppState>, info: web::Path<AddViewInfo>) -> Result<HttpResponse, HttpResponse> {
-    use ctprods::schema::projects::dsl::{ projects, id,  deleted_at, views_count };
+    use ctprods::schema::projects::dsl::{ projects,  deleted_at };
 
     let result: Result<Project, Error> = projects.filter(deleted_at.is_null()).find::<i32>(info.id.into()).first(&data.db);
 
     match result {
         Ok(mut project) => {
             project.views_count = project.views_count + 1;
-            let updated_row: Result<Project, Error> = diesel::update(projects.filter(id.eq(info.id)).or_filter(deleted_at.is_null()))
-                .set(views_count.eq(project.views_count))
-                .get_result(&data.db);
-            match updated_row {
+            let result = project.update(&data.db);
+            match result {
                 Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                 Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
             }
@@ -97,15 +95,13 @@ struct AddLikeInfo{
 
 #[put("/projects/{id}/addLike")]
 async fn add_like (data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
-    use ctprods::schema::projects::dsl::{ projects, id,  deleted_at, likes_count };
+    use ctprods::schema::projects::dsl::{ projects, deleted_at };
     let result: Result<Project, Error> = projects.filter(deleted_at.is_null()).find::<i32>(info.id.into()).first(&data.db);
     match result {
         Ok(mut project) => {
             project.likes_count = project.likes_count + 1;
-            let updated_row: Result<Project, Error> = diesel::update(projects.filter(id.eq(info.id)).or_filter(deleted_at.is_null()))
-                .set(likes_count.eq(project.likes_count))
-                .get_result(&data.db);
-            match updated_row {
+            let result = project.update(&data.db);
+            match result {
                 Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                 Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
             }

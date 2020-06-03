@@ -5,7 +5,8 @@ use diesel::pg::PgConnection;
 use super::super::diesel::prelude::*;
 use crate::schema::projects;
 
-#[derive(Queryable, AsChangeset, serde::Serialize, serde::Deserialize)]
+
+#[derive(Clone, Debug, Queryable, Identifiable, AsChangeset, serde::Serialize, serde::Deserialize)]
 #[table_name="projects"]
 pub struct Project {
     pub id: i32,
@@ -39,16 +40,11 @@ impl Model<Project> for Project {
         projects.filter(deleted_at.is_null()).find::<i32>(id.into()).first(db)
     }
     fn update(self, db: &PgConnection) -> Result<Project, Error> {
-        use super::super::schema::projects::dsl::{ projects, id,  deleted_at };
-        diesel::update(projects.filter(id.eq(self.id)).or_filter(deleted_at.is_null()))
-            .set::<Project>(self.into())
-            .get_result(db)
+        self.save_changes::<Project>(db)
     }
-    fn delete(self, db: &PgConnection) -> Result<Project, Error>{
-        use super::super::schema::projects::dsl::{ projects, id,  deleted_at };
-        diesel::update(projects.filter(id.eq(self.id)))
-            .set(deleted_at.eq(Option::Some(chrono::offset::Local::now().naive_local())))
-            .get_result(db)
+    fn delete(mut self, db: &PgConnection) -> Result<Project, Error>{
+        self.deleted_at = Option::Some(chrono::offset::Local::now().naive_local());
+        self.save_changes::<Project>(db)
     }
 }
 
