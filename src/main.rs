@@ -11,6 +11,7 @@ use diesel::result::Error;
 use diesel::pg::PgConnection;
 use self::ctprods::models::{ Project, NewProject, Model, NewModel };
 use slugify::slugify;
+use self::ctprods::middleware::auth_middleware;
 
 struct AppState {
     db: PgConnection
@@ -136,8 +137,11 @@ async fn add_like (data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> R
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(
-        || App::new().data(AppState{db: establish_connection()}
-        ).service(get_project)
+        || App::new()
+            .data(
+                AppState{db: establish_connection()}
+            ).wrap(auth_middleware::Authentication)
+            .service(get_project)
             .service(get_projects_by_category)
             .service(get_projects)
             .service(create_project)
