@@ -53,9 +53,9 @@ impl Model<Project> for Project {
 }
 
 impl Project{
-    pub fn by_category(db: &PgConnection, category_id: i32) -> Result<Vec<Project>, Error>{
+    pub fn by_category(db: &PgConnection, cat_id: i32) -> Result<Vec<Project>, Error>{
         use super::super::schema::projects::dsl::{ projects, deleted_at, category_id };
-        projects.filter(deleted_at.is_null()).filter(category_id.eq(category_id)).get_results(db)
+        projects.filter(deleted_at.is_null()).filter(category_id.eq(cat_id)).get_results(db)
     }
 }
 
