@@ -15,6 +15,29 @@ use slugify::slugify;
 struct AppState {
     db: PgConnection
 }
+
+#[get("/projects")]
+async fn get_projects (data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+    let result = Project::all(&data.db);
+    match result {
+        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
+#[derive(Deserialize)]
+struct GetProjectsByCategoryInfo{
+    category_id: i32,
+}
+#[get("/projects/category/{category_id}")]
+async fn get_projects_by_category (data: web::Data<AppState>, info: web::Path<GetProjectsByCategoryInfo>) -> Result<HttpResponse, HttpResponse> {
+    let result = Project::by_category(&data.db, info.category_id);
+    match result {
+        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
 #[derive(Deserialize)]
 struct GetProjectInfo{
     id: i32,
@@ -115,6 +138,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(
         || App::new().data(AppState{db: establish_connection()}
         ).service(get_project)
+            .service(get_projects_by_category)
+            .service(get_projects)
             .service(create_project)
             .service(add_view)
             .service(add_like)

@@ -39,12 +39,23 @@ impl Model<Project> for Project {
         use super::super::schema::projects::dsl::{ projects, deleted_at };
         projects.filter(deleted_at.is_null()).find::<i32>(id.into()).first(db)
     }
+    fn all(db: &PgConnection) -> Result<Vec<Project>, Error> {
+        use super::super::schema::projects::dsl::{ projects, deleted_at };
+        projects.filter(deleted_at.is_null()).get_results(db)
+    }
     fn update(self, db: &PgConnection) -> Result<Project, Error> {
         self.save_changes::<Project>(db)
     }
     fn delete(mut self, db: &PgConnection) -> Result<Project, Error>{
         self.deleted_at = Option::Some(chrono::offset::Local::now().naive_local());
         self.save_changes::<Project>(db)
+    }
+}
+
+impl Project{
+    pub fn by_category(db: &PgConnection, category_id: i32) -> Result<Vec<Project>, Error>{
+        use super::super::schema::projects::dsl::{ projects, deleted_at, category_id };
+        projects.filter(deleted_at.is_null()).filter(category_id.eq(category_id)).get_results(db)
     }
 }
 
