@@ -1,13 +1,41 @@
-use diesel::result::Error;
-use diesel::pg::PgConnection;
+use std::env;
+use async_trait::async_trait;
+use tokio_postgres::{ Client, NoTls, Error};
+use tokio;
 
+#[async_trait]
 pub trait Model<T> {
-    fn find(db: &PgConnection, id: i32) -> Result<T, Error>;
-    fn all(fb: &PgConnection) -> Result<Vec<T>, Error>;
-    fn update(self: Self, db: &PgConnection) -> Result<T, Error>;
-    fn delete(self: Self, db: &PgConnection) -> Result<T, Error>;
+    async fn db() -> Client
+    where T: 'async_trait{
+        let (client, connection) =
+            tokio_postgres::connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"), NoTls).await.expect(&format!("Error connecting to {}", env::var("DATABASE_URL").unwrap()));
+
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                eprintln!("connection error: {}", e);
+            }
+        });
+        client
+    }
+    async fn find(id: i32) -> Result<T, Error>;
+    async fn all() -> Result<Vec<T>, Error>;
+    async fn update(self: Self) -> Result<T, Error>;
+    async fn delete(self: Self) -> Result<T, Error>;
 }
 
+#[async_trait]
 pub trait NewModel<T> {
-    fn save(self: Self, db: &PgConnection) -> Result<T, Error>;
+    async fn db() -> Client
+        where T: 'async_trait{
+        let (client, connection) =
+            tokio_postgres::connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"), NoTls).await.expect(&format!("Error connecting to {}", env::var("DATABASE_URL").unwrap()));
+
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                eprintln!("connection error: {}", e);
+            }
+        });
+        client
+    }
+    async fn save(self: Self) -> Result<T, Error>;
 }
