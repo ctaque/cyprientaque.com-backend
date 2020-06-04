@@ -84,6 +84,23 @@ async fn create_project(_data: web::Data<AppState>, mut new_project: web::Json<N
     }
 }
 
+#[put("/projects/{id}")]
+async fn update_project(_data: web::Data<AppState>, info: web::Json<Project>) -> Result<HttpResponse, HttpResponse> {
+
+    let result: Result<Project, Error> = Project::find(info.id.into()).await;
+
+    match result {
+        Ok(project) => {
+            let result = project.update().await;
+            match result {
+                Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
+                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+            }
+        },
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
+    }
+}
+
 #[derive(Deserialize)]
 struct AddViewInfo{
     id: i32,
@@ -139,6 +156,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_projects_by_category)
             .service(get_projects)
             .service(create_project)
+            .service(update_project)
             .service(add_view)
             .service(add_like)
             .service(delete_project)
