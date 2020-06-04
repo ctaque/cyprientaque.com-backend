@@ -1,6 +1,6 @@
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
-use crate::models::{ ProjectCategory, model::{ Model, NewModel } };
+use crate::models::{ ProjectCategory, ProjectImage, model::{ Model, NewModel } };
 use postgres::{ Row, error::Error };
 
 
@@ -18,7 +18,8 @@ pub struct Project {
     pub updated_at: Option<NaiveDateTime>,
     pub sketchfab_model_number: Option<String>,
     pub user_id: i32,
-    pub category: Option<ProjectCategory>
+    pub category: Option<ProjectCategory>,
+    pub images: Option<Vec<ProjectImage>>
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -37,7 +38,8 @@ impl Model<Project> for Project {
     where Project: 'async_trait{
         let row: Row = Self::db().await.query_one("select * from projects where id = $1 and deleted_at is null;",  &[&project_id]).await?;
         let p = Project::new(&row);
-        let p = p.attach_category().await;
+        let p = p.attach_category().await?;
+        let p = p.attach_images().await;
         p
     }
     async fn all() -> Result<Vec<Project>, Error>
@@ -47,6 +49,7 @@ impl Model<Project> for Project {
         for row in rows{
             let p = Project::new(&row);
             let p = p.attach_category().await?;
+            let p = p.attach_images().await?;
             projects.push(p);
         }
         Ok(projects)
@@ -57,6 +60,7 @@ impl Model<Project> for Project {
                                     &[&self.id, &self.category_id, &self.title, &self.slug, &self.content, &self.views_count, &self.likes_count, &self.deleted_at, &self.created_at, &self.sketchfab_model_number, &self.user_id]).await?;
         let p = Project::new(&row);
         let p = p.attach_category().await?;
+        let p = p.attach_images().await?;
         Ok(p)
 
     }
@@ -64,6 +68,7 @@ impl Model<Project> for Project {
         let row = Self::db().await.query_one("update projects set deleted_at = CURRENT_TIMESTAMP where id = $1", &[&self.id]).await?;
         let p = Project::new(&row);
         let p = p.attach_category().await?;
+        let p = p.attach_images().await?;
         Ok(p)
     }
 }
@@ -83,7 +88,8 @@ impl Project{
             updated_at: row.get("updated_at"),
             sketchfab_model_number: row.get("sketchfab_model_number"),
             user_id: row.get("user_id"),
-            category: None
+            category: None,
+            images: None
         }
     }
     pub async fn by_category(cat_id: i32) -> Result<Vec<Project>, Error>{
@@ -92,6 +98,7 @@ impl Project{
         for row in rows{
             let project = Project::new(&row);
             let project = project.attach_category().await?;
+            let project = project.attach_images().await?;
             projects.push(project);
         }
         Ok(projects)
@@ -100,6 +107,17 @@ impl Project{
         let row = Self::db().await.query_one("select * from project_categories where id = $1", &[&self.category_id]).await?;
         let cat = ProjectCategory::new(&row);
         self.category = Some(cat);
+        Ok(self)
+    }
+
+    pub async fn attach_images(mut self) -> Result<Project, Error>{
+        let rows = Self::db().await.query("select * from project_images where project_id = $1", &[&self.id]).await?;
+        let mut images = Vec::new();
+        for row in rows{
+            let i = ProjectImage::new(&row);
+            images.push(i);
+        }
+        self.images = Some(images);
         Ok(self)
     }
 }
@@ -114,6 +132,7 @@ impl NewModel<Project> for NewProject {
 
         let project = Project::new(&row);
         let project = project.attach_category().await?;
+        let project = project.attach_images().await?;
         Ok(project)
     }
 }
