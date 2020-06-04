@@ -1,6 +1,6 @@
 use postgres::{ Row };
 
-#[derive(diesel::Queryable, Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ProjectCategory {
     pub id: i32,
     pub name: String,
