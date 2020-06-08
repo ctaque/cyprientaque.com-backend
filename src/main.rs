@@ -87,11 +87,11 @@ async fn create_project(_data: web::Data<AppState>, mut new_project: web::Json<N
 #[put("/projects/{id}")]
 async fn update_project(_data: web::Data<AppState>, info: web::Json<Project>) -> Result<HttpResponse, HttpResponse> {
 
-    let result: Result<Project, Error> = Project::find(info.id.into()).await;
+    let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
 
-    match result {
-        Ok(project) => {
-            let result = project.update().await;
+    match from_db {
+        Ok(_) => {
+            let result = info.into_inner().update().await;
             match result {
                 Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                 Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
