@@ -62,6 +62,7 @@ where
         let authenticate_pass = match *req.method(){
             Method::OPTIONS => true,
             Method::GET => true,
+            Method::POST => true,
             _ => {
                 if let Some(authen_header) = req.headers_mut().get("Authorization") {
                     if let Ok(authen_str) = authen_header.to_str() {
