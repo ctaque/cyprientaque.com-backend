@@ -1,15 +1,19 @@
 extern crate ctprods;
 extern crate diesel;
 extern crate slugify;
+extern crate log;
 use dotenv::dotenv;
 
+use futures::stream::{ StreamExt, TryStreamExt };
+use actix_multipart::{ Multipart };
 use actix_web::{ get, put, post, web, delete, App, HttpServer, HttpResponse };
 use serde_json::json;
 use serde::Deserialize;
-use self::ctprods::models::{ Project, NewProject, Model, NewModel };
+use self::ctprods::models::{ Project, NewProject, Model, NewModel, NewProjectImage, ProjectCategory };
 use slugify::slugify;
 use self::ctprods::middleware::auth_middleware;
 use postgres::error::Error;
+use mime;
 
 struct AppState {}
 
@@ -145,6 +149,55 @@ async fn add_like (_data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> 
     }
 }
 
+#[derive(Deserialize)]
+struct PostImageQuery{
+    project_id: i32,
+    category_id: i32,
+    primary: bool
+}
+
+#[post("/project-image")]
+async fn create_project_image (mut multipart: Multipart, info: web::Query<PostImageQuery>) -> Result<HttpResponse, HttpResponse> {
+
+    while let Ok(Some(mut field)) = multipart.try_next().await {
+        let content_type = field.content_disposition().unwrap();
+        let file_mime = field.content_type();
+        if file_mime.type_() != mime::IMAGE && ( file_mime.subtype() != mime::JPEG && file_mime.subtype() != mime::PNG ) {
+            return Err(HttpResponse::BadRequest().body("bad mime type"));
+        }
+        let project = Project::find(info.project_id.into()).await;
+        let category = ProjectCategory::find(info.category_id.into()).await;
+        if let Err(e) = project{
+            return Err(HttpResponse::BadRequest().body(e.to_string()));
+        }
+        if let Err(e) = category{
+            return Err(HttpResponse::BadRequest().body(e.to_string()));
+        }
+        let filename = content_type.get_filename().unwrap();
+        while let Some(chunk) = field.next().await{
+            let data = chunk.unwrap();
+            let project_image = NewProjectImage::new(
+                info.primary,
+                info.project_id,
+                info.category_id,
+                filename.to_owned()
+            );
+            match project_image.clone().upload_to_s3(data.to_vec()).await {
+                Ok(()) => {
+                    let image_save_result = project_image.save().await;
+
+                    return match image_save_result{
+                        Ok(image) => Ok(HttpResponse::Ok().body(json!(image))),
+                        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+                    }
+                }
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string()))
+            }
+        }
+    };
+    Ok(HttpResponse::Ok().into())
+}
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -160,6 +213,7 @@ async fn main() -> std::io::Result<()> {
             .service(add_view)
             .service(add_like)
             .service(delete_project)
+            .service(create_project_image)
     ).bind("127.0.0.1:8088")?
         .run()
         .await
