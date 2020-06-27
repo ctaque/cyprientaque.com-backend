@@ -131,6 +131,7 @@ table! {
 }
 
 joinable!(comments -> projects (project_id));
+joinable!(profile_user_images -> users (user_id));
 joinable!(project_images -> project_image_categories (project_image_category_id));
 joinable!(project_images -> projects (project_id));
 joinable!(projects -> project_categories (category_id));
