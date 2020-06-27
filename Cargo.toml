@@ -4,12 +4,15 @@ version = "0.1.0"
 authors = ["Cyprien Taque <cyprien.taque@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[target.x86_64-unknown-linux-gnu]
+linker = "x86_64-linux-gnu-gcc"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 tokio = "0.2.21"
 actix-web = "2"
 actix-http = "2.0.0-alpha.4"
+actix-cors = "0.2.0-alpha.1"
 actix-rt = "1.1.1"
 chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["postgres", "chrono"] }

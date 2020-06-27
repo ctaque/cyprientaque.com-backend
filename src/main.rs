@@ -3,7 +3,8 @@ extern crate diesel;
 extern crate slugify;
 use dotenv::dotenv;
 
-use actix_web::{ get, put, post, web, delete, App, HttpServer, HttpResponse };
+use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpResponse };
+use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
 use self::ctprods::models::{ Project, NewProject, Model, NewModel };
@@ -150,6 +151,13 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     HttpServer::new(
         || App::new()
+            .wrap(
+                Cors::new() // <- Construct CORS middleware builder
+                    .allowed_origin("http://localhost:3000")
+                    .allowed_methods(vec!["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"])
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT, http::header::CONTENT_TYPE])
+                    .max_age(3600)
+                    .finish())
             .data(AppState{})
             .wrap(auth_middleware::Authentication)
             .service(get_project)
