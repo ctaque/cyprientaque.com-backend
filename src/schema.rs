@@ -43,6 +43,7 @@ table! {
         w1500_object_url -> Varchar,
         w200_object_url -> Varchar,
         w40_object_url -> Varchar,
+        deleted_at -> Nullable<Timestamp>,
     }
 }
 
