@@ -131,6 +131,7 @@ impl Project{
     pub async fn attach_user(mut self) -> Result<Project, Error>{
         let row = Self::db().await.query_one("select * from users where id = $1", &[&self.user_id]).await?;
         let user = User::new(&row);
+        let user = user.attach_profile_images().await?;
         self.user = Some(user);
         Ok(self)
     }
