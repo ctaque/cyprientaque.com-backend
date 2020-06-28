@@ -80,6 +80,7 @@ table! {
         project_id -> Int4,
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
+        original_object_url -> Nullable<Varchar>,
     }
 }
 
