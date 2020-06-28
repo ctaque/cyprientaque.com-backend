@@ -14,6 +14,7 @@ pub struct ProjectImage {
     w1500_keyname: String,
     w350_keyname: String,
     w1500_object_url: String,
+    original_object_url: Option<String>,
     w350_object_url: String,
     primary: bool,
     project_image_category_id: i32,
@@ -29,6 +30,7 @@ impl ProjectImage {
             w1500_keyname: row.get("w1500_keyname"),
             w350_keyname: row.get("w350_keyname"),
             w1500_object_url: row.get("w1500_object_url"),
+            original_object_url: row.get("original_object_url"),
             project_image_category_id: row.get("project_image_category_id"),
             w350_object_url: row.get("w350_object_url"),
             primary: row.get("primary"),
@@ -42,7 +44,8 @@ impl ProjectImage {
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize)]
 pub struct NewProjectImage {
-    original_path: String,
+    original_keyname: String,
+    original_object_url: String,
     uid: String,
     w1500_keyname: String,
     w350_keyname: String,
@@ -63,9 +66,11 @@ impl NewProjectImage {
         let w350_keyname = format!("projectsImages/{}/w350-{}.{}", project_id, uid, ext);
         let w1500_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &w1500_keyname);
         let w350_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &w350_keyname);
-        let original_path = format!("projectsImages/{}/{}.{}", project_id, uid, ext);
+        let original_keyname = format!("projectsImages/{}/{}.{}", project_id, uid, ext);
+        let original_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &original_keyname);
         NewProjectImage {
-            original_path,
+            original_keyname,
+            original_object_url,
             uid,
             w1500_keyname,
             w350_keyname,
@@ -79,7 +84,7 @@ impl NewProjectImage {
 
     pub async fn upload_to_s3 (self, contents: Vec<u8>) -> Result<(), RusotoError<PutObjectError>> {
         let client = ConfiguredS3Client::new();
-        client.put_object(self.original_path, contents).await?;
+        client.put_object(self.original_keyname, contents).await?;
         Ok(())
     }
 }
@@ -88,10 +93,9 @@ impl NewProjectImage {
 impl NewModel<ProjectImage> for NewProjectImage {
     async fn save(self) -> Result<ProjectImage, Error>
         where ProjectImage: 'async_trait{
-        println!("{:#?}", &self);
         let row: Row = Self::db().await.query_one(
-            "insert into project_images (w1500_keyname, w350_keyname, project_image_category_id, w1500_object_url, w350_object_url, \"primary\", project_id, created_at) values ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) returning *;",
-            &[&self.w1500_keyname, &self.w350_keyname, &self.project_image_category_id ,&self.w1500_object_url, &self.w350_object_url, &self.primary, &self.project_id]
+            "insert into project_images (w1500_keyname, w350_keyname, project_image_category_id, w1500_object_url, w350_object_url, \"primary\", project_id, created_at, original_object_url) values ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, $8) returning *;",
+            &[&self.w1500_keyname, &self.w350_keyname, &self.project_image_category_id ,&self.w1500_object_url, &self.w350_object_url, &self.primary, &self.project_id, &self.original_object_url]
         ).await?;
 
         let image = ProjectImage::new(&row);

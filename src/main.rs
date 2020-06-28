@@ -157,7 +157,7 @@ struct PostImageQuery{
     primary: bool
 }
 
-#[post("/project-image")]
+#[post("/projectImage")]
 async fn create_project_image (mut multipart: Multipart, info: web::Query<PostImageQuery>) -> Result<HttpResponse, HttpResponse> {
 
     while let Ok(Some(mut field)) = multipart.try_next().await {

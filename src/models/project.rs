@@ -142,7 +142,7 @@ impl NewModel<Project> for NewProject {
     async fn save(self) -> Result<Project, Error>
     where Project: 'async_trait{
 
-        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $6, $7);",
+        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6) returning *;",
                                     &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id]).await?;
 
         let project = Project::new(&row);
