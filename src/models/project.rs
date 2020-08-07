@@ -1,6 +1,6 @@
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
-use crate::models::{ ProjectCategory, ProjectImage, User, model::{ Model, NewModel } };
+use crate::models::{ ProjectCategory, ProjectImage, User, model::{ Model, NewModel, UpdatableModel } };
 use postgres::{ Row, error::Error };
 
 
@@ -31,6 +31,30 @@ pub struct NewProject {
     pub content: String,
     pub sketchfab_model_number: Option<String>,
     pub user_id: i32
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct UpdatableProject {
+    pub id : i32,
+    pub title : String,
+    pub content : String,
+    pub category_id : i32,
+    pub user_id : i32
+}
+
+#[async_trait]
+impl UpdatableModel<Project> for UpdatableProject {
+    async fn update (self) -> Result<Project, Error> {
+        let row = Self::db().await.query_one(
+            "update projects set category_id = $1, title = $2, content = $3, user_id = $4 where id = $5 returning *",
+            &[&self.category_id, &self.title, &self.content, &self.user_id, &self.id]
+        ).await?;
+        let project = Project::new(&row);
+        let project = project.attach_category().await?;
+        let project = project.attach_user().await?;
+        let project = project.attach_images().await?;
+        Ok(project)
+    }
 }
 
 #[async_trait]
