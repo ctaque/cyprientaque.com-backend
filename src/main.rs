@@ -18,6 +18,15 @@ use mime;
 
 struct AppState {}
 
+#[get("/categories")]
+async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+    let result = ProjectCategory::all().await;
+    match result {
+        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
 #[get("/projects")]
 async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
     let result = Project::all().await;
@@ -222,6 +231,7 @@ async fn main() -> std::io::Result<()> {
             .service(add_like)
             .service(delete_project)
             .service(create_project_image)
+            .service(get_categories)
     ).bind("127.0.0.1:8088")?
         .run()
         .await
