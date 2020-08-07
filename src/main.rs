@@ -10,7 +10,7 @@ use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpRespons
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
-use self::ctprods::models::{ Project, NewProject, Model, NewModel, NewProjectImage, ProjectCategory };
+use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, UpdatableProject };
 use slugify::slugify;
 use self::ctprods::middleware::auth_middleware;
 use postgres::error::Error;
@@ -90,7 +90,7 @@ async fn create_project(_data: web::Data<AppState>, mut new_project: web::Json<N
 }
 
 #[put("/projects/{id}")]
-async fn update_project(_data: web::Data<AppState>, info: web::Json<Project>) -> Result<HttpResponse, HttpResponse> {
+async fn update_project(_data: web::Data<AppState>, info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
 
     let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
 
