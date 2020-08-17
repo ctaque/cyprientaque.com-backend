@@ -10,7 +10,7 @@ use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpRespons
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
-use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, UpdatableProject };
+use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
 use slugify::slugify;
 use self::ctprods::middleware::auth_middleware;
 use postgres::error::Error;
@@ -159,6 +159,15 @@ async fn add_like (_data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> 
     }
 }
 
+#[get("/projectImageCategories")]
+async fn get_project_image_categories(_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+    let result: Result<Vec<ProjectImageCategory>, Error> = ProjectImageCategory::all().await;
+    match result {
+        Ok(categories) => Ok(HttpResponse::Ok().body(json!(categories))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
 #[derive(Deserialize)]
 struct PostImageQuery{
     project_id: i32,
@@ -232,6 +241,7 @@ async fn main() -> std::io::Result<()> {
             .service(delete_project)
             .service(create_project_image)
             .service(get_categories)
+            .service(get_project_image_categories)
     ).bind("127.0.0.1:8088")?
         .run()
         .await
