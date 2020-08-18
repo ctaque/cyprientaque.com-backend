@@ -11,8 +11,10 @@ use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
 use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
-use slugify::slugify;
 use self::ctprods::middleware::auth_middleware;
+use self::ctprods::establish_connection;
+use diesel_migrations::{ run_pending_migrations, RunMigrationsError };
+use slugify::slugify;
 use postgres::error::Error;
 use mime;
 
@@ -220,6 +222,17 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
+    let connection = establish_connection();
+    let migration_run = run_pending_migrations(&connection);
+    match migration_run{
+        Err(e) =>
+            match e {
+                RunMigrationsError::MigrationError(e) => panic!(format!("Error while migrating : {}", e.to_string())),
+                RunMigrationsError::QueryError(e) => panic!(format!("Error while migrating : {}", e.to_string())),
+                _ => println!("Nothing to migrate"),
+            },
+        Ok(_) => println!("Migration successfull")
+    };
     HttpServer::new(
         move || {
             App::new()

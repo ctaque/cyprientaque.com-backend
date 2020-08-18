@@ -33,3 +33,4 @@ rusoto_core = "0.44.0"
 rusoto_sqs = "0.44.0"
 rusoto_s3 = "0.44.0"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
+diesel_migrations = "1.4.0"
