@@ -221,28 +221,31 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     HttpServer::new(
-        || App::new()
-            .wrap(
-                Cors::new() // <- Construct CORS middleware builder
-                    .allowed_origin("http://localhost:3000")
-                    .allowed_methods(vec!["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"])
-                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT, http::header::CONTENT_TYPE])
-                    .max_age(3600)
-                    .finish())
-            .data(AppState{})
-            .wrap(auth_middleware::Authentication)
-            .service(get_project)
-            .service(get_projects_by_category)
-            .service(get_projects)
-            .service(create_project)
-            .service(update_project)
-            .service(add_view)
-            .service(add_like)
-            .service(delete_project)
-            .service(create_project_image)
-            .service(get_categories)
-            .service(get_project_image_categories)
-    ).bind("127.0.0.1:8088")?
+        move || {
+            App::new()
+                .wrap(auth_middleware::Authentication)
+                .wrap(
+                    Cors::new() // <- Construct CORS middleware builder
+                        .allowed_origin("http://localhost:3000")
+                        .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE"])
+                        .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                        .allowed_header(http::header::CONTENT_TYPE)
+                        .max_age(3600)
+                        .finish())
+                .data(AppState{})
+                .service(get_project)
+                .service(get_projects_by_category)
+                .service(get_projects)
+                .service(create_project)
+                .service(update_project)
+                .service(add_view)
+                .service(add_like)
+                .service(delete_project)
+                .service(create_project_image)
+                .service(get_categories)
+                .service(get_project_image_categories)
+        })
+        .bind("127.0.0.1:8088")?
         .run()
         .await
 }
