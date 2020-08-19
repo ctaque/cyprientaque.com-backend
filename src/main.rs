@@ -33,7 +33,7 @@ async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, Htt
 
 #[get("/projects")]
 async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
-    let result = Project::all().await;
+    let result = Project::all_but_not_blog().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
         Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))

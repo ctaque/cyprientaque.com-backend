@@ -81,6 +81,7 @@ impl Model<Project> for Project {
         }
         Ok(projects)
     }
+
     async fn update(self) -> Result<Project, Error> {
 
         let row: Row = Self::db().await.query_one("update projects set category_id = $2, title = $3, slug = $4, content = $5, views_count = $6, likes_count = $7, deleted_at = $8, created_at = $9, updated_at = CURRENT_TIMESTAMP, sketchfab_model_number = $10, user_id = $11 where id = $1 returning *;",
@@ -122,6 +123,20 @@ impl Project{
             user: None
         }
     }
+
+    pub async fn all_but_not_blog() -> Result<Vec<Project>, Error>{
+        let rows: Vec<Row> = Self::db().await.query("select * from projects where deleted_at is null and category_id != 5;", &[]).await?;
+        let mut projects = Vec::new();
+        for row in rows{
+            let p = Project::new(&row);
+            let p = p.attach_category().await?;
+            let p = p.attach_user().await?;
+            let p = p.attach_images().await?;
+            projects.push(p);
+        }
+        Ok(projects)
+    }
+
     pub async fn by_category(cat_id: i32) -> Result<Vec<Project>, Error>{
         let rows: Vec<Row> = Self::db().await.query("select * from projects where category_id = $1;", &[&cat_id]).await?;
         let mut projects = Vec::new();
