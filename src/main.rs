@@ -2,6 +2,8 @@ extern crate ctprods;
 extern crate diesel;
 extern crate slugify;
 extern crate log;
+#[macro_use]
+extern crate diesel_migrations;
 use dotenv::dotenv;
 
 use futures::stream::{ StreamExt, TryStreamExt };
@@ -13,7 +15,7 @@ use serde::Deserialize;
 use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
-use diesel_migrations::{ run_pending_migrations, RunMigrationsError };
+use diesel_migrations::{ RunMigrationsError, embed_migrations };
 use slugify::slugify;
 use postgres::error::Error;
 use mime;
@@ -219,11 +221,13 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
     Ok(HttpResponse::Ok().into())
 }
 
+embed_migrations!();
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let connection = establish_connection();
-    let migration_run = run_pending_migrations(&connection);
+    let migration_run = embedded_migrations::run(&connection);
     match migration_run{
         Err(e) =>
             match e {
@@ -233,6 +237,7 @@ async fn main() -> std::io::Result<()> {
             },
         Ok(_) => println!("Migration successfull")
     };
+
     HttpServer::new(
         move || {
             App::new()
