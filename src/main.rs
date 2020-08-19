@@ -246,7 +246,7 @@ async fn main() -> std::io::Result<()> {
                     Cors::new() // <- Construct CORS middleware builder
                         .allowed_origin("http://localhost:3000")
                         .allowed_origin("https://www.cyprientaque.com")
-                        .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE"])
+                        .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
                         .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                         .allowed_header(http::header::CONTENT_TYPE)
                         .max_age(3600)
