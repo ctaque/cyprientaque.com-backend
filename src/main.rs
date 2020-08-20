@@ -33,6 +33,15 @@ async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, Htt
 
 #[get("/projects")]
 async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+    let result = Project::all().await;
+    match result {
+        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
+#[get("/projects/all_but_not_blog")]
+async fn get_projects_but_not_blog (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_but_not_blog().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -252,6 +261,7 @@ async fn main() -> std::io::Result<()> {
                         .max_age(3600)
                         .finish())
                 .data(AppState{})
+                .service(get_projects_but_not_blog)
                 .service(get_project)
                 .service(get_projects_by_category)
                 .service(get_projects)
