@@ -11,7 +11,7 @@ linker = "x86_64-linux-gnu-gcc"
 [dependencies]
 log = "^0.4"
 tokio = "0.2.21"
-actix-web = "2"
+actix-web = { version="2", features=["rust-tls"] }
 actix-http = "2.0.0-alpha.4"
 actix-multipart = "0.2.0"
 actix-cors = "0.2.0-alpha.1"
@@ -34,3 +34,4 @@ rusoto_sqs = "0.44.0"
 rusoto_s3 = "0.44.0"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 diesel_migrations = { version = "1.4.0", features = ["postgres"] }
+openssl = { version = "0.10", features = ["vendored"] }
