@@ -6,6 +6,7 @@ extern crate log;
 extern crate diesel_migrations;
 use dotenv::dotenv;
 
+use std::env;
 use futures::stream::{ StreamExt, TryStreamExt };
 use actix_multipart::{ Multipart };
 use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpResponse };
@@ -247,13 +248,15 @@ async fn main() -> std::io::Result<()> {
         Ok(_) => println!("Migration successfull")
     };
 
+    let is_prod = env::var("ENVIRONMENT").unwrap_or(String::from("development")) == String::from("production");
+
     HttpServer::new(
         move || {
             App::new()
                 .wrap(auth_middleware::Authentication)
                 .wrap(
                     Cors::new() // <- Construct CORS middleware builder
-                        .allowed_origin("*")
+                        .allowed_origin(match is_prod {true => "https://cyprientaque.com/", false => "http://localhost:3000"})
                         .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
                         .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                         .allowed_header(http::header::CONTENT_TYPE)
