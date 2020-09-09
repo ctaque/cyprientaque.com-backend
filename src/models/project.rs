@@ -20,7 +20,8 @@ pub struct Project {
     pub user_id: i32,
     pub category: Option<ProjectCategory>,
     pub images: Option<Vec<ProjectImage>>,
-    pub user: Option<User>
+    pub user: Option<User>,
+    pub is_pro: bool,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -30,7 +31,8 @@ pub struct NewProject {
     pub slug: Option<String>,
     pub content: String,
     pub sketchfab_model_number: Option<String>,
-    pub user_id: i32
+    pub user_id: i32,
+    pub is_pro: bool,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -39,7 +41,7 @@ pub struct UpdatableProject {
     pub title : String,
     pub content : String,
     pub category_id : i32,
-    pub user_id : i32
+    pub user_id : i32,
 }
 
 #[async_trait]
@@ -118,6 +120,7 @@ impl Project{
             updated_at: row.get("updated_at"),
             sketchfab_model_number: row.get("sketchfab_model_number"),
             user_id: row.get("user_id"),
+            is_pro: row.get("is_pro"),
             category: None,
             images: None,
             user: None
@@ -181,8 +184,8 @@ impl NewModel<Project> for NewProject {
     async fn save(self) -> Result<Project, Error>
     where Project: 'async_trait{
 
-        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6) returning *;",
-                                    &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id]).await?;
+        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id, is_pro) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7) returning *;",
+                                    &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id, &self.is_pro]).await?;
 
         let project = Project::new(&row);
         let project = project.attach_category().await?;
