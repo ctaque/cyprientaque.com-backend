@@ -16,6 +16,7 @@ use serde::Deserialize;
 use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
+use self::ctprods::services::bitbucket;
 use diesel_migrations::{ RunMigrationsError, embed_migrations };
 use slugify::slugify;
 use postgres::error::Error;
@@ -231,6 +232,30 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
     Ok(HttpResponse::Ok().into())
 }
 
+
+#[get("/bitbucket/accessToken")]
+async fn access_token () -> Result<HttpResponse, HttpResponse> {
+    let resp = bitbucket::get_access_token().await;
+    match resp{
+        Ok(token) => Ok(HttpResponse::Ok().body(json!(token))),
+        Err(err) => Err(HttpResponse::Unauthorized().body(err.to_string()))
+    }
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+struct RefreshTokenQuery{
+    refresh_token: String,
+}
+
+#[get("/bitbucket/refreshToken")]
+async fn refresh_token (_data: web::Data<AppState>, info: web::Query<RefreshTokenQuery>) -> Result<HttpResponse, HttpResponse> {
+    let resp = bitbucket::refresh_token(info.refresh_token.to_string()).await;
+    match resp{
+        Ok(token) => Ok(HttpResponse::Ok().body(json!(token))),
+        Err(err) => Err(HttpResponse::Unauthorized().body(err.to_string()))
+    }
+}
+
 embed_migrations!();
 
 #[actix_rt::main]
@@ -274,6 +299,8 @@ async fn main() -> std::io::Result<()> {
                 .service(create_project_image)
                 .service(get_categories)
                 .service(get_project_image_categories)
+                .service(access_token)
+                .service(refresh_token)
         })
         .bind("127.0.0.1:8088")?
         .run()

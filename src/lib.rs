@@ -6,6 +6,7 @@ pub mod schema;
 pub mod models;
 pub mod middleware;
 pub mod utils;
+pub mod services;
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
