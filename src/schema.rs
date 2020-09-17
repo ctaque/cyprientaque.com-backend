@@ -100,6 +100,8 @@ table! {
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
         sketchfab_model_number -> Nullable<Varchar>,
+        is_pro -> Bool,
+        bitbucket_project_key -> Nullable<Varchar>,
     }
 }
 
