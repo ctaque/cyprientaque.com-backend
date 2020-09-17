@@ -61,7 +61,7 @@ where
 
         let authenticate_pass = match *req.method(){
             Method::OPTIONS => true,
-            // Method::GET => true,
+            Method::GET => true,
             // Method::POST => true,
             // Method::PUT => true,
             _ => {

@@ -24,6 +24,15 @@ use mime;
 
 struct AppState {}
 
+#[get("/")]
+async fn index () -> Result<HttpResponse, HttpResponse> {
+    Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
+}
+#[get("*")]
+async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
+    Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
+}
+
 #[get("/categories")]
 async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
     let result = ProjectCategory::all().await;
@@ -301,6 +310,8 @@ async fn main() -> std::io::Result<()> {
                 .service(get_project_image_categories)
                 .service(access_token)
                 .service(refresh_token)
+                .service(index)
+                .service(not_found_redirect)
         })
         .bind("127.0.0.1:8088")?
         .run()
