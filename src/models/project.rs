@@ -22,6 +22,7 @@ pub struct Project {
     pub images: Option<Vec<ProjectImage>>,
     pub user: Option<User>,
     pub is_pro: bool,
+    pub bitbucket_project_key: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -119,6 +120,7 @@ impl Project{
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
             sketchfab_model_number: row.get("sketchfab_model_number"),
+            bitbucket_project_key: row.get("bitbucket_project_key"),
             user_id: row.get("user_id"),
             is_pro: row.get("is_pro"),
             category: None,
