@@ -1,15 +1,18 @@
 extern crate ctprods;
 extern crate diesel;
 extern crate slugify;
+#[macro_use]
 extern crate log;
+
 #[macro_use]
 extern crate diesel_migrations;
 use dotenv::dotenv;
 
+use env_logger;
 use std::env;
 use futures::stream::{ StreamExt, TryStreamExt };
 use actix_multipart::{ Multipart };
-use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpResponse };
+use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpResponse, middleware::Logger };
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
@@ -283,11 +286,15 @@ async fn main() -> std::io::Result<()> {
     };
 
     let is_prod = env::var("ENVIRONMENT").unwrap_or(String::from("development")) == String::from("production");
+    env::set_var("RUST_LOG", "actix_web=debug");
+    env::set_var("RUST_BACKTRACE", "full");
+    env_logger::init();
 
     HttpServer::new(
         move || {
             App::new()
                 .wrap(auth_middleware::Authentication)
+                .wrap(Logger::default())
                 .wrap(
                     Cors::new() // <- Construct CORS middleware builder
                         .allowed_origin(match is_prod {true => "https://www.cyprientaque.com", false => "http://localhost:3000"})
