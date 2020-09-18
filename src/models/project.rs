@@ -34,6 +34,7 @@ pub struct NewProject {
     pub sketchfab_model_number: Option<String>,
     pub user_id: i32,
     pub is_pro: bool,
+    pub bitbucket_project_key: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -186,8 +187,8 @@ impl NewModel<Project> for NewProject {
     async fn save(self) -> Result<Project, Error>
     where Project: 'async_trait{
 
-        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id, is_pro) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7) returning *;",
-                                    &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id, &self.is_pro]).await?;
+        let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id, is_pro, bitbucket_project_key) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7, $8) returning *;",
+                                    &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id, &self.is_pro, &self.bitbucket_project_key]).await?;
 
         let project = Project::new(&row);
         let project = project.attach_category().await?;
