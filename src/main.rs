@@ -230,9 +230,19 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
             );
             let image_data = data.to_vec();
             let image_350_data = &project_image.clone().generate_size(350.0, image_data.clone());
-            project_image.clone().upload_to_s3(&project_image.w350_keyname, image_350_data.to_vec()).await.expect("Failed uploading w350 image");
+            match image_350_data {
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+                Ok(image) => {
+                    project_image.clone().upload_to_s3(&project_image.w350_keyname, image.to_vec()).await.expect("Failed uploading w350 image");
+                }
+            };
             let image_1500_data = &project_image.clone().generate_size(1500.0, image_data.clone());
-            project_image.clone().upload_to_s3(&project_image.w1500_keyname, image_1500_data.to_vec()).await.expect("Failed uploading w1500 image");
+            match image_1500_data {
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+                Ok(image) => {
+                    project_image.clone().upload_to_s3(&project_image.w1500_keyname, image.to_vec()).await.expect("Failed uploading w1500 image");
+                }
+            };
             match project_image.clone().upload_to_s3(&project_image.original_keyname, image_data).await {
                 Ok(()) => {
                     let image_save_result = project_image.save().await;

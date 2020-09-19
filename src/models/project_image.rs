@@ -1,4 +1,4 @@
-use image::{self, GenericImageView, ImageOutputFormat};
+use image::{self, ImageOutputFormat, DynamicImage, error::ImageResult, GenericImageView};
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
 use postgres::{ Row, error::Error };
@@ -89,12 +89,8 @@ impl NewProjectImage {
         Ok(())
     }
 
-    pub fn generate_size(self, new_w: f32, data: Vec<u8>) -> Vec<u8> {
-        let img = image::load_from_memory(&data).ok();
-        if let Err(e) = image::load_from_memory(&data) {
-            panic!("Failed opening Image: {}", e);
-        }
-        let img = img.unwrap();
+    pub fn generate_size(self, new_w: f32, data: Vec<u8>) -> ImageResult<Vec<u8>> {
+        let img = image::load_from_memory(&data)?;
         let mut result: Vec<u8> = Vec::new();
 
         let old_w = img.width() as f32;
@@ -105,7 +101,7 @@ impl NewProjectImage {
         let scaled = img.resize(new_w as u32, new_h as u32, image::imageops::FilterType::Lanczos3);
         scaled.write_to(&mut result, ImageOutputFormat::Jpeg(90)).expect("Failed to write image to result");
 
-        (*result).to_vec()
+        Ok((*result).to_vec())
     }
 }
 
@@ -113,6 +109,12 @@ impl NewProjectImage {
 impl NewModel<ProjectImage> for NewProjectImage {
     async fn save(self) -> Result<ProjectImage, Error>
         where ProjectImage: 'async_trait{
+        if self.primary.clone(){
+            Self::db().await.query(
+                "update project_images set \"primary\" = false where project_id = $1",
+                &[&self.project_id]
+            ).await?;
+        }
         let row: Row = Self::db().await.query_one(
             "insert into project_images (w1500_keyname, w350_keyname, project_image_category_id, w1500_object_url, w350_object_url, \"primary\", project_id, created_at, original_object_url) values ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, $8) returning *;",
             &[&self.w1500_keyname, &self.w350_keyname, &self.project_image_category_id ,&self.w1500_object_url, &self.w350_object_url, &self.primary, &self.project_id, &self.original_object_url]
