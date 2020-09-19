@@ -1,3 +1,4 @@
+use image::{self, GenericImageView, ImageOutputFormat};
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
 use postgres::{ Row, error::Error };
@@ -44,16 +45,16 @@ impl ProjectImage {
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize)]
 pub struct NewProjectImage {
-    original_keyname: String,
-    original_object_url: String,
-    uid: String,
-    w1500_keyname: String,
-    w350_keyname: String,
-    w1500_object_url: String,
-    w350_object_url: String,
-    primary: bool,
-    project_image_category_id: i32,
-    project_id: i32,
+    pub original_keyname: String,
+    pub original_object_url: String,
+    pub uid: String,
+    pub w1500_keyname: String,
+    pub w350_keyname: String,
+    pub w1500_object_url: String,
+    pub w350_object_url: String,
+    pub primary: bool,
+    pub project_image_category_id: i32,
+    pub project_id: i32,
 }
 
 impl NewProjectImage {
@@ -82,10 +83,29 @@ impl NewProjectImage {
         }
     }
 
-    pub async fn upload_to_s3 (self, contents: Vec<u8>) -> Result<(), RusotoError<PutObjectError>> {
+    pub async fn upload_to_s3 (self, keyname: &String, contents: Vec<u8>) -> Result<(), RusotoError<PutObjectError>> {
         let client = ConfiguredS3Client::new();
-        client.put_object(self.original_keyname, contents).await?;
+        client.put_object(keyname.to_string(), contents).await?;
         Ok(())
+    }
+
+    pub fn generate_size(self, new_w: f32, data: Vec<u8>) -> Vec<u8> {
+        let img = image::load_from_memory(&data).ok();
+        if let Err(e) = image::load_from_memory(&data) {
+            panic!("Failed opening Image: {}", e);
+        }
+        let img = img.unwrap();
+        let mut result: Vec<u8> = Vec::new();
+
+        let old_w = img.width() as f32;
+        let old_h = img.height() as f32;
+        let ratio = new_w.clone() / old_w;
+        let new_h = (old_h * ratio).floor();
+
+        let scaled = img.resize(new_w as u32, new_h as u32, image::imageops::FilterType::Lanczos3);
+        scaled.write_to(&mut result, ImageOutputFormat::Jpeg(90)).expect("Failed to write image to result");
+
+        (*result).to_vec()
     }
 }
 
