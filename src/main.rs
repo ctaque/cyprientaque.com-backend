@@ -220,40 +220,42 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
             return Err(HttpResponse::BadRequest().body(e.to_string()));
         }
         let filename = content_type.get_filename().unwrap();
+        let mut file_stream: Vec<u8> = vec![];
         while let Some(chunk) = field.next().await{
             let data = chunk.unwrap();
-            let project_image = NewProjectImage::new(
-                info.primary,
-                info.project_id,
-                info.category_id,
-                filename.to_owned()
-            );
-            let image_data = data.to_vec();
-            let image_350_data = &project_image.clone().generate_size(350.0, image_data.clone());
-            match image_350_data {
-                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
-                Ok(image) => {
-                    project_image.clone().upload_to_s3(&project_image.w350_keyname, image.to_vec()).await.expect("Failed uploading w350 image");
-                }
-            };
-            let image_1500_data = &project_image.clone().generate_size(1500.0, image_data.clone());
-            match image_1500_data {
-                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
-                Ok(image) => {
-                    project_image.clone().upload_to_s3(&project_image.w1500_keyname, image.to_vec()).await.expect("Failed uploading w1500 image");
-                }
-            };
-            match project_image.clone().upload_to_s3(&project_image.original_keyname, image_data).await {
-                Ok(()) => {
-                    let image_save_result = project_image.save().await;
-
-                    return match image_save_result{
-                        Ok(image) => Ok(HttpResponse::Ok().body(json!(image))),
-                        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-                    }
-                }
-                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string()))
+            file_stream.append(&mut data.to_vec());
+        }
+        let project_image = NewProjectImage::new(
+            info.primary,
+            info.project_id,
+            info.category_id,
+            filename.to_owned()
+        );
+        let image_data = file_stream.to_vec();
+        let image_350_data = &project_image.clone().generate_size(350.0, image_data.clone());
+        match image_350_data {
+            Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+            Ok(image) => {
+                project_image.clone().upload_to_s3(&project_image.w350_keyname, image.to_vec()).await.expect("Failed uploading w350 image");
             }
+        };
+        let image_1500_data = &project_image.clone().generate_size(1500.0, image_data.clone());
+        match image_1500_data {
+            Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+            Ok(image) => {
+                project_image.clone().upload_to_s3(&project_image.w1500_keyname, image.to_vec()).await.expect("Failed uploading w1500 image");
+            }
+        };
+        match project_image.clone().upload_to_s3(&project_image.original_keyname, image_data).await {
+            Ok(()) => {
+                let image_save_result = project_image.save().await;
+
+                return match image_save_result{
+                    Ok(image) => Ok(HttpResponse::Ok().body(json!(image))),
+                    Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+                }
+            }
+            Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string()))
         }
     };
     Ok(HttpResponse::Ok().into())
@@ -318,6 +320,7 @@ async fn main() -> std::io::Result<()> {
                         .max_age(3600)
                         .finish())
                 .data(AppState{})
+                .app_data(web::PayloadConfig::new(900000000000000000))
                 .service(get_projects_but_not_blog)
                 .service(get_project)
                 .service(get_projects_by_category)
