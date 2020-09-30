@@ -43,6 +43,7 @@ impl ConfiguredS3Client {
             bucket: self.bucket_name.to_owned(),
             key: filename.to_owned(),
             body: Some(contents.into()),
+            acl: Some("public-read".to_string()),
             ..Default::default()
         };
 
