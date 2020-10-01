@@ -2,6 +2,7 @@ use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
 use crate::models::{ ProjectCategory, ProjectImage, User, model::{ Model, NewModel, UpdatableModel } };
 use postgres::{ Row, error::Error };
+use std::dbg;
 
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -23,6 +24,7 @@ pub struct Project {
     pub user: Option<User>,
     pub is_pro: bool,
     pub bitbucket_project_key: Option<String>,
+    pub published: bool,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -124,14 +126,28 @@ impl Project{
             bitbucket_project_key: row.get("bitbucket_project_key"),
             user_id: row.get("user_id"),
             is_pro: row.get("is_pro"),
+            published: row.get("published"),
             category: None,
             images: None,
             user: None
         }
     }
 
+    pub async fn all_published() -> Result<Vec<Project>, Error>{
+        let rows: Vec<Row> = Self::db().await.query("select * from projects where deleted_at is null and published = true;", &[]).await?;
+        let mut projects = Vec::new();
+        for row in rows{
+            let p = Project::new(&row);
+            let p = p.attach_category().await?;
+            let p = p.attach_user().await?;
+            let p = p.attach_images().await?;
+            projects.push(p);
+        }
+        Ok(projects)
+    }
+
     pub async fn all_but_not_blog() -> Result<Vec<Project>, Error>{
-        let rows: Vec<Row> = Self::db().await.query("select * from projects where deleted_at is null and category_id != 5;", &[]).await?;
+        let rows: Vec<Row> = Self::db().await.query("select * from projects where deleted_at is null and category_id != 5 and published = true;", &[]).await?;
         let mut projects = Vec::new();
         for row in rows{
             let p = Project::new(&row);
@@ -144,7 +160,7 @@ impl Project{
     }
 
     pub async fn by_category(cat_id: i32) -> Result<Vec<Project>, Error>{
-        let rows: Vec<Row> = Self::db().await.query("select * from projects where category_id = $1;", &[&cat_id]).await?;
+        let rows: Vec<Row> = Self::db().await.query("select * from projects where category_id = $1 and published = true;", &[&cat_id]).await?;
         let mut projects = Vec::new();
         for row in rows{
             let project = Project::new(&row);
@@ -155,6 +171,24 @@ impl Project{
         }
         Ok(projects)
     }
+    pub async fn publish(self) -> Result<Project, Error> {
+        let row = Self::db().await.query_one("UPDATE projects set published = true where id = $1 returning *;", &[&self.id]).await?;
+        let project = Project::new(&row);
+        let project = project.attach_images().await?;
+        let project = project.attach_user().await?;
+        let project = project.attach_category().await?;
+        Ok(project)
+    }
+
+    pub async fn unpublish(self) -> Result<Project, Error> {
+        let row = Self::db().await.query_one("UPDATE projects set published = false where id = $1 returning *;", &[&self.id]).await?;
+        let project = Project::new(&row);
+        let project = project.attach_images().await?;
+        let project = project.attach_user().await?;
+        let project = project.attach_category().await?;
+        Ok(project)
+    }
+
     pub async fn attach_category(mut self) -> Result<Project, Error>{
         let row = Self::db().await.query_one("select * from project_categories where id = $1", &[&self.category_id]).await?;
         let cat = ProjectCategory::new(&row);

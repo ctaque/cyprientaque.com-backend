@@ -54,6 +54,15 @@ async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpR
     }
 }
 
+#[get("/projects/published")]
+async fn get_published_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+    let result = Project::all_published().await;
+    match result {
+        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+    }
+}
+
 #[get("/projects/all_but_not_blog")]
 async fn get_projects_but_not_blog (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_but_not_blog().await;
@@ -183,6 +192,47 @@ async fn add_like (_data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> 
             }
         },
         Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
+    }
+}
+
+#[derive(Deserialize)]
+struct PublishInfo{
+    id: i32,
+}
+#[put("/projects/{id}/publish")]
+async fn publish_project (_data: web::Data<AppState>, info: web::Path<PublishInfo>) -> Result<HttpResponse, HttpResponse> {
+    let result: Result<Project, Error> = Project::find(info.id.into()).await;
+    match result {
+        Ok(project) => {
+            let result = project.publish().await;
+            match result{
+                Ok(published) => Ok(HttpResponse::Ok().body(json!(published))),
+                Err(err) => {
+                    println!("{}", err.to_string());
+                    Err(HttpResponse::InternalServerError().body(err.to_string()))
+                }
+            }
+        },
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
+    }
+}
+
+#[derive(Deserialize)]
+struct UnpublishInfo{
+    id: i32,
+}
+#[put("/projects/{id}/unpublish")]
+async fn unpublish_project (_data: web::Data<AppState>, info: web::Path<UnpublishInfo>) -> Result<HttpResponse, HttpResponse> {
+    let result: Result<Project, Error> = Project::find(info.id.into()).await;
+    match result {
+        Ok(project) => {
+            let result = project.unpublish().await;
+            match result{
+                Ok(published) => Ok(HttpResponse::Ok().body(json!(published))),
+                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+            }
+        },
+        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
     }
 }
 
@@ -322,6 +372,7 @@ async fn main() -> std::io::Result<()> {
                 .data(AppState{})
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .service(get_projects_but_not_blog)
+                .service(get_published_projects)
                 .service(get_project)
                 .service(get_projects_by_category)
                 .service(get_projects)
@@ -329,6 +380,8 @@ async fn main() -> std::io::Result<()> {
                 .service(update_project)
                 .service(add_view)
                 .service(add_like)
+                .service(publish_project)
+                .service(unpublish_project)
                 .service(delete_project)
                 .service(create_project_image)
                 .service(get_categories)
