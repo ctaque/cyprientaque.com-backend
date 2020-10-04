@@ -13,6 +13,8 @@ pub struct ProjectCategory {
     pub deleted_at: Option<NaiveDateTime>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub color_hex: String,
+    pub project_count: Option<u32>
 }
 
 impl ProjectCategory{
@@ -24,7 +26,9 @@ impl ProjectCategory{
             slug: row.get("slug"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
-            deleted_at: row.get("deleted_at")
+            deleted_at: row.get("deleted_at"),
+            color_hex: row.get("color_hex"),
+            project_count: None,
         }
     }
 }
@@ -43,6 +47,7 @@ impl Model<ProjectCategory> for ProjectCategory {
         let mut categories = Vec::new();
         for row in rows{
             let p = ProjectCategory::new(&row);
+            let p = p.attach_project_count().await?;
             categories.push(p);
         }
         Ok(categories)
@@ -59,5 +64,13 @@ impl Model<ProjectCategory> for ProjectCategory {
         let row = Self::db().await.query_one("update project_categories set deleted_at = CURRENT_TIMESTAMP where id = $1", &[&self.id]).await?;
         let c = ProjectCategory::new(&row);
         Ok(c)
+    }
+}
+
+impl ProjectCategory{
+    async fn attach_project_count(mut self) -> Result<ProjectCategory, Error> {
+        let row: Row = Self::db().await.query_one("SELECT count(id) as project_count from projects where category_id = $1", &[&self.id]).await?;
+        self.project_count = row.get("project_count");
+        Ok(self)
     }
 }

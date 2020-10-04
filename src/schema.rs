@@ -56,6 +56,7 @@ table! {
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
+        color_hex -> Varchar,
     }
 }
 
