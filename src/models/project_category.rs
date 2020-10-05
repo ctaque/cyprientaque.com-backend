@@ -14,7 +14,7 @@ pub struct ProjectCategory {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub color_hex: String,
-    pub project_count: Option<u32>
+    pub project_count: Option<i64>
 }
 
 impl ProjectCategory{
