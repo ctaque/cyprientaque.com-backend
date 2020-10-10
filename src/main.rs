@@ -25,8 +25,6 @@ use slugify::slugify;
 use postgres::error::Error;
 use mime;
 
-struct AppState {}
-
 #[get("/")]
 async fn index () -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
@@ -37,7 +35,7 @@ async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
 }
 
 #[get("/categories")]
-async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+async fn get_categories () -> Result<HttpResponse, HttpResponse> {
     let result = ProjectCategory::all().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -46,7 +44,7 @@ async fn get_categories (_data: web::Data<AppState>) -> Result<HttpResponse, Htt
 }
 
 #[get("/projects")]
-async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+async fn get_projects () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -55,7 +53,7 @@ async fn get_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpR
 }
 
 #[get("/projects/published")]
-async fn get_published_projects (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+async fn get_published_projects () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_published().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -64,7 +62,7 @@ async fn get_published_projects (_data: web::Data<AppState>) -> Result<HttpRespo
 }
 
 #[get("/projects/all_but_not_blog")]
-async fn get_projects_but_not_blog (_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+async fn get_projects_but_not_blog () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_but_not_blog().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -77,7 +75,7 @@ struct GetProjectsByCategoryInfo{
     category_id: i32,
 }
 #[get("/projects/category/{category_id}")]
-async fn get_projects_by_category (_data: web::Data<AppState>, info: web::Path<GetProjectsByCategoryInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -> Result<HttpResponse, HttpResponse> {
     let result = Project::by_category(info.category_id).await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
@@ -90,7 +88,7 @@ struct GetProjectInfo{
     id: i32,
 }
 #[get("/projects/{id}")]
-async fn get_project(_data: web::Data<AppState>, info: web::Path<GetProjectInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn get_project(info: web::Path<GetProjectInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id).await;
 
     match result {
@@ -104,7 +102,7 @@ struct DeleteProjectInfo{
     id: i32,
 }
 #[delete("/projects/{id}")]
-async fn delete_project(_data: web::Data<AppState>, info: web::Path<DeleteProjectInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn delete_project(info: web::Path<DeleteProjectInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id).await;
 
     match result {
@@ -119,7 +117,7 @@ async fn delete_project(_data: web::Data<AppState>, info: web::Path<DeleteProjec
 }
 
 #[post("/projects")]
-async fn create_project(_data: web::Data<AppState>, mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
+async fn create_project(mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
     let slug: String = slugify!(&new_project.title);
     let is_unique = new_project.clone().check_slug_unique(slug.clone()).await;
     if !is_unique {
@@ -135,7 +133,7 @@ async fn create_project(_data: web::Data<AppState>, mut new_project: web::Json<N
 }
 
 #[put("/projects/{id}")]
-async fn update_project(_data: web::Data<AppState>, info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
+async fn update_project(info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
 
     let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
 
@@ -157,7 +155,7 @@ struct AddViewInfo{
 }
 
 #[put("/projects/{id}/addView")]
-async fn add_view(_data: web::Data<AppState>, info: web::Path<AddViewInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn add_view(info: web::Path<AddViewInfo>) -> Result<HttpResponse, HttpResponse> {
 
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
 
@@ -180,7 +178,7 @@ struct AddLikeInfo{
 }
 
 #[put("/projects/{id}/addLike")]
-async fn add_like (_data: web::Data<AppState>, info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn add_like (info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
         Ok(mut project) => {
@@ -200,7 +198,7 @@ struct PublishInfo{
     id: i32,
 }
 #[put("/projects/{id}/publish")]
-async fn publish_project (_data: web::Data<AppState>, info: web::Path<PublishInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn publish_project (info: web::Path<PublishInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
         Ok(project) => {
@@ -222,7 +220,7 @@ struct UnpublishInfo{
     id: i32,
 }
 #[put("/projects/{id}/unpublish")]
-async fn unpublish_project (_data: web::Data<AppState>, info: web::Path<UnpublishInfo>) -> Result<HttpResponse, HttpResponse> {
+async fn unpublish_project (info: web::Path<UnpublishInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
         Ok(project) => {
@@ -237,7 +235,7 @@ async fn unpublish_project (_data: web::Data<AppState>, info: web::Path<Unpublis
 }
 
 #[get("/projectImageCategories")]
-async fn get_project_image_categories(_data: web::Data<AppState>) -> Result<HttpResponse, HttpResponse> {
+async fn get_project_image_categories() -> Result<HttpResponse, HttpResponse> {
     let result: Result<Vec<ProjectImageCategory>, Error> = ProjectImageCategory::all().await;
     match result {
         Ok(categories) => Ok(HttpResponse::Ok().body(json!(categories))),
@@ -327,7 +325,7 @@ struct RefreshTokenQuery{
 }
 
 #[get("/bitbucket/refreshToken")]
-async fn refresh_token (_data: web::Data<AppState>, info: web::Query<RefreshTokenQuery>) -> Result<HttpResponse, HttpResponse> {
+async fn refresh_token (info: web::Query<RefreshTokenQuery>) -> Result<HttpResponse, HttpResponse> {
     let resp = bitbucket::refresh_token(info.refresh_token.to_string()).await;
     match resp{
         Ok(token) => Ok(HttpResponse::Ok().body(json!(token))),
@@ -369,7 +367,6 @@ async fn main() -> std::io::Result<()> {
                         .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT, http::header::CONTENT_TYPE])
                         .max_age(3600)
                         .finish())
-                .data(AppState{})
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .service(get_projects_but_not_blog)
                 .service(get_published_projects)
