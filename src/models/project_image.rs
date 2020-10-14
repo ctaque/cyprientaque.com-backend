@@ -23,6 +23,7 @@ pub struct ProjectImage {
     project_id: i32,
     created_at: Option<NaiveDateTime>,
     updated_at: Option<NaiveDateTime>,
+    deleted_at: Option<NaiveDateTime>,
 }
 
 impl ProjectImage {
@@ -39,7 +40,7 @@ impl ProjectImage {
             project_id: row.get("project_id"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
-
+            deleted_at: row.get("deleted_at"),
         }
     }
 }

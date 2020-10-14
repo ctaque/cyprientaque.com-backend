@@ -2,7 +2,7 @@ table! {
     comments (id) {
         id -> Int4,
         content -> Text,
-        user_id -> Nullable<Int4>,
+        user_id -> Int4,
         project_id -> Int4,
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
@@ -83,6 +83,7 @@ table! {
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
         original_object_url -> Nullable<Varchar>,
+        deleted_at -> Nullable<Timestamp>,
     }
 }
 
@@ -137,6 +138,7 @@ table! {
 }
 
 joinable!(comments -> projects (project_id));
+joinable!(comments -> users (user_id));
 joinable!(profile_user_images -> users (user_id));
 joinable!(project_images -> project_image_categories (project_image_category_id));
 joinable!(project_images -> projects (project_id));
