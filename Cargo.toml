@@ -39,3 +39,5 @@ reqwest = { version = "0.10", features = ["json"] }
 env_logger = "0.7.1"
 image = "0.23.9"
 either = "1.6.1"
+rest_macro = { version = "0.1.0", path = "rest_macro" }
+rest_macro_derive = { version = "0.1.0", path = "rest_macro_derive" }

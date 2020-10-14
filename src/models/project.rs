@@ -1,11 +1,13 @@
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
-use crate::models::{ ProjectCategory, ProjectImage, User, model::{ Model, NewModel, UpdatableModel } };
+use crate::models::{ ProjectCategory, ProjectImage, User };
 use postgres::{ Row, error::Error };
-use std::dbg;
+use rest_macro_derive::{HttpAll, HttpFind };
+use rest_macro::{HttpAll, HttpFind, FindInfo, Model, NewModel, UpdatableModel };
+use actix_web::{ HttpResponse, web };
+use serde_json::json;
 
-
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll)]
 pub struct Project {
     pub id: i32,
     pub category_id: i32,

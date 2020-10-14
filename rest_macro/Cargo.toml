@@ -1,0 +1,15 @@
+[package]
+name = "rest_macro"
+version = "0.1.0"
+authors = ["Cyprien Taque <Cyprien.taque@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.33"
+actix-web = { version="2" }
+tokio-postgres = { version = "0.5.4", features = ["with-chrono-0_4", "with-serde_json-1"] }
+tokio = "0.2.21"
+serde = { version = "1.0.110", features = ["derive"] }
+serde_json = "1.0.53"

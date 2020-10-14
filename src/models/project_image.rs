@@ -1,12 +1,13 @@
-use image::{self, ImageOutputFormat, DynamicImage, error::ImageResult, GenericImageView};
+use image::{self, ImageOutputFormat, error::ImageResult, GenericImageView};
 use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
 use postgres::{ Row, error::Error };
 use std::env;
-use crate::models::{ model::{ NewModel }, s3_client::ConfiguredS3Client };
+use crate::models::{ s3_client::ConfiguredS3Client };
 use rusoto_s3::PutObjectError;
 use rusoto_core::{ RusotoError};
 use uuid::Uuid;
+use rest_macro::{ NewModel };
 
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize)]

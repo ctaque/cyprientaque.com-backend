@@ -1,7 +1,9 @@
-use std::env;
 use async_trait::async_trait;
+use actix_web::{ HttpResponse, web };
+use std::env;
 use tokio_postgres::{ Client, NoTls, Error};
 use tokio;
+use serde::{Deserialize};
 
 #[async_trait]
 pub trait Model<T> {
@@ -55,4 +57,18 @@ pub trait UpdatableModel<T> {
         client
     }
     async fn update(self: Self) -> Result<T, Error>;
+}
+
+#[async_trait]
+pub trait HttpAll {
+    async fn http_all() -> Result<HttpResponse, HttpResponse>;
+}
+
+#[derive(Deserialize)]
+pub struct FindInfo{
+    pub id: i32,
+}
+#[async_trait]
+pub trait HttpFind {
+    async fn http_find(info: web::Path<FindInfo>) -> Result<HttpResponse, HttpResponse>;
 }

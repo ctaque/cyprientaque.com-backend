@@ -1,5 +1,5 @@
 use postgres::{ Row };
-use crate::models::model::Model;
+use rest_macro::{ Model };
 use async_trait::async_trait;
 use postgres::{ error::Error };
 use chrono::naive::NaiveDateTime;

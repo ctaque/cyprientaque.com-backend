@@ -1,8 +1,8 @@
 use postgres::{ Row };
-use crate::models::model::Model;
 use async_trait::async_trait;
 use postgres::{ error::Error };
 use chrono::naive::NaiveDateTime;
+use rest_macro::{ Model };
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ProjectCategory {

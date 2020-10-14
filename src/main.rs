@@ -1,13 +1,14 @@
 extern crate ctprods;
 extern crate diesel;
 extern crate slugify;
-#[macro_use]
+extern crate rest_macro;
+extern crate rest_macro_derive;
 extern crate log;
 
 #[macro_use]
 extern crate diesel_migrations;
-use dotenv::dotenv;
 
+use dotenv::dotenv;
 use env_logger;
 use std::env;
 use futures::stream::{ StreamExt, TryStreamExt };
@@ -16,7 +17,8 @@ use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpRespons
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
-use self::ctprods::models::{ Project, NewProject, Model, NewModel, UpdatableModel, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
+use self::ctprods::models::{ Project, NewProject, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
+use rest_macro::{Model, NewModel, UpdatableModel};
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
 use self::ctprods::services::bitbucket;
@@ -24,6 +26,7 @@ use diesel_migrations::{ RunMigrationsError, embed_migrations };
 use slugify::slugify;
 use postgres::error::Error;
 use mime;
+use rest_macro::{HttpFind, HttpAll};
 
 #[get("/")]
 async fn index () -> Result<HttpResponse, HttpResponse> {
@@ -37,15 +40,6 @@ async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
 #[get("/categories")]
 async fn get_categories () -> Result<HttpResponse, HttpResponse> {
     let result = ProjectCategory::all().await;
-    match result {
-        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-#[get("/projects")]
-async fn get_projects () -> Result<HttpResponse, HttpResponse> {
-    let result = Project::all().await;
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
         Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
@@ -80,20 +74,6 @@ async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
         Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-#[derive(Deserialize)]
-struct GetProjectInfo{
-    id: i32,
-}
-#[get("/projects/{id}")]
-async fn get_project(info: web::Path<GetProjectInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Project, Error> = Project::find(info.id).await;
-
-    match result {
-        Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
     }
 }
 
@@ -370,9 +350,9 @@ async fn main() -> std::io::Result<()> {
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .service(get_projects_but_not_blog)
                 .service(get_published_projects)
-                .service(get_project)
+                .route("/projects/{id}", web::get().to(Project::http_find))
+                .route("/projects", web::get().to(Project::http_all))
                 .service(get_projects_by_category)
-                .service(get_projects)
                 .service(create_project)
                 .service(update_project)
                 .service(add_view)

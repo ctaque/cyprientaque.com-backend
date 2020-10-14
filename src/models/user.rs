@@ -1,7 +1,8 @@
 use chrono::naive::NaiveDateTime;
 use postgres::{ Row, error::Error };
 use async_trait::async_trait;
-use crate::models::{ ProfileUserImage, model::{ Model } };
+use crate::models::{ ProfileUserImage };
+use rest_macro::{ Model };
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
