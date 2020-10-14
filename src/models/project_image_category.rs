@@ -2,17 +2,18 @@ use postgres::{ Row };
 use async_trait::async_trait;
 use postgres::{ error::Error };
 use chrono::naive::NaiveDateTime;
-use rest_macro_derive::{HttpAll, HttpFind };
-use rest_macro::{HttpAll, HttpFind, FindInfo, Model };
+use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
+use rest_macro::{HttpAll, HttpFind, HttpDelete, DeleteInfo, FindInfo, Model };
 use actix_web::{ HttpResponse, web };
 use serde_json::json;
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct ProjectImageCategory {
     pub id: i32,
     pub name: String,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
 impl ProjectImageCategory{
@@ -22,6 +23,7 @@ impl ProjectImageCategory{
             name: row.get("name"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
+            deleted_at: row.get("deleted_at"),
         }
     }
 }
@@ -53,7 +55,7 @@ impl Model<ProjectImageCategory> for ProjectImageCategory {
 
     }
     async fn delete(mut self) -> Result<ProjectImageCategory, Error>{
-        let row = Self::db().await.query_one("update project_image_categories set deleted_at = CURRENT_TIMESTAMP where id = $1", &[&self.id]).await?;
+        let row = Self::db().await.query_one("update project_image_categories set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *", &[&self.id]).await?;
         let c = ProjectImageCategory::new(&row);
         Ok(c)
     }

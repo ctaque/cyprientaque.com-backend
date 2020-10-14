@@ -72,3 +72,13 @@ pub struct FindInfo{
 pub trait HttpFind {
     async fn http_find(info: web::Path<FindInfo>) -> Result<HttpResponse, HttpResponse>;
 }
+
+
+#[derive(Deserialize)]
+pub struct DeleteInfo{
+    pub id: i32,
+}
+#[async_trait]
+pub trait HttpDelete {
+    async fn http_delete(info: web::Path<DeleteInfo>) -> Result<HttpResponse, HttpResponse>;
+}

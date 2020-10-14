@@ -2,12 +2,12 @@ use chrono::naive::NaiveDateTime;
 use async_trait::async_trait;
 use crate::models::{ ProjectCategory, ProjectImage, User };
 use postgres::{ Row, error::Error };
-use rest_macro_derive::{HttpAll, HttpFind };
-use rest_macro::{HttpAll, HttpFind, FindInfo, Model, NewModel, UpdatableModel };
+use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
+use rest_macro::{HttpAll, HttpFind, HttpDelete, FindInfo, DeleteInfo, Model, NewModel, UpdatableModel };
 use actix_web::{ HttpResponse, web };
 use serde_json::json;
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
     pub id: i32,
     pub category_id: i32,
@@ -102,7 +102,7 @@ impl Model<Project> for Project {
 
     }
     async fn delete(mut self) -> Result<Project, Error>{
-        let row = Self::db().await.query_one("update projects set deleted_at = CURRENT_TIMESTAMP where id = $1", &[&self.id]).await?;
+        let row = Self::db().await.query_one("update projects set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *", &[&self.id]).await?;
         let p = Project::new(&row);
         let p = p.attach_category().await?;
         let p = p.attach_user().await?;

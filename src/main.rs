@@ -13,7 +13,7 @@ use env_logger;
 use std::env;
 use futures::stream::{ StreamExt, TryStreamExt };
 use actix_multipart::{ Multipart };
-use actix_web::{ http, get, put, post, web, delete, App, HttpServer, HttpResponse, middleware::Logger };
+use actix_web::{ http, get, put, post, web, App, HttpServer, HttpResponse, middleware::Logger };
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
@@ -26,7 +26,7 @@ use diesel_migrations::{ RunMigrationsError, embed_migrations };
 use slugify::slugify;
 use postgres::error::Error;
 use mime;
-use rest_macro::{HttpFind, HttpAll};
+use rest_macro::{HttpFind, HttpAll, HttpDelete};
 
 #[get("/")]
 async fn index () -> Result<HttpResponse, HttpResponse> {
@@ -65,25 +65,6 @@ async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
         Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-#[derive(Deserialize)]
-struct DeleteProjectInfo{
-    id: i32,
-}
-#[delete("/projects/{id}")]
-async fn delete_project(info: web::Path<DeleteProjectInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Project, Error> = Project::find(info.id).await;
-
-    match result {
-        Ok(project) => {
-            match project.delete().await {
-                Ok(p) => Ok(HttpResponse::Ok().body(json!(p))),
-                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-            }
-        }
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
     }
 }
 
@@ -330,12 +311,15 @@ async fn main() -> std::io::Result<()> {
                         .max_age(3600)
                         .finish())
                 .app_data(web::PayloadConfig::new(900000000000000000))
-                .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects", web::get().to(Project::http_all))
-                .route("/categories/{id}", web::get().to(ProjectCategory::http_find))
+                .route("/projects/{id}", web::get().to(Project::http_find))
+                .route("/projects/{id}", web::delete().to(Project::http_delete))
                 .route("/categories", web::get().to(ProjectCategory::http_all))
-                .route("/projectImageCategories/{id}", web::get().to(ProjectImageCategory::http_find))
+                .route("/categories/{id}", web::get().to(ProjectCategory::http_find))
+                .route("/categories/{id}", web::delete().to(ProjectCategory::http_delete))
                 .route("/projectImageCategories", web::get().to(ProjectImageCategory::http_all))
+                .route("/projectImageCategories/{id}", web::get().to(ProjectImageCategory::http_find))
+                .route("/projectImageCategories/{id}", web::delete().to(ProjectImageCategory::http_delete))
                 .service(get_projects_but_not_blog)
                 .service(get_published_projects)
                 .service(get_projects_by_category)
@@ -345,7 +329,6 @@ async fn main() -> std::io::Result<()> {
                 .service(add_like)
                 .service(publish_project)
                 .service(unpublish_project)
-                .service(delete_project)
                 .service(create_project_image)
                 .service(access_token)
                 .service(refresh_token)
