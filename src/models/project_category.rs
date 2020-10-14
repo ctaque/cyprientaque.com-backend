@@ -2,9 +2,12 @@ use postgres::{ Row };
 use async_trait::async_trait;
 use postgres::{ error::Error };
 use chrono::naive::NaiveDateTime;
-use rest_macro::{ Model };
+use rest_macro_derive::{HttpAll, HttpFind };
+use rest_macro::{HttpAll, HttpFind, FindInfo, Model };
+use actix_web::{ HttpResponse, web };
+use serde_json::json;
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll)]
 pub struct ProjectCategory {
     pub id: i32,
     pub name: String,

@@ -37,15 +37,6 @@ async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
 }
 
-#[get("/categories")]
-async fn get_categories () -> Result<HttpResponse, HttpResponse> {
-    let result = ProjectCategory::all().await;
-    match result {
-        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
 #[get("/projects/published")]
 async fn get_published_projects () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_published().await;
@@ -214,15 +205,6 @@ async fn unpublish_project (info: web::Path<UnpublishInfo>) -> Result<HttpRespon
     }
 }
 
-#[get("/projectImageCategories")]
-async fn get_project_image_categories() -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Vec<ProjectImageCategory>, Error> = ProjectImageCategory::all().await;
-    match result {
-        Ok(categories) => Ok(HttpResponse::Ok().body(json!(categories))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
 #[derive(Deserialize)]
 struct PostImageQuery{
     project_id: i32,
@@ -348,10 +330,14 @@ async fn main() -> std::io::Result<()> {
                         .max_age(3600)
                         .finish())
                 .app_data(web::PayloadConfig::new(900000000000000000))
-                .service(get_projects_but_not_blog)
-                .service(get_published_projects)
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects", web::get().to(Project::http_all))
+                .route("/categories/{id}", web::get().to(ProjectCategory::http_find))
+                .route("/categories", web::get().to(ProjectCategory::http_all))
+                .route("/projectImageCategories/{id}", web::get().to(ProjectImageCategory::http_find))
+                .route("/projectImageCategories", web::get().to(ProjectImageCategory::http_all))
+                .service(get_projects_but_not_blog)
+                .service(get_published_projects)
                 .service(get_projects_by_category)
                 .service(create_project)
                 .service(update_project)
@@ -361,8 +347,6 @@ async fn main() -> std::io::Result<()> {
                 .service(unpublish_project)
                 .service(delete_project)
                 .service(create_project_image)
-                .service(get_categories)
-                .service(get_project_image_categories)
                 .service(access_token)
                 .service(refresh_token)
                 .service(index)
