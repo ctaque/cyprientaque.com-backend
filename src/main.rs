@@ -17,7 +17,7 @@ use actix_web::{ http, get, put, post, web, App, HttpServer, HttpResponse, middl
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
-use self::ctprods::models::{ Project, NewProject, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject };
+use self::ctprods::models::{ Project, NewProject, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject, ProjectImage };
 use rest_macro::{Model, NewModel, UpdatableModel};
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
@@ -320,6 +320,9 @@ async fn main() -> std::io::Result<()> {
                 .route("/projectImageCategories", web::get().to(ProjectImageCategory::http_all))
                 .route("/projectImageCategories/{id}", web::get().to(ProjectImageCategory::http_find))
                 .route("/projectImageCategories/{id}", web::delete().to(ProjectImageCategory::http_delete))
+                .route("/projectImage", web::get().to(ProjectImage::http_all))
+                .route("/projectImage/{id}", web::get().to(ProjectImage::http_find))
+                .route("/projectImage/{id}", web::delete().to(ProjectImage::http_delete))
                 .service(get_projects_but_not_blog)
                 .service(get_published_projects)
                 .service(get_projects_by_category)
