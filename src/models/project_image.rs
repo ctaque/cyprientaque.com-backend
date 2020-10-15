@@ -25,6 +25,7 @@ pub struct ProjectImage {
     original_object_url: Option<String>,
     w350_object_url: String,
     primary: bool,
+    views_count: i32,
     project_image_category_id: i32,
     project_id: i32,
     created_at: Option<NaiveDateTime>,
@@ -43,6 +44,7 @@ impl ProjectImage {
             project_image_category_id: row.get("project_image_category_id"),
             w350_object_url: row.get("w350_object_url"),
             primary: row.get("primary"),
+            views_count: row.get("views_count"),
             project_id: row.get("project_id"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
@@ -87,8 +89,8 @@ impl Model<ProjectImage> for ProjectImage {
     }
 
     async fn update(self) -> Result<ProjectImage, Error> {
-        let row: Row = Self::db().await.query_one("update project_images set primary = $2, deleted_at = $3, created_at = $4, updated_at = CURRENT_TIMESTAMP where id = $1 returning *;",
-                                    &[&self.id, &self.primary, &self.deleted_at, &self.created_at]).await?;
+        let row: Row = Self::db().await.query_one("update project_images set \"primary\" = $2, deleted_at = $3, created_at = $4, views_count = $5, updated_at = CURRENT_TIMESTAMP where id = $1 returning *;",
+                                    &[&self.id, &self.primary, &self.deleted_at, &self.created_at, &self.views_count]).await?;
         let p = ProjectImage::new(&row);
         Ok(p)
     }
@@ -102,6 +104,27 @@ impl Model<ProjectImage> for ProjectImage {
       .await?;
         let p = ProjectImage::new(&row);
         Ok(p)
+    }
+}
+#[derive(serde::Deserialize)]
+pub struct Id{
+    pub id: i32,
+}
+
+impl ProjectImage{
+    pub async fn http_add_view(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
+        let ri = ProjectImage::find(info.id.into()).await;
+        match ri {
+            Ok(mut i) => {
+                i.views_count = i.views_count + 1;
+                let result = i.update().await;
+                match result {
+                    Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
+                    Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string()))
+                }
+            }
+            Err(e) => Err(HttpResponse::NotFound().body(e.to_string()))
+        }
     }
 }
 

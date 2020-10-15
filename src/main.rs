@@ -104,6 +104,7 @@ async fn main() -> std::io::Result<()> {
                 .route("/projectImageCategories/{id}", web::get().to(ProjectImageCategory::http_find))
                 .route("/projectImageCategories/{id}", web::delete().to(ProjectImageCategory::http_delete))
                 .route("/projectImage", web::get().to(ProjectImage::http_all))
+                .route("/projectImage/{id}/addView", web::put().to(ProjectImage::http_add_view))
                 .route("/projectImage/{id}", web::get().to(ProjectImage::http_find))
                 .route("/projectImage/{id}", web::delete().to(ProjectImage::http_delete))
                 .route("/projectImage", web::post().to(NewProjectImage::http_create))

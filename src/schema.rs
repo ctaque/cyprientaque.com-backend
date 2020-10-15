@@ -84,6 +84,7 @@ table! {
         updated_at -> Nullable<Timestamp>,
         original_object_url -> Nullable<Varchar>,
         deleted_at -> Nullable<Timestamp>,
+        views_count -> Int4,
     }
 }
 
