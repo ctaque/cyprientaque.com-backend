@@ -23,7 +23,6 @@ use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
 use self::ctprods::services::bitbucket;
 use diesel_migrations::{ RunMigrationsError, embed_migrations };
-use postgres::error::Error;
 use mime;
 use rest_macro::{HttpFind, HttpAll, HttpDelete};
 
@@ -32,116 +31,6 @@ async fn index () -> Result<HttpResponse, HttpResponse> {
 }
 async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
-}
-
-async fn get_published_projects () -> Result<HttpResponse, HttpResponse> {
-    let result = Project::all_published().await;
-    match result {
-        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-async fn get_projects_but_not_blog () -> Result<HttpResponse, HttpResponse> {
-    let result = Project::all_but_not_blog().await;
-    match result {
-        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-#[derive(Deserialize)]
-struct GetProjectsByCategoryInfo{
-    category_id: i32,
-}
-
-async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result = Project::by_category(info.category_id).await;
-    match result {
-        Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-#[derive(Deserialize)]
-struct AddViewInfo{
-    id: i32,
-}
-
-async fn add_view(info: web::Path<AddViewInfo>) -> Result<HttpResponse, HttpResponse> {
-
-    let result: Result<Project, Error> = Project::find(info.id.into()).await;
-
-    match result {
-        Ok(mut project) => {
-            project.views_count = project.views_count + 1;
-            let result = project.update().await;
-            match result {
-                Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
-                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-            }
-        },
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
-    }
-}
-
-#[derive(Deserialize)]
-struct AddLikeInfo{
-    id: i32,
-}
-
-async fn add_like (info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Project, Error> = Project::find(info.id.into()).await;
-    match result {
-        Ok(mut project) => {
-            project.likes_count = project.likes_count + 1;
-            let result = project.update().await;
-            match result {
-                Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
-                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-            }
-        },
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
-    }
-}
-
-#[derive(Deserialize)]
-struct PublishInfo{
-    id: i32,
-}
-async fn publish_project (info: web::Path<PublishInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Project, Error> = Project::find(info.id.into()).await;
-    match result {
-        Ok(project) => {
-            let result = project.publish().await;
-            match result{
-                Ok(published) => Ok(HttpResponse::Ok().body(json!(published))),
-                Err(err) => {
-                    println!("{}", err.to_string());
-                    Err(HttpResponse::InternalServerError().body(err.to_string()))
-                }
-            }
-        },
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
-    }
-}
-
-#[derive(Deserialize)]
-struct UnpublishInfo{
-    id: i32,
-}
-async fn unpublish_project (info: web::Path<UnpublishInfo>) -> Result<HttpResponse, HttpResponse> {
-    let result: Result<Project, Error> = Project::find(info.id.into()).await;
-    match result {
-        Ok(project) => {
-            let result = project.unpublish().await;
-            match result{
-                Ok(published) => Ok(HttpResponse::Ok().body(json!(published))),
-                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-            }
-        },
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string()))
-    }
 }
 
 #[derive(Deserialize)]
@@ -271,13 +160,13 @@ async fn main() -> std::io::Result<()> {
                 .route("/projects/{id}", web::put().to(UpdatableProject::http_update))
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects/{id}", web::delete().to(Project::http_delete))
-                .route("/projects/{id}/addView", web::put().to(add_view))
-                .route("/projects/{id}/addLike", web::put().to(add_like))
-                .route("/projects/{id}/publish", web::put().to(publish_project))
-                .route("/projects/{id}/unpublish", web::put().to(unpublish_project))
-                .route("/projects/published", web::get().to(get_published_projects))
-                .route("/projects/all_but_not_blog", web::get().to(get_projects_but_not_blog))
-                .route("/projects/category/{category_id}", web::get().to(get_projects_by_category))
+                .route("/projects/{id}/addView", web::put().to(Project::http_add_view))
+                .route("/projects/{id}/addLike", web::put().to(Project::http_add_like))
+                .route("/projects/{id}/publish", web::put().to(Project::http_publish_project))
+                .route("/projects/{id}/unpublish", web::put().to(Project::http_unpublish_project))
+                .route("/projects/published", web::get().to(Project::http_get_published_projects))
+                .route("/projects/all_but_not_blog", web::get().to(Project::http_get_projects_but_not_blog))
+                .route("/projects/category/{category_id}", web::get().to(Project::http_get_projects_by_category))
                 .route("/categories", web::get().to(ProjectCategory::http_all))
                 .route("/categories/{id}", web::get().to(ProjectCategory::http_find))
                 .route("/categories/{id}", web::delete().to(ProjectCategory::http_delete))
