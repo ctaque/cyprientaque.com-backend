@@ -28,16 +28,13 @@ use postgres::error::Error;
 use mime;
 use rest_macro::{HttpFind, HttpAll, HttpDelete};
 
-#[get("/")]
 async fn index () -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
 }
-#[get("*")]
 async fn not_found_redirect () -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently().header("Location", "https://www.cyprientaque.com/").await?)
 }
 
-#[get("/projects/published")]
 async fn get_published_projects () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_published().await;
     match result {
@@ -46,7 +43,6 @@ async fn get_published_projects () -> Result<HttpResponse, HttpResponse> {
     }
 }
 
-#[get("/projects/all_but_not_blog")]
 async fn get_projects_but_not_blog () -> Result<HttpResponse, HttpResponse> {
     let result = Project::all_but_not_blog().await;
     match result {
@@ -59,7 +55,7 @@ async fn get_projects_but_not_blog () -> Result<HttpResponse, HttpResponse> {
 struct GetProjectsByCategoryInfo{
     category_id: i32,
 }
-#[get("/projects/category/{category_id}")]
+
 async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -> Result<HttpResponse, HttpResponse> {
     let result = Project::by_category(info.category_id).await;
     match result {
@@ -68,7 +64,6 @@ async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -
     }
 }
 
-#[post("/projects")]
 async fn create_project(mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
     let slug: String = slugify!(&new_project.title);
     let is_unique = new_project.clone().check_slug_unique(slug.clone()).await;
@@ -84,7 +79,6 @@ async fn create_project(mut new_project: web::Json<NewProject>) -> Result<HttpRe
     }
 }
 
-#[put("/projects/{id}")]
 async fn update_project(info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
 
     let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
@@ -106,7 +100,6 @@ struct AddViewInfo{
     id: i32,
 }
 
-#[put("/projects/{id}/addView")]
 async fn add_view(info: web::Path<AddViewInfo>) -> Result<HttpResponse, HttpResponse> {
 
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
@@ -129,7 +122,6 @@ struct AddLikeInfo{
     id: i32,
 }
 
-#[put("/projects/{id}/addLike")]
 async fn add_like (info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
@@ -149,7 +141,6 @@ async fn add_like (info: web::Path<AddLikeInfo>) -> Result<HttpResponse, HttpRes
 struct PublishInfo{
     id: i32,
 }
-#[put("/projects/{id}/publish")]
 async fn publish_project (info: web::Path<PublishInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
@@ -171,7 +162,6 @@ async fn publish_project (info: web::Path<PublishInfo>) -> Result<HttpResponse, 
 struct UnpublishInfo{
     id: i32,
 }
-#[put("/projects/{id}/unpublish")]
 async fn unpublish_project (info: web::Path<UnpublishInfo>) -> Result<HttpResponse, HttpResponse> {
     let result: Result<Project, Error> = Project::find(info.id.into()).await;
     match result {
@@ -193,7 +183,6 @@ struct PostImageQuery{
     primary: bool
 }
 
-#[post("/projectImage")]
 async fn create_project_image (mut multipart: Multipart, info: web::Query<PostImageQuery>) -> Result<HttpResponse, HttpResponse> {
 
     while let Ok(Some(mut field)) = multipart.try_next().await {
@@ -253,7 +242,6 @@ async fn create_project_image (mut multipart: Multipart, info: web::Query<PostIm
 }
 
 
-#[get("/bitbucket/accessToken")]
 async fn access_token () -> Result<HttpResponse, HttpResponse> {
     let resp = bitbucket::get_access_token().await;
     match resp{
@@ -267,7 +255,6 @@ struct RefreshTokenQuery{
     refresh_token: String,
 }
 
-#[get("/bitbucket/refreshToken")]
 async fn refresh_token (info: web::Query<RefreshTokenQuery>) -> Result<HttpResponse, HttpResponse> {
     let resp = bitbucket::refresh_token(info.refresh_token.to_string()).await;
     match resp{
@@ -312,8 +299,17 @@ async fn main() -> std::io::Result<()> {
                         .finish())
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .route("/projects", web::get().to(Project::http_all))
+                .route("/projects", web::post().to(create_project))
+                .route("/projects/{id}", web::put().to(update_project))
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects/{id}", web::delete().to(Project::http_delete))
+                .route("/projects/{id}/addView", web::put().to(add_view))
+                .route("/projects/{id}/addLike", web::put().to(add_like))
+                .route("/projects/{id}/publish", web::put().to(publish_project))
+                .route("/projects/{id}/unpublish", web::put().to(unpublish_project))
+                .route("/projects/published", web::get().to(get_published_projects))
+                .route("/projects/all_but_not_blog", web::get().to(get_projects_but_not_blog))
+                .route("/projects/category/{category_id}", web::get().to(get_projects_by_category))
                 .route("/categories", web::get().to(ProjectCategory::http_all))
                 .route("/categories/{id}", web::get().to(ProjectCategory::http_find))
                 .route("/categories/{id}", web::delete().to(ProjectCategory::http_delete))
@@ -323,20 +319,11 @@ async fn main() -> std::io::Result<()> {
                 .route("/projectImage", web::get().to(ProjectImage::http_all))
                 .route("/projectImage/{id}", web::get().to(ProjectImage::http_find))
                 .route("/projectImage/{id}", web::delete().to(ProjectImage::http_delete))
-                .service(get_projects_but_not_blog)
-                .service(get_published_projects)
-                .service(get_projects_by_category)
-                .service(create_project)
-                .service(update_project)
-                .service(add_view)
-                .service(add_like)
-                .service(publish_project)
-                .service(unpublish_project)
-                .service(create_project_image)
-                .service(access_token)
-                .service(refresh_token)
-                .service(index)
-                .service(not_found_redirect)
+                .route("/projectImage", web::post().to(create_project_image))
+                .route("/bitbucket/accessToken", web::get().to(access_token))
+                .route("/bitbucket/refreshToken", web::get().to(refresh_token))
+                .route("/", web::get().to(index))
+                .route("*", web::get().to(not_found_redirect))
         })
         .bind("127.0.0.1:8088")?
         .run()
