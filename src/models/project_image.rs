@@ -1,17 +1,20 @@
-use image::{self, ImageOutputFormat, error::ImageResult, GenericImageView};
-use chrono::naive::NaiveDateTime;
+use crate::models::s3_client::ConfiguredS3Client;
+use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
-use postgres::{ Row, error::Error };
-use std::env;
-use crate::models::{ s3_client::ConfiguredS3Client };
+use chrono::naive::NaiveDateTime;
+use image::{self, error::ImageResult, GenericImageView, ImageOutputFormat};
+use postgres::{error::Error, Row};
+use rest_macro::{DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel};
+use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
+use rusoto_core::RusotoError;
 use rusoto_s3::PutObjectError;
-use rusoto_core::{ RusotoError};
-use uuid::Uuid;
-use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
-use rest_macro::{HttpAll, HttpFind, HttpDelete, FindInfo, DeleteInfo, Model, NewModel };
-use actix_web::{ HttpResponse, web };
 use serde_json::json;
-
+use std::env;
+use uuid::Uuid;
+use serde::Deserialize;
+use actix_multipart::{ Multipart };
+use futures::stream::{ StreamExt, TryStreamExt };
+use super::{ Project, ProjectCategory };
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize, HttpAll, HttpFind, HttpDelete)]
 pub struct ProjectImage {
@@ -30,8 +33,8 @@ pub struct ProjectImage {
 }
 
 impl ProjectImage {
-    pub fn new(row: &Row) -> Self{
-        ProjectImage{
+    pub fn new(row: &Row) -> Self {
+        ProjectImage {
             id: row.get("id"),
             w1500_keyname: row.get("w1500_keyname"),
             w350_keyname: row.get("w350_keyname"),
@@ -51,16 +54,32 @@ impl ProjectImage {
 #[async_trait]
 impl Model<ProjectImage> for ProjectImage {
     async fn find(project_image_id: i32) -> Result<ProjectImage, Error>
-    where ProjectImage: 'async_trait{
-        let row: Row = Self::db().await.query_one("select * from project_images where id = $1 and deleted_at is null;",  &[&project_image_id]).await?;
+    where
+        ProjectImage: 'async_trait,
+    {
+        let row: Row = Self::db()
+            .await
+            .query_one(
+                "select * from project_images where id = $1 and deleted_at is null;",
+                &[&project_image_id],
+            )
+            .await?;
         let p = ProjectImage::new(&row);
         Ok(p)
     }
     async fn all() -> Result<Vec<ProjectImage>, Error>
-        where ProjectImage: 'async_trait{
-        let rows: Vec<Row> = Self::db().await.query("select * from project_images where deleted_at is null;", &[]).await?;
+    where
+        ProjectImage: 'async_trait,
+    {
+        let rows: Vec<Row> = Self::db()
+            .await
+            .query(
+                "select * from project_images where deleted_at is null;",
+                &[],
+            )
+            .await?;
         let mut entities = Vec::new();
-        for row in rows{
+        for row in rows {
             let p = ProjectImage::new(&row);
             entities.push(p);
         }
@@ -68,14 +87,19 @@ impl Model<ProjectImage> for ProjectImage {
     }
 
     async fn update(self) -> Result<ProjectImage, Error> {
-
         let row: Row = Self::db().await.query_one("update project_images set primary = $2, deleted_at = $3, created_at = $4, updated_at = CURRENT_TIMESTAMP where id = $1 returning *;",
                                     &[&self.id, &self.primary, &self.deleted_at, &self.created_at]).await?;
         let p = ProjectImage::new(&row);
         Ok(p)
     }
-    async fn delete(mut self) -> Result<ProjectImage, Error>{
-        let row = Self::db().await.query_one("update project_images set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *", &[&self.id]).await?;
+    async fn delete(mut self) -> Result<ProjectImage, Error> {
+        let row = Self::db()
+      .await
+      .query_one(
+        "update project_images set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *",
+        &[&self.id],
+      )
+      .await?;
         let p = ProjectImage::new(&row);
         Ok(p)
     }
@@ -95,6 +119,13 @@ pub struct NewProjectImage {
     pub project_id: i32,
 }
 
+#[derive(Deserialize)]
+pub struct PostImageQuery {
+    project_id: i32,
+    category_id: i32,
+    primary: bool,
+}
+
 impl NewProjectImage {
     pub fn new(primary: bool, project_id: i32, category_id: i32, filename: String) -> Self {
         let uid = str::replace(&Uuid::new_v4().to_string(), "-", "");
@@ -103,10 +134,19 @@ impl NewProjectImage {
         let ext: &str = filename.split(".").collect::<Vec<&str>>().last().unwrap();
         let w1500_keyname = format!("projectsImages/{}/w1500-{}.{}", project_id, uid, ext);
         let w350_keyname = format!("projectsImages/{}/w350-{}.{}", project_id, uid, ext);
-        let w1500_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &w1500_keyname);
-        let w350_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &w350_keyname);
+        let w1500_object_url = format!(
+            "https://s3.{}.amazonaws.com/{}/{}",
+            &region, &bucket, &w1500_keyname
+        );
+        let w350_object_url = format!(
+            "https://s3.{}.amazonaws.com/{}/{}",
+            &region, &bucket, &w350_keyname
+        );
         let original_keyname = format!("projectsImages/{}/{}.{}", project_id, uid, ext);
-        let original_object_url = format!("https://s3.{}.amazonaws.com/{}/{}", &region, &bucket, &original_keyname);
+        let original_object_url = format!(
+            "https://s3.{}.amazonaws.com/{}/{}",
+            &region, &bucket, &original_keyname
+        );
         NewProjectImage {
             original_keyname,
             original_object_url,
@@ -121,7 +161,89 @@ impl NewProjectImage {
         }
     }
 
-    pub async fn upload_to_s3 (self, keyname: &String, contents: Vec<u8>) -> Result<(), RusotoError<PutObjectError>> {
+    pub async fn http_create(
+        mut multipart: Multipart,
+        info: web::Query<PostImageQuery>,
+    ) -> Result<HttpResponse, HttpResponse> {
+        while let Ok(Some(mut field)) = multipart.try_next().await {
+            let content_type = field.content_disposition().unwrap();
+            let file_mime = field.content_type();
+            if file_mime.type_() != mime::IMAGE
+                && (file_mime.subtype() != mime::JPEG && file_mime.subtype() != mime::PNG)
+            {
+                return Err(HttpResponse::BadRequest().body("bad mime type"));
+            }
+            let project = Project::find(info.project_id.into()).await;
+            let category = ProjectCategory::find(info.category_id.into()).await;
+            if let Err(e) = project {
+                return Err(HttpResponse::BadRequest().body(e.to_string()));
+            }
+            if let Err(e) = category {
+                return Err(HttpResponse::BadRequest().body(e.to_string()));
+            }
+            let filename = content_type.get_filename().unwrap();
+            let mut file_stream: Vec<u8> = vec![];
+            while let Some(chunk) = field.next().await {
+                let data = chunk.unwrap();
+                file_stream.append(&mut data.to_vec());
+            }
+            let project_image = NewProjectImage::new(
+                info.primary,
+                info.project_id,
+                info.category_id,
+                filename.to_owned(),
+            );
+            let image_data = file_stream.to_vec();
+            let image_350_data = &project_image
+                .clone()
+                .generate_size(350.0, image_data.clone());
+            match image_350_data {
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+                Ok(image) => {
+                    project_image
+                        .clone()
+                        .upload_to_s3(&project_image.w350_keyname, image.to_vec())
+                        .await
+                        .expect("Failed uploading w350 image");
+                }
+            };
+            let image_1500_data = &project_image
+                .clone()
+                .generate_size(1500.0, image_data.clone());
+            match image_1500_data {
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+                Ok(image) => {
+                    project_image
+                        .clone()
+                        .upload_to_s3(&project_image.w1500_keyname, image.to_vec())
+                        .await
+                        .expect("Failed uploading w1500 image");
+                }
+            };
+            match project_image
+                .clone()
+                .upload_to_s3(&project_image.original_keyname, image_data)
+                .await
+            {
+                Ok(()) => {
+                    let image_save_result = project_image.save().await;
+
+                    return match image_save_result {
+                        Ok(image) => Ok(HttpResponse::Ok().body(json!(image))),
+                        Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
+                    };
+                }
+                Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
+            }
+        }
+        Ok(HttpResponse::Ok().into())
+    }
+
+    pub async fn upload_to_s3(
+        self,
+        keyname: &String,
+        contents: Vec<u8>,
+    ) -> Result<(), RusotoError<PutObjectError>> {
         let client = ConfiguredS3Client::new();
         client.put_object(keyname.to_string(), contents).await?;
         Ok(())
@@ -136,8 +258,14 @@ impl NewProjectImage {
         let ratio = new_w.clone() / old_w;
         let new_h = (old_h * ratio).floor();
 
-        let scaled = img.resize(new_w as u32, new_h as u32, image::imageops::FilterType::Lanczos3);
-        scaled.write_to(&mut result, ImageOutputFormat::Jpeg(90)).expect("Failed to write image to result");
+        let scaled = img.resize(
+            new_w as u32,
+            new_h as u32,
+            image::imageops::FilterType::Lanczos3,
+        );
+        scaled
+            .write_to(&mut result, ImageOutputFormat::Jpeg(90))
+            .expect("Failed to write image to result");
 
         Ok((*result).to_vec())
     }
@@ -146,12 +274,17 @@ impl NewProjectImage {
 #[async_trait]
 impl NewModel<ProjectImage> for NewProjectImage {
     async fn save(self) -> Result<ProjectImage, Error>
-        where ProjectImage: 'async_trait{
-        if self.primary.clone(){
-            Self::db().await.query(
-                "update project_images set \"primary\" = false where project_id = $1",
-                &[&self.project_id]
-            ).await?;
+    where
+        ProjectImage: 'async_trait,
+    {
+        if self.primary.clone() {
+            Self::db()
+                .await
+                .query(
+                    "update project_images set \"primary\" = false where project_id = $1",
+                    &[&self.project_id],
+                )
+                .await?;
         }
         let row: Row = Self::db().await.query_one(
             "insert into project_images (w1500_keyname, w350_keyname, project_image_category_id, w1500_object_url, w350_object_url, \"primary\", project_id, created_at, original_object_url) values ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, $8) returning *;",
