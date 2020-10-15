@@ -7,10 +7,13 @@ use crate::models::{ s3_client::ConfiguredS3Client };
 use rusoto_s3::PutObjectError;
 use rusoto_core::{ RusotoError};
 use uuid::Uuid;
-use rest_macro::{ NewModel };
+use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
+use rest_macro::{HttpAll, HttpFind, HttpDelete, FindInfo, DeleteInfo, Model, NewModel };
+use actix_web::{ HttpResponse, web };
+use serde_json::json;
 
 
-#[derive(serde::Serialize, Debug, Clone, serde::Deserialize)]
+#[derive(serde::Serialize, Debug, Clone, serde::Deserialize, HttpAll, HttpFind, HttpDelete)]
 pub struct ProjectImage {
     id: i32,
     w1500_keyname: String,
@@ -42,6 +45,39 @@ impl ProjectImage {
             updated_at: row.get("updated_at"),
             deleted_at: row.get("deleted_at"),
         }
+    }
+}
+
+#[async_trait]
+impl Model<ProjectImage> for ProjectImage {
+    async fn find(project_image_id: i32) -> Result<ProjectImage, Error>
+    where ProjectImage: 'async_trait{
+        let row: Row = Self::db().await.query_one("select * from project_images where id = $1 and deleted_at is null;",  &[&project_image_id]).await?;
+        let p = ProjectImage::new(&row);
+        Ok(p)
+    }
+    async fn all() -> Result<Vec<ProjectImage>, Error>
+        where ProjectImage: 'async_trait{
+        let rows: Vec<Row> = Self::db().await.query("select * from project_images where deleted_at is null;", &[]).await?;
+        let mut entities = Vec::new();
+        for row in rows{
+            let p = ProjectImage::new(&row);
+            entities.push(p);
+        }
+        Ok(entities)
+    }
+
+    async fn update(self) -> Result<ProjectImage, Error> {
+
+        let row: Row = Self::db().await.query_one("update project_images set primary = $2, deleted_at = $3, created_at = $4, updated_at = CURRENT_TIMESTAMP where id = $1 returning *;",
+                                    &[&self.id, &self.primary, &self.deleted_at, &self.created_at]).await?;
+        let p = ProjectImage::new(&row);
+        Ok(p)
+    }
+    async fn delete(mut self) -> Result<ProjectImage, Error>{
+        let row = Self::db().await.query_one("update project_images set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *", &[&self.id]).await?;
+        let p = ProjectImage::new(&row);
+        Ok(p)
     }
 }
 
