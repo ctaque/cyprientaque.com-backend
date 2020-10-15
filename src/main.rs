@@ -13,17 +13,16 @@ use env_logger;
 use std::env;
 use futures::stream::{ StreamExt, TryStreamExt };
 use actix_multipart::{ Multipart };
-use actix_web::{ http, get, put, post, web, App, HttpServer, HttpResponse, middleware::Logger };
+use actix_web::{ http, web, App, HttpServer, HttpResponse, middleware::Logger };
 use actix_cors::Cors;
 use serde_json::json;
 use serde::Deserialize;
 use self::ctprods::models::{ Project, NewProject, NewProjectImage, ProjectCategory, ProjectImageCategory, UpdatableProject, ProjectImage };
-use rest_macro::{Model, NewModel, UpdatableModel};
+use rest_macro::{Model, NewModel};
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::establish_connection;
 use self::ctprods::services::bitbucket;
 use diesel_migrations::{ RunMigrationsError, embed_migrations };
-use slugify::slugify;
 use postgres::error::Error;
 use mime;
 use rest_macro::{HttpFind, HttpAll, HttpDelete};
@@ -61,37 +60,6 @@ async fn get_projects_by_category (info: web::Path<GetProjectsByCategoryInfo>) -
     match result {
         Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
         Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-    }
-}
-
-async fn create_project(mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
-    let slug: String = slugify!(&new_project.title);
-    let is_unique = new_project.clone().check_slug_unique(slug.clone()).await;
-    if !is_unique {
-        Err(HttpResponse::BadRequest().body("Slug already used"))
-    } else {
-        new_project.slug = Some(slug);
-        let result = new_project.clone().save().await;
-        match result {
-            Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
-            Err(err) => Err(HttpResponse::BadRequest().body(err.to_string()))
-        }
-    }
-}
-
-async fn update_project(info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
-
-    let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
-
-    match from_db {
-        Ok(_) => {
-            let result = info.into_inner().update().await;
-            match result {
-                Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
-                Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
-            }
-        },
-        Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
     }
 }
 
@@ -299,8 +267,8 @@ async fn main() -> std::io::Result<()> {
                         .finish())
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .route("/projects", web::get().to(Project::http_all))
-                .route("/projects", web::post().to(create_project))
-                .route("/projects/{id}", web::put().to(update_project))
+                .route("/projects", web::post().to(NewProject::http_create))
+                .route("/projects/{id}", web::put().to(UpdatableProject::http_update))
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects/{id}", web::delete().to(Project::http_delete))
                 .route("/projects/{id}/addView", web::put().to(add_view))

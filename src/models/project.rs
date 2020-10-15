@@ -6,6 +6,7 @@ use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
 use rest_macro::{HttpAll, HttpFind, HttpDelete, FindInfo, DeleteInfo, Model, NewModel, UpdatableModel };
 use actix_web::{ HttpResponse, web };
 use serde_json::json;
+use slugify::slugify;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -62,6 +63,24 @@ impl UpdatableModel<Project> for UpdatableProject {
         let project = project.attach_user().await?;
         let project = project.attach_images().await?;
         Ok(project)
+    }
+}
+
+impl UpdatableProject {
+    pub async fn http_update (info: web::Json<UpdatableProject>) -> Result<HttpResponse, HttpResponse> {
+
+        let from_db: Result<Project, Error> = Project::find(info.id.into()).await;
+
+        match from_db {
+            Ok(_) => {
+                let result = info.into_inner().update().await;
+                match result {
+                    Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
+                    Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))
+                }
+            },
+            Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
+        }
     }
 }
 
@@ -238,5 +257,20 @@ impl NewProject {
     pub async fn check_slug_unique(self, slug_to_find: String)-> bool {
         let row = Self::db().await.query_one("select id from projects where slug = $1;", &[&slug_to_find]).await;
         row.is_err()
+    }
+
+    pub async fn http_create(mut new_project: web::Json<NewProject>) -> Result<HttpResponse, HttpResponse> {
+        let slug: String = slugify!(&new_project.title);
+        let is_unique = new_project.clone().check_slug_unique(slug.clone()).await;
+        if !is_unique {
+            Err(HttpResponse::BadRequest().body("Slug already used"))
+        } else {
+            new_project.slug = Some(slug);
+            let result = new_project.clone().save().await;
+            match result {
+                Ok(project) => Ok(HttpResponse::Ok().body(json!(project))),
+                Err(err) => Err(HttpResponse::BadRequest().body(err.to_string()))
+            }
+        }
     }
 }
