@@ -116,9 +116,9 @@ impl ProjectImage{
         let ri = ProjectImage::find(info.id.into()).await;
         match ri {
             Ok(mut i) => {
-                let current_primary = ProjectImage::get_image_with_max_views_for_project(i.project_id).await;
-                if let Ok(current) = current_primary {
-                    if current.id != i.id {
+                let new_primary = ProjectImage::get_image_with_max_views_for_project(i.project_id).await;
+                if let Ok(new) = new_primary {
+                    if new.id == i.id {
                         let reset_result = ProjectImage::reset_primary_for_project(i.project_id).await;
                         if let Ok(()) = reset_result  {
                             i.primary = true;
@@ -136,7 +136,7 @@ impl ProjectImage{
         }
     }
     pub async fn get_image_with_max_views_for_project(project_id: i32) -> Result<ProjectImage, Error>{
-        let row: Row = Self::db().await.query_one("SELECT * from project_images where project_id = $1 order by views_count desc , (case when \"primary\" then 1 else 0 end) desc limit 1;", &[&project_id]).await?;
+        let row: Row = Self::db().await.query_one("SELECT * from project_images where project_id = $1 order by views_count + 1 desc , (case when \"primary\" then 1 else 0 end) desc limit 1;", &[&project_id]).await?;
         let i = ProjectImage::new(&row);
         Ok(i)
     }
