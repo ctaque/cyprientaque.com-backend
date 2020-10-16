@@ -15,6 +15,8 @@ use serde::Deserialize;
 use actix_multipart::{ Multipart };
 use futures::stream::{ StreamExt, TryStreamExt };
 use super::{ Project, ProjectCategory };
+use std::fmt;
+
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize, HttpAll, HttpFind, HttpDelete)]
 pub struct ProjectImage {
@@ -107,8 +109,45 @@ impl Model<ProjectImage> for ProjectImage {
     }
 }
 #[derive(serde::Deserialize)]
-pub struct Id{
+pub struct Id {
     pub id: i32,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct CategoriesQuery {
+    #[serde(deserialize_with = "deserialize_stringified_int_list")]
+    pub categories: Vec<i32>,
+    pub include: bool,
+}
+pub fn deserialize_stringified_int_list<'de, D>(deserializer: D) -> Result<Vec<i32>, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
+    struct IntVecVisitor;
+
+    impl<'de> serde::de::Visitor<'de> for IntVecVisitor {
+        type Value = Vec<i32>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string containing a list of ints")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            let mut ints = Vec::new();
+            for id in v.replace("[", "").replace("]", "").split(",") {
+                println!("{}", id);
+                let res = id.parse::<i32>().unwrap();
+                ints.push(res);
+                println!("{:#?}", ints);
+            }
+            Ok(ints)
+        }
+    }
+
+    deserializer.deserialize_any(IntVecVisitor)
 }
 
 impl ProjectImage{
@@ -144,6 +183,32 @@ impl ProjectImage{
     pub async fn reset_primary_for_project(project_id: i32) -> Result<(), Error>{
         Self::db().await.query("UPDATE project_images set \"primary\" = false where project_id = $1;", &[&project_id]).await?;
         Ok(())
+    }
+
+    pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
+        println!("{:#?}", query);
+        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.category_id ");
+        if query.include {
+            q.push_str(" = ANY($1)");
+        }else{
+            q.push_str(" != ANY($1)");
+        }
+        let client = Self::db().await;
+        let rows = client.query(&*q, &[&query.categories]).await;
+        match rows {
+            Ok(values) => {
+                let mut res = Vec::new();
+                for row in values{
+                    res.push(ProjectImage::new(&row));
+                }
+                Ok(HttpResponse::Ok().body(json!(res)))
+
+            }
+            Err(e) => {
+                println!("{:#?}", &e);
+                Err(HttpResponse::InternalServerError().body(e.to_string()))
+            }
+        }
     }
 }
 
