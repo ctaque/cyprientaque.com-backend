@@ -1,4 +1,5 @@
-use crate::models::s3_client::ConfiguredS3Client;
+use super::s3_client::ConfiguredS3Client;
+use super::ProjectImageCategory;
 use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
@@ -29,6 +30,7 @@ pub struct ProjectImage {
     primary: bool,
     views_count: i32,
     project_image_category_id: i32,
+    category: Option<ProjectImageCategory>,
     project_id: i32,
     created_at: Option<NaiveDateTime>,
     updated_at: Option<NaiveDateTime>,
@@ -51,6 +53,7 @@ impl ProjectImage {
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
             deleted_at: row.get("deleted_at"),
+            category: None,
         }
     }
 }
@@ -138,10 +141,8 @@ where
         {
             let mut ints = Vec::new();
             for id in v.replace("[", "").replace("]", "").split(",") {
-                println!("{}", id);
                 let res = id.parse::<i32>().unwrap();
                 ints.push(res);
-                println!("{:#?}", ints);
             }
             Ok(ints)
         }
@@ -186,20 +187,22 @@ impl ProjectImage{
     }
 
     pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
-        println!("{:#?}", query);
-        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.category_id ");
+        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and p.category_id ");
         if query.include {
-            q.push_str(" = ANY($1)");
+            q.push_str(" = ANY($1) and p.category_id <> 5");
         }else{
-            q.push_str(" != ANY($1)");
+            q.push_str(" != ANY($1) and p.category_id <> 5");
         }
         let client = Self::db().await;
         let rows = client.query(&*q, &[&query.categories]).await;
         match rows {
             Ok(values) => {
-                let mut res = Vec::new();
+                let mut res: Vec<ProjectImage> = Vec::new();
                 for row in values{
-                    res.push(ProjectImage::new(&row));
+                    let p = ProjectImage::new(&row);
+                    let err_text = &*format!("Cannot attach project_image_category; image id: {}", &p.id);
+                    let p = p.attach_category().await.expect(err_text);
+                    res.push(p);
                 }
                 Ok(HttpResponse::Ok().body(json!(res)))
 
@@ -209,6 +212,18 @@ impl ProjectImage{
                 Err(HttpResponse::InternalServerError().body(e.to_string()))
             }
         }
+    }
+    pub async fn attach_category(mut self) -> Result<ProjectImage, Error> {
+        let row = Self::db()
+            .await
+            .query_one(
+                "select * from project_image_categories where id = $1",
+                &[&self.project_image_category_id],
+            )
+            .await?;
+        let cat = ProjectImageCategory::new(&row);
+        self.category = Some(cat);
+        Ok(self)
     }
 }
 

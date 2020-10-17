@@ -11,6 +11,7 @@ use serde_json::json;
 pub struct ProjectImageCategory {
     pub id: i32,
     pub name: String,
+    pub color_hex: String,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
     pub deleted_at: Option<NaiveDateTime>,
@@ -21,6 +22,7 @@ impl ProjectImageCategory{
         ProjectImageCategory{
             id: row.get("id"),
             name: row.get("name"),
+            color_hex: row.get("color_hex"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
             deleted_at: row.get("deleted_at"),
