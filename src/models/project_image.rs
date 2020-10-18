@@ -189,9 +189,9 @@ impl ProjectImage{
     pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
         let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and published = true and p.category_id ");
         if query.include {
-            q.push_str(" = ANY($1) and p.category_id <> 5");
+            q.push_str(" = ANY($1) and p.category_id <> 5 ORDER BY i.views_count desc");
         }else{
-            q.push_str(" != ANY($1) and p.category_id <> 5");
+            q.push_str(" != ANY($1) and p.category_id <> 5 ORDER BY i.views_count desc");
         }
         let client = Self::db().await;
         let rows = client.query(&*q, &[&query.categories]).await;
