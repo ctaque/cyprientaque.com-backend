@@ -119,8 +119,9 @@ pub struct Id {
 #[derive(serde::Deserialize, Debug)]
 pub struct CategoriesQuery {
     #[serde(deserialize_with = "deserialize_stringified_int_list")]
-    pub categories: Vec<i32>,
-    pub include: bool,
+    pub include_categories: Vec<i32>,
+    #[serde(deserialize_with = "deserialize_stringified_int_list")]
+    pub exclude_categories: Vec<i32>
 }
 pub fn deserialize_stringified_int_list<'de, D>(deserializer: D) -> Result<Vec<i32>, D::Error>
 where
@@ -140,8 +141,16 @@ where
             E: serde::de::Error,
         {
             let mut ints = Vec::new();
-            for id in v.replace("[", "").replace("]", "").split(",") {
-                let res = id.parse::<i32>().unwrap();
+            let ids = v.replace("[", "");
+            let ids = ids.replace("]", "");
+            if ids.len() == 0 {
+                return Ok(ints);
+            }
+            let ids = ids.split(",");
+            let ids: Vec<&str> = ids.collect();
+            for id in ids{
+                let err = format!("Failed to parse id : {}", &id);
+                let res = id.parse::<i32>().expect(&err);
                 ints.push(res);
             }
             Ok(ints)
@@ -187,14 +196,32 @@ impl ProjectImage{
     }
 
     pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
-        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and published = true and p.category_id ");
-        if query.include {
-            q.push_str(" = ANY($1) and p.category_id <> 5 ORDER BY i.views_count desc");
-        }else{
-            q.push_str(" != ANY($1) and p.category_id <> 5 ORDER BY i.views_count desc");
-        }
+        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and published = true");
         let client = Self::db().await;
-        let rows = client.query(&*q, &[&query.categories]).await;
+        let end = " and p.category_id <> 5 ORDER BY i.views_count desc";
+        let rows = match query.include_categories.len() {
+            0 => match query.exclude_categories.len() {
+                0 => return Err(HttpResponse::BadRequest().body("Params must include at least one category")),
+                _ => {
+                    q.push_str(" and p.category_id != ANY($1)");
+                    q.push_str(end);
+                    client.query(&*q, &[&query.exclude_categories]).await
+                }
+            },
+            _ => match query.exclude_categories.len() {
+                0 => {
+                    q.push_str(" and p.category_id = ANY($1)");
+                    q.push_str(end);
+                    client.query(&*q, &[&query.include_categories]).await
+                },
+                _ => {
+                    q.push_str(" and p.category_id = ANY($1)");
+                    q.push_str(" and p.category_id != ANY($2)");
+                    q.push_str(end);
+                    client.query(&*q, &[&query.include_categories, &query.exclude_categories]).await
+                }
+            }
+        };
         match rows {
             Ok(values) => {
                 let mut res: Vec<ProjectImage> = Vec::new();
