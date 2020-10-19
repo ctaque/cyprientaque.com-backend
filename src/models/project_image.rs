@@ -196,7 +196,7 @@ impl ProjectImage{
     }
 
     pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
-        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and published = true");
+        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and p.published = true");
         let client = Self::db().await;
         let end = " and p.category_id <> 5 ORDER BY i.views_count desc";
         let rows = match query.include_categories.len() {
