@@ -147,6 +147,7 @@ where
                 return Ok(ints);
             }
             let ids = ids.split(",");
+            let ids = ids.map(| id | id.trim());
             let ids: Vec<&str> = ids.collect();
             for id in ids{
                 let err = format!("Failed to parse id : {}", &id);
@@ -203,7 +204,7 @@ impl ProjectImage{
             0 => match query.exclude_categories.len() {
                 0 => return Err(HttpResponse::BadRequest().body("Params must include at least one category")),
                 _ => {
-                    q.push_str(" and p.category_id != ANY($1)");
+                    q.push_str(" and p.category_id NOT IN (SELECT id from project_categories where id  = ANY($1))");
                     q.push_str(end);
                     client.query(&*q, &[&query.exclude_categories]).await
                 }
@@ -215,8 +216,7 @@ impl ProjectImage{
                     client.query(&*q, &[&query.include_categories]).await
                 },
                 _ => {
-                    q.push_str(" and p.category_id = ANY($1)");
-                    q.push_str(" and p.category_id != ANY($2)");
+                    q.push_str(" and p.category_id = ANY($1) and p.category_id NOT IN (SELECT id from project_categories where id = ANY($2))");
                     q.push_str(end);
                     client.query(&*q, &[&query.include_categories, &query.exclude_categories]).await
                 }
