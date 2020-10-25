@@ -392,6 +392,29 @@ impl Project {
             Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
         }
     }
+    pub fn pretty_print(self) -> (){
+        println!(
+            "Project id: {}, Title: {}, published: {}, created_at: {}, updated_at: {}, deleted_at: {}",
+            self.id,
+            self.title,
+            self.published,
+            self.created_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+            self.updated_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+            self.deleted_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+        );
+    }
+    pub async fn print_all() -> Result<(), String> {
+        let result = Project::all().await;
+        match result {
+            Ok(projects) => {
+                for project in projects {
+                    project.pretty_print();
+                };
+                Ok(())
+            },
+            Err(err) => Err(err.to_string())
+        }
+    }
 }
 
 #[async_trait]

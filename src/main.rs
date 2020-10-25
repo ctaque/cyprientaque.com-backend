@@ -24,7 +24,9 @@ use rest_macro::{HttpAll, HttpDelete, HttpFind};
 use serde_json::json;
 use std::env;
 use structopt::StructOpt;
+use clap::arg_enum;
 use tokio;
+use dialoguer::{ Confirm, Input, theme::ColorfulTheme, Select };
 
 async fn index() -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently()
@@ -58,6 +60,16 @@ async fn refresh_token(info: web::Query<RefreshTokenQuery>) -> Result<HttpRespon
     }
 }
 
+arg_enum!{
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    enum Entity {
+        projects,
+        categories,
+        image_categories,
+    }
+}
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "ctprods", about = "cyprientaque.com/backend/cli")]
 enum Cmd {
@@ -68,6 +80,8 @@ enum Cmd {
         #[structopt(short = "a", long = "address", default_value = "127.0.0.1")]
         address: String,
     },
+    #[structopt(name = "list")]
+    List,
 }
 
 embed_migrations!();
@@ -79,6 +93,22 @@ async fn main() -> std::io::Result<()> {
 
     let args = Cmd::from_args();
     match args {
+        Cmd::List => {
+            let entities = vec![Entity::projects, Entity::categories, Entity::image_categories];
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Que voulez vous lister ?")
+                .default(0)
+                .items(&entities[..])
+                .interact()
+                .unwrap();
+            let entity: &Entity = entities.get(selection).unwrap();
+            let res: Result<(), String> = match entity {
+                Entity::projects => Project::print_all().await,
+                Entity::categories => ProjectCategory::print_all().await,
+                Entity::image_categories => ProjectImageCategory::print_all().await
+            };
+            res.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+        },
         Cmd::Listen { address, port } => {
             let migration_run = embedded_migrations::run(&connection);
             match migration_run {

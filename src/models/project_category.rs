@@ -34,6 +34,37 @@ impl ProjectCategory{
             project_count: None,
         }
     }
+    async fn attach_project_count(mut self) -> Result<ProjectCategory, Error> {
+        let row: Row = Self::db().await.query_one("SELECT count(id) as project_count from projects where category_id = $1", &[&self.id]).await?;
+        self.project_count = row.get("project_count");
+        Ok(self)
+    }
+
+    pub fn pretty_print(self) -> (){
+        println!(
+            "Category id: {}, name: {}, color hex: {}, picture url: {}, created_at: {}, updated_at: {}, deleted_at: {}",
+            self.id,
+            self.name,
+            self.picture_url.unwrap_or("null".to_string()),
+            self.color_hex,
+            self.created_at.to_string(),
+            self.updated_at.to_string(),
+            self.deleted_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+        );
+    }
+
+    pub async fn print_all() -> Result<(), String> {
+        let result = Self::all().await;
+        match result {
+            Ok(cats) => {
+                for cat in cats {
+                    cat.pretty_print();
+                };
+                Ok(())
+            },
+            Err(err) => Err(err.to_string())
+        }
+    }
 }
 
 #[async_trait]
@@ -67,13 +98,5 @@ impl Model<ProjectCategory> for ProjectCategory {
         let row = Self::db().await.query_one("update project_categories set deleted_at = CURRENT_TIMESTAMP where id = $1 returning *", &[&self.id]).await?;
         let c = ProjectCategory::new(&row);
         Ok(c)
-    }
-}
-
-impl ProjectCategory{
-    async fn attach_project_count(mut self) -> Result<ProjectCategory, Error> {
-        let row: Row = Self::db().await.query_one("SELECT count(id) as project_count from projects where category_id = $1", &[&self.id]).await?;
-        self.project_count = row.get("project_count");
-        Ok(self)
     }
 }

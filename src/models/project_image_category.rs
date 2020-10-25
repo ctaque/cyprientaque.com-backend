@@ -28,6 +28,30 @@ impl ProjectImageCategory{
             deleted_at: row.get("deleted_at"),
         }
     }
+    pub fn pretty_print(self) -> (){
+        println!(
+            "Image category id: {}, name: {}, color hex: {}, created_at: {}, updated_at: {}, deleted_at: {}",
+            self.id,
+            self.name,
+            self.color_hex,
+            self.created_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+            self.updated_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+            self.deleted_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
+        );
+    }
+
+    pub async fn print_all() -> Result<(), String> {
+        let result = Self::all().await;
+        match result {
+            Ok(cats) => {
+                for cat in cats {
+                    cat.pretty_print();
+                };
+                Ok(())
+            },
+            Err(err) => Err(err.to_string())
+        }
+    }
 }
 
 #[async_trait]
