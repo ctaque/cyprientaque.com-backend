@@ -787,6 +787,7 @@ dependencies = [
  "mime",
  "openssl",
  "postgres",
+ "rand",
  "reqwest",
  "rest_macro",
  "rest_macro_derive",

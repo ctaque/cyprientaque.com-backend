@@ -8,6 +8,7 @@ extern crate slugify;
 #[macro_use]
 extern crate diesel_migrations;
 
+use rest_macro::{ Model, NewModel };
 use self::ctprods::establish_connection;
 use self::ctprods::middleware::auth_middleware;
 use self::ctprods::models::{
@@ -27,6 +28,7 @@ use structopt::StructOpt;
 use clap::arg_enum;
 use tokio;
 use dialoguer::{ Confirm, Input, theme::ColorfulTheme, Select };
+use slugify::slugify;
 
 async fn index() -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently()
@@ -82,6 +84,8 @@ enum Cmd {
     },
     #[structopt(name = "list")]
     List,
+    #[structopt(name = "create")]
+    Create,
 }
 
 embed_migrations!();
@@ -108,6 +112,62 @@ async fn main() -> std::io::Result<()> {
                 Entity::image_categories => ProjectImageCategory::print_all().await
             };
             res.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+        },
+        Cmd::Create => {
+            let categories: Vec<ProjectCategory> = ProjectCategory::all().await.unwrap();
+            let selectified_categories: Vec<String> = ProjectCategory::selectify_categories(&categories);
+            loop {
+                let title = Input::<String>::new().with_prompt("Titre").interact();
+                let title: String = match title {
+                    Ok(title) => title,
+                    Err(_) => continue
+                };
+                let slug: String = slugify!(&title);
+                let is_unique = NewProject::check_slug_unique(slug.clone()).await;
+                if !is_unique {
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, "Slug already used".to_string()));
+                }
+                loop {
+                    let selection = Select::with_theme(&ColorfulTheme::default())
+                        .with_prompt("Choisir une catégorie")
+                        .default(0)
+                        .items(&selectified_categories[..])
+                        .interact()
+                        .unwrap();
+                    let selected_category: &ProjectCategory = categories.get(selection).unwrap();
+                    let is_pro = Confirm::new().with_prompt("Le projet est il un projet professionnel ?").interact().unwrap();
+                    let has_bitbucket_project_key = Confirm::new().with_prompt("Le projet a-t'il une clé de projet bitbucket ?").interact().unwrap();
+                    let bitbucket_project_key = match has_bitbucket_project_key {
+                        true =>
+                            Input::<String>::new().with_prompt("Quelle est la clé du projet Bitbucket ?").interact().ok(),
+                        false =>
+                            Option::None
+                    };
+                    let mut p = NewProject {
+                        title,
+                        content: String::from(""),
+                        category_id: selected_category.id,
+                        user_id: 1,
+                        sketchfab_model_number: None,
+                        slug: Some(slug),
+                        is_pro,
+                        bitbucket_project_key,
+                    };
+                    let p = p.cli_edit();
+
+                    let result: Result<Project, tokio_postgres::Error> = p.clone().save().await;
+                    match result {
+                        Ok(project) => {
+                            println!("Success !");
+                            project.pretty_print()
+                        },
+                        Err(err) => println!("{}", err)
+                    }
+                    break;
+                }
+                break;
+            }
+            Ok(())
         },
         Cmd::Listen { address, port } => {
             let migration_run = embedded_migrations::run(&connection);

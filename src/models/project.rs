@@ -3,13 +3,19 @@ use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
 use postgres::{error::Error, Row};
+use std::env::{temp_dir, var};
 use rest_macro::{
     DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel,
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
+use std::process::Command;
 use serde_json::json;
 use slugify::slugify;
 use serde::Deserialize;
+use std::fs::{ self, File };
+use rand::Rng;
+use rand::distributions::Alphanumeric;
+use std::io::prelude::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -435,7 +441,7 @@ impl NewModel<Project> for NewProject {
 }
 
 impl NewProject {
-    pub async fn check_slug_unique(self, slug_to_find: String) -> bool {
+    pub async fn check_slug_unique(slug_to_find: String) -> bool {
         let row = Self::db()
             .await
             .query_one("select id from projects where slug = $1;", &[&slug_to_find])
@@ -447,7 +453,7 @@ impl NewProject {
         mut new_project: web::Json<NewProject>,
     ) -> Result<HttpResponse, HttpResponse> {
         let slug: String = slugify!(&new_project.title);
-        let is_unique = new_project.clone().check_slug_unique(slug.clone()).await;
+        let is_unique = Self::check_slug_unique(slug.clone()).await;
         if !is_unique {
             Err(HttpResponse::BadRequest().body("Slug already used"))
         } else {
@@ -458,5 +464,37 @@ impl NewProject {
                 Err(err) => Err(HttpResponse::BadRequest().body(err.to_string())),
             }
         }
+    }
+
+    fn gen_random_string () -> String  {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(10)
+            .collect::<String>()
+    }
+
+    fn gen_tmp_filename() -> std::path::PathBuf {
+        let name = Self::gen_random_string();
+        let mut path = temp_dir();
+        path.push(format!("{}.md", name));
+        path
+    }
+
+    pub fn cli_edit (&mut self)-> &mut NewProject {
+        let editor = var("EDITOR");
+        let editor = match editor {
+            Ok(editor) => editor,
+            _ => "vim".to_string()
+        };
+        let file_name = Self::gen_tmp_filename();
+        let mut file = File::create(&file_name).unwrap();
+        let mut w = Vec::new();
+        write!(&mut w, "{}", &self.content).unwrap();
+        file.write(&w).unwrap();
+        Command::new(editor).arg(&file_name).status().expect("Cannot open file");
+        let contents = fs::read_to_string(&file_name)
+            .expect("Something went wrong reading the file");
+        self.content = contents;
+        self
     }
 }

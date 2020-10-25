@@ -65,6 +65,10 @@ impl ProjectCategory{
             Err(err) => Err(err.to_string())
         }
     }
+
+    pub fn selectify_categories(categories: &Vec<ProjectCategory>) -> Vec<String> {
+        categories.into_iter().map(| x | format!("id: {}, name: {}", x.id, x.name)).collect()
+    }
 }
 
 #[async_trait]
