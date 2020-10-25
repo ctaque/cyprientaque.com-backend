@@ -10,6 +10,7 @@ linker = "x86_64-linux-gnu-gcc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 log = "^0.4"
+structopt = "0.3.13"
 tokio = { version = "0.2", features = ["full"] }
 actix-web = { version="2", features=["rust-tls"] }
 actix-http = "2.0.0-alpha.4"
