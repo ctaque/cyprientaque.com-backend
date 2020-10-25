@@ -86,6 +86,8 @@ enum Cmd {
     List,
     #[structopt(name = "create")]
     Create,
+    #[structopt(name = "publish")]
+    Publish,
 }
 
 embed_migrations!();
@@ -166,6 +168,25 @@ async fn main() -> std::io::Result<()> {
                     break;
                 }
                 break;
+            }
+            Ok(())
+        },
+        Cmd::Publish => {
+            let projects: Vec<Project> = Project::all().await.unwrap();
+            let selectified_projects: Vec<String> = Project::selectify(&projects);
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Choisir un projet")
+                .default(0)
+                .paged(true)
+                .items(&selectified_projects[..])
+                .interact()
+                .unwrap();
+            let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
+            selected_project.published = true;
+            let result = selected_project.update().await;
+            match result {
+                Ok(project) => println!("Successfully published project: \"{}\"", project.title),
+                Err(err) => return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Error while publishing: {}", err.to_string())))
             }
             Ok(())
         },

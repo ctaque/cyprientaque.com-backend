@@ -421,6 +421,15 @@ impl Project {
             Err(err) => Err(err.to_string())
         }
     }
+    pub fn selectify(projects: &Vec<Project>) -> Vec<String> {
+        projects.into_iter().map(
+            | x | format!(
+                "id: {}, title: {}"
+                    , x.id.to_string()
+                    , x.title
+            )
+        ).collect()
+    }
 }
 
 #[async_trait]
