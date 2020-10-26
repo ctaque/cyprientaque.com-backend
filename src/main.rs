@@ -88,6 +88,8 @@ enum Cmd {
     Create,
     #[structopt(name = "publish")]
     Publish,
+    #[structopt(name = "unpublish")]
+    Unpublish
 }
 
 embed_migrations!();
@@ -190,6 +192,25 @@ async fn main() -> std::io::Result<()> {
             }
             Ok(())
         },
+        Cmd::Unpublish => {
+            let projects: Vec<Project> = Project::all().await.unwrap();
+            let selectified_projects: Vec<String> = Project::selectify(&projects);
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Choisir un projet")
+                .default(0)
+                .paged(true)
+                .items(&selectified_projects[..])
+                .interact()
+                .unwrap();
+            let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
+            selected_project.published = false;
+            let result = selected_project.update().await;
+            match result {
+                Ok(project) => println!("Successfully unpublished project {}", project.title),
+                Err(err) => return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Error while unpublishing: {}", err.to_string())))
+            }
+            Ok(())
+        }
         Cmd::Listen { address, port } => {
             let migration_run = embedded_migrations::run(&connection);
             match migration_run {
