@@ -133,8 +133,23 @@ impl Model<Project> for Project {
     }
 
     async fn update(self) -> Result<Project, Error> {
-        let row: Row = Self::db().await.query_one("update projects set category_id = $2, title = $3, slug = $4, content = $5, views_count = $6, likes_count = $7, deleted_at = $8, created_at = $9, updated_at = CURRENT_TIMESTAMP, sketchfab_model_number = $10, user_id = $11 where id = $1 returning *;",
-                                    &[&self.id, &self.category_id, &self.title, &self.slug, &self.content, &self.views_count, &self.likes_count, &self.deleted_at, &self.created_at, &self.sketchfab_model_number, &self.user_id]).await?;
+        let row: Row = Self::db().await.query_one(
+            "update projects set (
+            category_id = $2,
+            title = $3,
+            slug = $4,
+            content = $5,
+            views_count = $6,
+            likes_count = $7,
+            deleted_at = $8,
+            created_at = $9,
+            updated_at = CURRENT_TIMESTAMP,
+            sketchfab_model_number = $10,
+            user_id = $11,
+            published = $12
+            )
+            where id = $1 returning *;",
+            &[&self.id, &self.category_id, &self.title, &self.slug, &self.content, &self.views_count, &self.likes_count, &self.deleted_at, &self.created_at, &self.sketchfab_model_number, &self.user_id, &self.published]).await?;
         let p = Project::new(&row);
         let p = p.attach_category().await?;
         let p = p.attach_user().await?;

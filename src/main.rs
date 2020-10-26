@@ -296,9 +296,8 @@ async fn main() -> std::io::Result<()> {
                 .items(&selectified_projects[..])
                 .interact()
                 .unwrap();
-            let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
-            selected_project.published = true;
-            let result = selected_project.update().await;
+            let selected_project: Project = projects.get(selection).unwrap().to_owned();
+            let result = selected_project.publish().await;
             match result {
                 Ok(project) => println!("Successfully published project: \"{}\"", project.title),
                 Err(err) => return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Error while publishing: {}", err.to_string())))
@@ -315,9 +314,8 @@ async fn main() -> std::io::Result<()> {
                 .items(&selectified_projects[..])
                 .interact()
                 .unwrap();
-            let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
-            selected_project.published = false;
-            let result = selected_project.update().await;
+            let selected_project: Project = projects.get(selection).unwrap().to_owned();
+            let result = selected_project.unpublish().await;
             match result {
                 Ok(project) => println!("Successfully unpublished project {}", project.title),
                 Err(err) => return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Error while unpublishing: {}", err.to_string())))
