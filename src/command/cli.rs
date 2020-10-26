@@ -423,6 +423,7 @@ impl HandleCmd {
                     "/projects/all_but_not_blog",
                     web::get().to(Project::http_get_projects_but_not_blog),
                 )
+                .route("/projects/search", web::get().to(Project::http_text_search))
                 .route(
                     "/projects/{id}",
                     web::put().to(UpdatableProject::http_update),

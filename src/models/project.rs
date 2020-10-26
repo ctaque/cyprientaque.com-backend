@@ -3,19 +3,19 @@ use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
 use postgres::{error::Error, Row};
-use std::env::{temp_dir, var};
+use rand::distributions::Alphanumeric;
+use rand::Rng;
 use rest_macro::{
     DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel,
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
-use std::process::Command;
+use serde::Deserialize;
 use serde_json::json;
 use slugify::slugify;
-use serde::Deserialize;
-use std::fs::{ self, File };
-use rand::Rng;
-use rand::distributions::Alphanumeric;
+use std::env::{temp_dir, var};
+use std::fs::{self, File};
 use std::io::prelude::*;
+use std::process::Command;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -133,8 +133,10 @@ impl Model<Project> for Project {
     }
 
     async fn update(self) -> Result<Project, Error> {
-        let row: Row = Self::db().await.query_one(
-            "update projects set (
+        let row: Row = Self::db()
+            .await
+            .query_one(
+                "update projects set (
             category_id = $2,
             title = $3,
             slug = $4,
@@ -149,7 +151,22 @@ impl Model<Project> for Project {
             published = $12
             )
             where id = $1 returning *;",
-            &[&self.id, &self.category_id, &self.title, &self.slug, &self.content, &self.views_count, &self.likes_count, &self.deleted_at, &self.created_at, &self.sketchfab_model_number, &self.user_id, &self.published]).await?;
+                &[
+                    &self.id,
+                    &self.category_id,
+                    &self.title,
+                    &self.slug,
+                    &self.content,
+                    &self.views_count,
+                    &self.likes_count,
+                    &self.deleted_at,
+                    &self.created_at,
+                    &self.sketchfab_model_number,
+                    &self.user_id,
+                    &self.published,
+                ],
+            )
+            .await?;
         let p = Project::new(&row);
         let p = p.attach_category().await?;
         let p = p.attach_user().await?;
@@ -181,6 +198,12 @@ pub struct CategoryId {
 pub struct Id {
     pub id: i32,
 }
+
+#[derive(Deserialize)]
+pub struct SearchQuery {
+    pub s: String,
+}
+
 impl Project {
     pub fn new<'a>(row: &Row) -> Project {
         Project {
@@ -255,6 +278,21 @@ impl Project {
         }
         Ok(projects)
     }
+
+    pub async fn search(terms: String) -> Result<Vec<Project>, Error> {
+        let rows: Vec<Row> = Self::db().await
+            .query(
+                "select * from projects where published = true and deleted_at is null and to_tsvector(title || ' ' || content) @@ to_tsquery($1)",
+                &[&terms]
+            ).await?;
+        let mut projects = Vec::new();
+        for row in rows {
+            let project = Project::new(&row);
+            projects.push(project);
+        }
+        Ok(projects)
+    }
+
     pub async fn publish(self) -> Result<Project, Error> {
         let row = Self::db()
             .await
@@ -413,7 +451,18 @@ impl Project {
             Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
         }
     }
-    pub fn pretty_print(self) -> (){
+
+    pub async fn http_text_search(
+        info: web::Query<SearchQuery>,
+    ) -> Result<HttpResponse, HttpResponse> {
+        let result: Result<Vec<Project>, Error> = Project::search(info.s.to_string()).await;
+        match result {
+            Ok(projects) => Ok(HttpResponse::Ok().body(json!(projects))),
+            Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
+        }
+    }
+
+    pub fn pretty_print(self) -> () {
         println!(
             "Project id: {}, Title: {}, published: {}, created_at: {}, updated_at: {}, deleted_at: {}",
             self.id,
@@ -430,23 +479,20 @@ impl Project {
             Ok(projects) => {
                 for project in projects {
                     project.pretty_print();
-                };
+                }
                 Ok(())
-            },
-            Err(err) => Err(err.to_string())
+            }
+            Err(err) => Err(err.to_string()),
         }
     }
     pub fn selectify(projects: &Vec<Project>) -> Vec<String> {
-        projects.into_iter().map(
-            | x | format!(
-                "id: {}, title: {}"
-                    , x.id.to_string()
-                    , x.title
-            )
-        ).collect()
+        projects
+            .into_iter()
+            .map(|x| format!("id: {}, title: {}", x.id.to_string(), x.title))
+            .collect()
     }
 
-    fn gen_random_string () -> String  {
+    fn gen_random_string() -> String {
         rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(10)
@@ -460,20 +506,23 @@ impl Project {
         path
     }
 
-    pub fn cli_edit (&mut self)-> Project {
+    pub fn cli_edit(&mut self) -> Project {
         let editor = var("EDITOR");
         let editor = match editor {
             Ok(editor) => editor,
-            _ => "vim".to_string()
+            _ => "vim".to_string(),
         };
         let file_name = Self::gen_tmp_filename();
         let mut file = File::create(&file_name).unwrap();
         let mut w = Vec::new();
         write!(&mut w, "{}", &self.content).unwrap();
         file.write(&w).unwrap();
-        Command::new(editor).arg(&file_name).status().expect("Cannot open file");
-        let contents = fs::read_to_string(&file_name)
-            .expect("Something went wrong reading the file");
+        Command::new(editor)
+            .arg(&file_name)
+            .status()
+            .expect("Cannot open file");
+        let contents =
+            fs::read_to_string(&file_name).expect("Something went wrong reading the file");
         self.content = contents;
         self.to_owned()
     }
@@ -522,7 +571,7 @@ impl NewProject {
         }
     }
 
-    fn gen_random_string () -> String  {
+    fn gen_random_string() -> String {
         rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(10)
@@ -536,20 +585,23 @@ impl NewProject {
         path
     }
 
-    pub fn cli_edit (&mut self)-> &mut NewProject {
+    pub fn cli_edit(&mut self) -> &mut NewProject {
         let editor = var("EDITOR");
         let editor = match editor {
             Ok(editor) => editor,
-            _ => "vim".to_string()
+            _ => "vim".to_string(),
         };
         let file_name = Self::gen_tmp_filename();
         let mut file = File::create(&file_name).unwrap();
         let mut w = Vec::new();
         write!(&mut w, "{}", &self.content).unwrap();
         file.write(&w).unwrap();
-        Command::new(editor).arg(&file_name).status().expect("Cannot open file");
-        let contents = fs::read_to_string(&file_name)
-            .expect("Something went wrong reading the file");
+        Command::new(editor)
+            .arg(&file_name)
+            .status()
+            .expect("Cannot open file");
+        let contents =
+            fs::read_to_string(&file_name).expect("Something went wrong reading the file");
         self.content = contents;
         self
     }
