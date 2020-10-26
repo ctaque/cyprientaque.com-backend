@@ -6,6 +6,7 @@ pub mod profile_user_image;
 pub mod user;
 pub mod s3_client;
 pub mod project_image_category;
+pub mod bitbucket;
 
 pub use self::{
     project::*,
@@ -15,5 +16,6 @@ pub use self::{
     user::*,
     s3_client::*,
     profile_user_image::*,
-    project_image_category::*
+    project_image_category::*,
+    bitbucket::*
 };
