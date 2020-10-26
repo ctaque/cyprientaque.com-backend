@@ -785,6 +785,7 @@ dependencies = [
  "jsonwebtoken",
  "log",
  "mime",
+ "mime_guess",
  "openssl",
  "postgres",
  "rand",
@@ -800,6 +801,7 @@ dependencies = [
  "structopt",
  "tokio",
  "tokio-postgres",
+ "url",
  "uuid",
 ]
 

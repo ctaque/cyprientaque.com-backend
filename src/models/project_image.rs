@@ -1,23 +1,22 @@
 use super::s3_client::ConfiguredS3Client;
 use super::ProjectImageCategory;
+use super::{Project, ProjectCategory};
+use actix_multipart::Multipart;
 use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
+use futures::stream::{StreamExt, TryStreamExt};
 use image::{self, error::ImageResult, GenericImageView, ImageOutputFormat};
 use postgres::{error::Error, Row};
 use rest_macro::{DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel};
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
 use rusoto_core::RusotoError;
 use rusoto_s3::PutObjectError;
+use serde::Deserialize;
 use serde_json::json;
 use std::env;
-use uuid::Uuid;
-use serde::Deserialize;
-use actix_multipart::{ Multipart };
-use futures::stream::{ StreamExt, TryStreamExt };
-use super::{ Project, ProjectCategory };
 use std::fmt;
-
+use uuid::Uuid;
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize, HttpAll, HttpFind, HttpDelete)]
 pub struct ProjectImage {
@@ -121,7 +120,7 @@ pub struct CategoriesQuery {
     #[serde(deserialize_with = "deserialize_stringified_int_list")]
     pub include_categories: Vec<i32>,
     #[serde(deserialize_with = "deserialize_stringified_int_list")]
-    pub exclude_categories: Vec<i32>
+    pub exclude_categories: Vec<i32>,
 }
 pub fn deserialize_stringified_int_list<'de, D>(deserializer: D) -> Result<Vec<i32>, D::Error>
 where
@@ -147,9 +146,9 @@ where
                 return Ok(ints);
             }
             let ids = ids.split(",");
-            let ids = ids.map(| id | id.trim());
+            let ids = ids.map(|id| id.trim());
             let ids: Vec<&str> = ids.collect();
-            for id in ids{
+            for id in ids {
                 let err = format!("Failed to parse id : {}", &id);
                 let res = id.parse::<i32>().expect(&err);
                 ints.push(res);
@@ -161,16 +160,18 @@ where
     deserializer.deserialize_any(IntVecVisitor)
 }
 
-impl ProjectImage{
+impl ProjectImage {
     pub async fn http_add_view(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
         let ri = ProjectImage::find(info.id.into()).await;
         match ri {
             Ok(mut i) => {
-                let new_primary = ProjectImage::get_image_with_max_views_for_project(i.project_id).await;
+                let new_primary =
+                    ProjectImage::get_image_with_max_views_for_project(i.project_id).await;
                 if let Ok(new) = new_primary {
                     if new.id == i.id {
-                        let reset_result = ProjectImage::reset_primary_for_project(i.project_id).await;
-                        if let Ok(()) = reset_result  {
+                        let reset_result =
+                            ProjectImage::reset_primary_for_project(i.project_id).await;
+                        if let Ok(()) = reset_result {
                             i.primary = true;
                         }
                     }
@@ -179,30 +180,43 @@ impl ProjectImage{
                 let result = i.update().await;
                 match result {
                     Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
-                    Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string()))
+                    Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
                 }
             }
-            Err(e) => Err(HttpResponse::NotFound().body(e.to_string()))
+            Err(e) => Err(HttpResponse::NotFound().body(e.to_string())),
         }
     }
-    pub async fn get_image_with_max_views_for_project(project_id: i32) -> Result<ProjectImage, Error>{
+    pub async fn get_image_with_max_views_for_project(
+        project_id: i32,
+    ) -> Result<ProjectImage, Error> {
         let row: Row = Self::db().await.query_one("SELECT * from project_images where project_id = $1 order by views_count + 1 desc , (case when \"primary\" then 1 else 0 end) desc limit 1;", &[&project_id]).await?;
         let i = ProjectImage::new(&row);
         Ok(i)
     }
 
-    pub async fn reset_primary_for_project(project_id: i32) -> Result<(), Error>{
-        Self::db().await.query("UPDATE project_images set \"primary\" = false where project_id = $1;", &[&project_id]).await?;
+    pub async fn reset_primary_for_project(project_id: i32) -> Result<(), Error> {
+        Self::db()
+            .await
+            .query(
+                "UPDATE project_images set \"primary\" = false where project_id = $1;",
+                &[&project_id],
+            )
+            .await?;
         Ok(())
     }
 
-    pub async fn http_include_exclude_categories(query: web::Query<CategoriesQuery>) ->  Result<HttpResponse, HttpResponse>{
+    pub async fn http_include_exclude_categories(
+        query: web::Query<CategoriesQuery>,
+    ) -> Result<HttpResponse, HttpResponse> {
         let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and p.published = true");
         let client = Self::db().await;
         let end = " and p.category_id <> 5 ORDER BY i.views_count desc";
         let rows = match query.include_categories.len() {
             0 => match query.exclude_categories.len() {
-                0 => return Err(HttpResponse::BadRequest().body("Params must include at least one category")),
+                0 => {
+                    return Err(HttpResponse::BadRequest()
+                        .body("Params must include at least one category"))
+                }
                 _ => {
                     q.push_str(" and p.category_id NOT IN (SELECT id from project_categories where id  = ANY($1))");
                     q.push_str(end);
@@ -214,25 +228,27 @@ impl ProjectImage{
                     q.push_str(" and p.category_id = ANY($1)");
                     q.push_str(end);
                     client.query(&*q, &[&query.include_categories]).await
-                },
+                }
                 _ => {
                     q.push_str(" and p.category_id = ANY($1) and p.category_id NOT IN (SELECT id from project_categories where id = ANY($2))");
                     q.push_str(end);
-                    client.query(&*q, &[&query.include_categories, &query.exclude_categories]).await
+                    client
+                        .query(&*q, &[&query.include_categories, &query.exclude_categories])
+                        .await
                 }
-            }
+            },
         };
         match rows {
             Ok(values) => {
                 let mut res: Vec<ProjectImage> = Vec::new();
-                for row in values{
+                for row in values {
                     let p = ProjectImage::new(&row);
-                    let err_text = &*format!("Cannot attach project_image_category; image id: {}", &p.id);
+                    let err_text =
+                        &*format!("Cannot attach project_image_category; image id: {}", &p.id);
                     let p = p.attach_category().await.expect(err_text);
                     res.push(p);
                 }
                 Ok(HttpResponse::Ok().body(json!(res)))
-
             }
             Err(e) => {
                 println!("{:#?}", &e);
@@ -343,37 +359,25 @@ impl NewProjectImage {
                 filename.to_owned(),
             );
             let image_data = file_stream.to_vec();
-            let image_350_data = &project_image
-                .clone()
-                .generate_size(350.0, image_data.clone());
+            let image_350_data = Self::generate_size(350.0, image_data.clone());
             match image_350_data {
                 Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
                 Ok(image) => {
-                    project_image
-                        .clone()
-                        .upload_to_s3(&project_image.w350_keyname, image.to_vec())
+                    Self::upload_to_s3(&project_image.w350_keyname, image.to_vec())
                         .await
                         .expect("Failed uploading w350 image");
                 }
             };
-            let image_1500_data = &project_image
-                .clone()
-                .generate_size(1500.0, image_data.clone());
+            let image_1500_data = Self::generate_size(1500.0, image_data.clone());
             match image_1500_data {
                 Err(err) => return Err(HttpResponse::InternalServerError().body(err.to_string())),
                 Ok(image) => {
-                    project_image
-                        .clone()
-                        .upload_to_s3(&project_image.w1500_keyname, image.to_vec())
+                    Self::upload_to_s3(&project_image.w1500_keyname, image.to_vec())
                         .await
                         .expect("Failed uploading w1500 image");
                 }
             };
-            match project_image
-                .clone()
-                .upload_to_s3(&project_image.original_keyname, image_data)
-                .await
-            {
+            match Self::upload_to_s3(&project_image.original_keyname, image_data).await {
                 Ok(()) => {
                     let image_save_result = project_image.save().await;
 
@@ -389,7 +393,6 @@ impl NewProjectImage {
     }
 
     pub async fn upload_to_s3(
-        self,
         keyname: &String,
         contents: Vec<u8>,
     ) -> Result<(), RusotoError<PutObjectError>> {
@@ -398,7 +401,7 @@ impl NewProjectImage {
         Ok(())
     }
 
-    pub fn generate_size(self, new_w: f32, data: Vec<u8>) -> ImageResult<Vec<u8>> {
+    pub fn generate_size(new_w: f32, data: Vec<u8>) -> ImageResult<Vec<u8>> {
         let img = image::load_from_memory(&data)?;
         let mut result: Vec<u8> = Vec::new();
 

@@ -45,3 +45,5 @@ either = "1.6.1"
 rest_macro = { version = "0.1.0", path = "rest_macro" }
 rest_macro_derive = { version = "0.1.0", path = "rest_macro_derive" }
 rand = "0.7.3"
+url = "2.1.1"
+mime_guess = "2.0.3"

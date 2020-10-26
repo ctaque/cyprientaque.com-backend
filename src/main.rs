@@ -29,6 +29,9 @@ use clap::arg_enum;
 use tokio;
 use dialoguer::{ Confirm, Input, theme::ColorfulTheme, Select };
 use slugify::slugify;
+use url::Url;
+use std::fs::File;
+use std::io::prelude::*;
 
 async fn index() -> Result<HttpResponse, HttpResponse> {
     Ok(HttpResponse::MovedPermanently()
@@ -91,7 +94,12 @@ enum Cmd {
     #[structopt(name = "unpublish")]
     Unpublish,
     #[structopt(name = "edit")]
-    Edit
+    Edit,
+    #[structopt(name = "add-image")]
+    AddImage {
+        #[structopt(short = "f", long = "file")]
+        file: String,
+    },
 }
 
 embed_migrations!();
@@ -172,6 +180,87 @@ async fn main() -> std::io::Result<()> {
                     break;
                 }
                 break;
+            }
+            Ok(())
+        },
+        Cmd::AddImage {file} => {
+            let projects: Vec<Project> = Project::all().await.unwrap();
+            let selectified_projects: Vec<String> = Project::selectify(&projects);
+            let categories: Vec<ProjectImageCategory> = ProjectImageCategory::all().await.unwrap();
+            let selectified_categories: Vec<String> = ProjectImageCategory::selectify(&categories);
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Choisir un projet")
+                .default(0)
+                .paged(true)
+                .items(&selectified_projects[..])
+                .interact()
+                .unwrap();
+            let selected_project: &Project = projects.get(selection).unwrap();
+
+            let image_category_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Choisir une catégorie")
+                .default(0)
+                .paged(true)
+                .items(&selectified_categories[..])
+                .interact()
+                .unwrap();
+            let selected_category = categories.get(image_category_selection).unwrap();
+            let is_cover_image: bool = Confirm::new().with_prompt("Is it the cover image?").interact().unwrap();
+
+            let parsed = Url::parse(&file);
+            match parsed {
+                Ok(url) => {
+
+                    let path = url.path();
+                    let split_path = path.clone().split("/");
+                    let file_name: String = split_path.collect::<Vec<&str>>().pop().expect("Cannot read file name from url path").to_string();
+                    let client = reqwest::Client::new();
+                    let resp = client.get(&url.to_string());
+                    let i = NewProjectImage::new(is_cover_image, selected_project.id, selected_category.id, file_name);
+                    if let Ok(res) = resp.send().await {
+                        let image_data: Vec<u8> = res.bytes().await.expect("Invalid Image downloaded").to_vec();
+                        let image_350_data = NewProjectImage::generate_size(350.0, image_data.clone()).expect("Failed generating size 350px");
+                        let image_1500_data = NewProjectImage::generate_size(1500.0, image_data.clone()).expect("Failed generating size 1500px");
+                        NewProjectImage::upload_to_s3(&i.w350_keyname, image_350_data.to_vec()).await.expect("Failed uploading w350 image");
+                        println!("Uploaded image 350px to s3");
+                        NewProjectImage::upload_to_s3(&i.w1500_keyname, image_1500_data.to_vec()).await.expect("Failed uploading w1500 image");
+                        println!("Uploaded image 1500px to s3");
+                        NewProjectImage::upload_to_s3(&i.original_keyname, image_data).await.expect("Failed uploading original size");
+                        println!("Uploaded original image to s3");
+                        return match i.save().await {
+                            Ok(_image) => {
+                                println!("Successfully saved image");
+                                Ok(())
+                            },
+                            Err(err) => Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed Saving image, error: {}", err.to_string()))),
+                        };
+                    } else {
+                        println!("Cannot GET image");
+                    }
+                },
+                _ => {
+                    let split_path = file.split("/");
+                    let file_name: String = split_path.collect::<Vec<&str>>().pop().expect("Cannot read file name from file path").to_string();
+                    let mut file = File::open(file).expect("Failed to open image");
+                    let mut image_data = Vec::new();
+                    file.read_to_end(&mut image_data).expect("Failed to read image");
+                    let i = NewProjectImage::new(is_cover_image, selected_project.id, selected_category.id, file_name);
+                    let image_350_data = NewProjectImage::generate_size(350.0, image_data.clone()).expect("Failed generating size 350px");
+                    let image_1500_data = NewProjectImage::generate_size(1500.0, image_data.clone()).expect("Failed generating size 1500px");
+                    NewProjectImage::upload_to_s3(&i.w350_keyname, image_350_data.to_vec()).await.expect("Failed uploading w350 image");
+                    println!("Uploaded image 350px to s3");
+                    NewProjectImage::upload_to_s3(&i.w1500_keyname, image_1500_data.to_vec()).await.expect("Failed uploading w1500 image");
+                    println!("Uploaded image 1500px to s3");
+                    NewProjectImage::upload_to_s3(&i.original_keyname, image_data).await.expect("Failed uploading original size");
+                    println!("Uploaded original image to s3");
+                    return match i.save().await {
+                        Ok(_image) => {
+                            println!("Successfully saved image");
+                            Ok(())
+                        },
+                        Err(err) => Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed Saving image, error: {}", err.to_string()))),
+                    };
+                }
             }
             Ok(())
         },
