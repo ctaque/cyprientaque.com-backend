@@ -89,7 +89,9 @@ enum Cmd {
     #[structopt(name = "publish")]
     Publish,
     #[structopt(name = "unpublish")]
-    Unpublish
+    Unpublish,
+    #[structopt(name = "edit")]
+    Edit
 }
 
 embed_migrations!();
@@ -170,6 +172,28 @@ async fn main() -> std::io::Result<()> {
                     break;
                 }
                 break;
+            }
+            Ok(())
+        },
+        Cmd::Edit => {
+            let projects: Vec<Project> = Project::all().await.unwrap();
+            let selectified_projects: Vec<String> = Project::selectify(&projects);
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Choisir un projet")
+                .default(0)
+                .paged(true)
+                .items(&selectified_projects[..])
+                .interact()
+                .unwrap();
+            let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
+            let project_to_save = selected_project.cli_edit();
+            let out = project_to_save.update().await;
+            match out {
+                Ok(project_algolia) => {
+                    println!("{}", "Success !");
+                    project_algolia.pretty_print()
+                },
+                Err(err) => println!("{}", err)
             }
             Ok(())
         },

@@ -430,6 +430,38 @@ impl Project {
             )
         ).collect()
     }
+
+    fn gen_random_string () -> String  {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(10)
+            .collect::<String>()
+    }
+
+    fn gen_tmp_filename() -> std::path::PathBuf {
+        let name = Self::gen_random_string();
+        let mut path = temp_dir();
+        path.push(format!("{}.md", name));
+        path
+    }
+
+    pub fn cli_edit (&mut self)-> Project {
+        let editor = var("EDITOR");
+        let editor = match editor {
+            Ok(editor) => editor,
+            _ => "vim".to_string()
+        };
+        let file_name = Self::gen_tmp_filename();
+        let mut file = File::create(&file_name).unwrap();
+        let mut w = Vec::new();
+        write!(&mut w, "{}", &self.content).unwrap();
+        file.write(&w).unwrap();
+        Command::new(editor).arg(&file_name).status().expect("Cannot open file");
+        let contents = fs::read_to_string(&file_name)
+            .expect("Something went wrong reading the file");
+        self.content = contents;
+        self.to_owned()
+    }
 }
 
 #[async_trait]
