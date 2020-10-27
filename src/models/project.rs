@@ -136,21 +136,20 @@ impl Model<Project> for Project {
         let row: Row = Self::db()
             .await
             .query_one(
-                "update projects set (
-            category_id = $2,
-            title = $3,
-            slug = $4,
-            content = $5,
-            views_count = $6,
-            likes_count = $7,
-            deleted_at = $8,
-            created_at = $9,
-            updated_at = CURRENT_TIMESTAMP,
-            sketchfab_model_number = $10,
-            user_id = $11,
-            published = $12
-            )
-            where id = $1 returning *;",
+                "update projects set
+                category_id = $2,
+                title = $3,
+                slug = $4,
+                content = $5,
+                views_count = $6,
+                likes_count = $7,
+                deleted_at = $8,
+                created_at = $9,
+                updated_at = CURRENT_TIMESTAMP,
+                sketchfab_model_number = $10,
+                user_id = $11,
+                published = $12
+                where id = $1 returning *;",
                 &[
                     &self.id,
                     &self.category_id,
