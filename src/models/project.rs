@@ -295,7 +295,6 @@ impl Project {
         let without_space: Vec<String> = split.iter().filter(|v| v.to_string() != String::from("")).map(|v| v.to_string()).collect();
         let mut formatted_terms = without_space.join(":* & ").to_string();
         formatted_terms.push_str(":*");
-        println!("{}", formatted_terms);
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
             let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&formatted_terms, &category_id]).await?;
