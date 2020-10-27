@@ -291,16 +291,21 @@ impl Project {
     pub async fn search_projects(terms: String, category_id: i32) -> Result<Vec<i32>, Error> {
         let mut q = String::from("select id from projects where published = true and deleted_at is null and category_id <> 5 and to_tsvector(title || ' ' || content) @@ to_tsquery($1)");
         let mut ids = Vec::new();
+        let split: Vec<&str> = terms.split(" ").collect();
+        let without_space: Vec<String> = split.iter().filter(|v| v.to_string() != String::from("")).map(|v| v.to_string()).collect();
+        let mut formatted_terms = without_space.join(":* & ").to_string();
+        formatted_terms.push_str(":*");
+        println!("{}", formatted_terms);
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
-            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&terms, &category_id]).await?;
+            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&formatted_terms, &category_id]).await?;
             for row in rows {
                 let id = Id::new(&row);
                 ids.push(id);
             }
             Ok(ids.iter().map(|id| id.id).collect())
         } else {
-            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&terms]).await?;
+            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&formatted_terms]).await?;
             for row in rows {
                 let id = Id::new(&row);
                 ids.push(id);
