@@ -199,9 +199,18 @@ pub struct Id {
     pub id: i32,
 }
 
+impl Id {
+    pub fn new(row: &Row) -> Id {
+        Id {
+            id: row.get("id")
+        }
+    }
+}
+
 #[derive(Deserialize)]
 pub struct SearchQuery {
     pub s: String,
+    pub category_id: i32,
 }
 
 impl Project {
@@ -279,18 +288,25 @@ impl Project {
         Ok(projects)
     }
 
-    pub async fn search(terms: String) -> Result<Vec<Project>, Error> {
-        let rows: Vec<Row> = Self::db().await
-            .query(
-                "select * from projects where published = true and deleted_at is null and to_tsvector(title || ' ' || content) @@ to_tsquery($1)",
-                &[&terms]
-            ).await?;
-        let mut projects = Vec::new();
-        for row in rows {
-            let project = Project::new(&row);
-            projects.push(project);
+    pub async fn search_projects(terms: String, category_id: i32) -> Result<Vec<i32>, Error> {
+        let mut q = String::from("select id from projects where published = true and deleted_at is null and category_id <> 5 and to_tsvector(title || ' ' || content) @@ to_tsquery($1)");
+        let mut ids = Vec::new();
+        if category_id != 0 {
+            q.push_str(" and category_id  = $2");
+            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&terms, &category_id]).await?;
+            for row in rows {
+                let id = Id::new(&row);
+                ids.push(id);
+            }
+            Ok(ids.iter().map(|id| id.id).collect())
+        } else {
+            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&terms]).await?;
+            for row in rows {
+                let id = Id::new(&row);
+                ids.push(id);
+            }
+            Ok(ids.iter().map(|id| id.id).collect())
         }
-        Ok(projects)
     }
 
     pub async fn publish(self) -> Result<Project, Error> {
@@ -452,10 +468,10 @@ impl Project {
         }
     }
 
-    pub async fn http_text_search(
+    pub async fn http_text_search_projects(
         info: web::Query<SearchQuery>,
     ) -> Result<HttpResponse, HttpResponse> {
-        let result: Result<Vec<Project>, Error> = Project::search(info.s.to_string()).await;
+        let result: Result<Vec<i32>, Error> = Project::search_projects(info.s.to_string(), info.category_id).await;
         match result {
             Ok(projects) => Ok(HttpResponse::Ok().body(json!(projects))),
             Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
