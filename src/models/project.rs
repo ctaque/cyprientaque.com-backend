@@ -359,7 +359,7 @@ impl Project {
         let rows = Self::db()
             .await
             .query(
-                "select * from project_images where project_id = $1",
+                "select * from project_images where project_id = $1 and deleted_at is null",
                 &[&self.id],
             )
             .await?;
