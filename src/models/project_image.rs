@@ -189,7 +189,7 @@ impl ProjectImage {
     pub async fn get_image_with_max_views_for_project(
         project_id: i32,
     ) -> Result<ProjectImage, Error> {
-        let row: Row = Self::db().await.query_one("SELECT * from project_images where project_id = $1 order by views_count + 1 desc , (case when \"primary\" then 1 else 0 end) desc limit 1;", &[&project_id]).await?;
+        let row: Row = Self::db().await.query_one("SELECT * from project_images where project_id = $1 and deleted_at is null order by views_count + 1 desc , (case when \"primary\" then 1 else 0 end) desc limit 1;", &[&project_id]).await?;
         let i = ProjectImage::new(&row);
         Ok(i)
     }
@@ -208,7 +208,7 @@ impl ProjectImage {
     pub async fn http_include_exclude_categories(
         query: web::Query<CategoriesQuery>,
     ) -> Result<HttpResponse, HttpResponse> {
-        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and p.published = true");
+        let mut q = String::from("SELECT i.* FROM project_images i JOIN projects p ON p.id = i.project_id WHERE p.deleted_at is null and i.deleted_at is null and p.published = true");
         let client = Self::db().await;
         let end = " and p.category_id <> 5 ORDER BY i.views_count desc";
         let rows = match query.include_categories.len() {
