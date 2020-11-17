@@ -4,12 +4,18 @@ use crate::models::{
     ProjectImageCategory, UpdatableProject,
 };
 use actix_cors::Cors;
-use actix_web::{http, middleware::Logger, web, App, HttpResponse, HttpServer};
+use actix_web::{
+    http,
+    middleware::Logger,
+    web::{self, Data},
+    App, HttpResponse, HttpServer,
+};
 use clap::arg_enum;
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use diesel::pg::PgConnection;
 use diesel_migrations::RunMigrationsError;
 use env_logger;
+use handlebars::Handlebars;
 use rest_macro::{HttpAll, HttpDelete, HttpFind};
 use rest_macro::{Model, NewModel};
 use slugify::slugify;
@@ -18,6 +24,10 @@ use std::fs::File;
 use std::io::prelude::*;
 use structopt::StructOpt;
 use url::Url;
+use actix_web_static_files;
+use std::collections::HashMap;
+
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 arg_enum! {
     #[derive(Debug)]
@@ -59,6 +69,10 @@ pub enum Cmd {
 pub struct HandleCmd;
 
 type RunMigrationCb = fn(connection: &PgConnection) -> Result<(), RunMigrationsError>;
+
+pub struct AppData {
+    pub handlebars: Handlebars<'static>,
+}
 
 impl HandleCmd {
     pub async fn list() -> std::io::Result<()> {
@@ -367,6 +381,7 @@ impl HandleCmd {
         port: String,
         connection: &PgConnection,
         run_migrations: RunMigrationCb,
+        hb: Handlebars<'static>,
     ) -> std::io::Result<()> {
         let migration_run = run_migrations(&connection);
         match migration_run {
@@ -393,7 +408,11 @@ impl HandleCmd {
         let local = tokio::task::LocalSet::new();
         let sys = actix_rt::System::run_in_tokio("server", &local);
         println!("Running server on address : {}", addr);
+
+        let app_data = Data::new(AppData { handlebars: hb });
+
         let server = HttpServer::new(move || {
+            let generated = generate();
             App::new()
                 .wrap(auth_middleware::Authentication)
                 .wrap(Logger::default())
@@ -412,7 +431,14 @@ impl HandleCmd {
                         .max_age(3600)
                         .finish(),
                 )
+                .service(actix_web_static_files::ResourceFiles::new(
+                    "/static",
+                    generated
+                ))
                 .app_data(web::PayloadConfig::new(900000000000000000))
+                .app_data(app_data.clone())
+                .route("/blog/{slug}", web::get().to(Project::http_blog_detail))
+                .route("/blog", web::get().to(Project::http_blog_index))
                 .route("/projects", web::get().to(Project::http_all))
                 .route("/projects", web::post().to(NewProject::http_create))
                 .route(
@@ -423,7 +449,10 @@ impl HandleCmd {
                     "/projects/all_but_not_blog",
                     web::get().to(Project::http_get_projects_but_not_blog),
                 )
-                .route("/projects/search", web::get().to(Project::http_text_search_projects))
+                .route(
+                    "/projects/search",
+                    web::get().to(Project::http_text_search_projects),
+                )
                 .route(
                     "/projects/{id}",
                     web::put().to(UpdatableProject::http_update),

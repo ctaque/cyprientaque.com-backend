@@ -36,27 +36,6 @@ pub struct ProjectImage {
     deleted_at: Option<NaiveDateTime>,
 }
 
-impl ProjectImage {
-    pub fn new(row: &Row) -> Self {
-        ProjectImage {
-            id: row.get("id"),
-            w1500_keyname: row.get("w1500_keyname"),
-            w350_keyname: row.get("w350_keyname"),
-            w1500_object_url: row.get("w1500_object_url"),
-            original_object_url: row.get("original_object_url"),
-            project_image_category_id: row.get("project_image_category_id"),
-            w350_object_url: row.get("w350_object_url"),
-            primary: row.get("primary"),
-            views_count: row.get("views_count"),
-            project_id: row.get("project_id"),
-            created_at: row.get("created_at"),
-            updated_at: row.get("updated_at"),
-            deleted_at: row.get("deleted_at"),
-            category: None,
-        }
-    }
-}
-
 #[async_trait]
 impl Model<ProjectImage> for ProjectImage {
     async fn find(project_image_id: i32) -> Result<ProjectImage, Error>
@@ -161,6 +140,24 @@ where
 }
 
 impl ProjectImage {
+    pub fn new(row: &Row) -> Self {
+        ProjectImage {
+            id: row.get("id"),
+            w1500_keyname: row.get("w1500_keyname"),
+            w350_keyname: row.get("w350_keyname"),
+            w1500_object_url: row.get("w1500_object_url"),
+            original_object_url: row.get("original_object_url"),
+            project_image_category_id: row.get("project_image_category_id"),
+            w350_object_url: row.get("w350_object_url"),
+            primary: row.get("primary"),
+            views_count: row.get("views_count"),
+            project_id: row.get("project_id"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            deleted_at: row.get("deleted_at"),
+            category: None,
+        }
+    }
     pub async fn http_add_view(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
         let ri = ProjectImage::find(info.id.into()).await;
         match ri {
@@ -267,6 +264,10 @@ impl ProjectImage {
         let cat = ProjectImageCategory::new(&row);
         self.category = Some(cat);
         Ok(self)
+    }
+
+    pub fn get_primary_image(images: Vec<ProjectImage>) -> Option<ProjectImage>{
+        images.into_iter().find(|image| image.primary == true)
     }
 }
 

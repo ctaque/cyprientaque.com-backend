@@ -1,0 +1,35 @@
+
+{{#*inline "page"}}
+<div class="article">
+    <div class="header">
+        {{#if article.primary_image }}
+            <img class="banner" src={{article.primary_image.w1500_object_url}}>
+        {{/if }}
+        <div class="gradient"></div>
+        <div class="page-title">
+            <a class="back-link" href="/blog">
+                <svg width="40" height="40" viewBox="0 0 24 24">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z" fill="rgb(169,169,171)"></path>
+                </svg>
+            </a>
+            <div class="title">
+                <h1>{{article.title}}</h1>
+                <small class="date">{{format_date article.created_at "%A %d %B %Y %H:%M"}}</small>
+            </div>
+        </div>
+    </div>
+    <div class="">
+        <div class="content">
+            {{render_markdown article.content}}
+        </div>
+    </div>
+    <div class="footer">
+        {{#if article.updated_at}}
+            <span class="">Last edited : {{format_date article.updated_at "%Y-%m-%d %H:%M:%S"}}</span>
+        {{/if }}
+    </div>
+</div>
+{{/inline}}
+
+{{~> (base)~}}

@@ -1,0 +1,21 @@
+
+{{#*inline "page"}}
+<div class="articles-list--with-banner">
+    <div class="articles-list">
+        {{#each articles}}
+            <a class="list-item" href="/blog/{{this.slug}}">
+                <div class="header">
+                    {{#if this.primary_image}}
+                        <img alt="Presentation image of the article" src="{{this.primary_image.w350_object_url}}"/>
+                    {{/if}}
+                </div>
+                <small class="date">{{format_date this.created_at "%A %d %B %Y"}}</small>
+                <h2 class="title">{{this.title}}</h2>
+                <div class="preview">{{unicode_truncate this.content 200}}...</div>
+            </a>
+        {{/each}}
+    </div>
+</div>
+{{/inline}}
+
+{{~> (base)~}}

@@ -7,6 +7,26 @@ use rest_macro::{HttpAll, HttpFind, FindInfo, HttpDelete, DeleteInfo, Model };
 use actix_web::{ HttpResponse, web };
 use serde_json::json;
 
+pub enum ProjectCategoryHardcoded {
+    Web,
+    Ebenisterie,
+    Nautisme,
+    Mobilier,
+    Blog,
+}
+
+impl ProjectCategoryHardcoded {
+    pub fn value(self) -> i32{
+        match self{
+            ProjectCategoryHardcoded::Web => 1,
+            ProjectCategoryHardcoded::Ebenisterie => 2,
+            ProjectCategoryHardcoded::Mobilier => 3,
+            ProjectCategoryHardcoded::Nautisme => 4,
+            ProjectCategoryHardcoded::Blog => 5
+        }
+    }
+}
+
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct ProjectCategory {
     pub id: i32,

@@ -3,6 +3,7 @@ name = "ctprods"
 version = "0.1.0"
 authors = ["Cyprien Taque <cyprien.taque@gmail.com>"]
 edition = "2018"
+build = "build.rs"
 
 [target.x86_64-unknown-linux-gnu]
 linker = "x86_64-linux-gnu-gcc"
@@ -15,6 +16,8 @@ dialoguer = "0.6.2"
 clap = "~2.33.0"
 tokio = { version = "0.2", features = ["full"] }
 actix-web = { version="2", features=["rust-tls"] }
+actix-files = "0.2.0"
+actix-web-static-files = "2.0"
 actix-http = "2.0.0-alpha.4"
 actix-multipart = "0.2.0"
 actix-cors = "0.2.0-alpha.1"
@@ -47,3 +50,9 @@ rest_macro_derive = { version = "0.1.0", path = "rest_macro_derive" }
 rand = "0.7.3"
 url = "2.1.1"
 mime_guess = "2.0.3"
+handlebars = "3.5.1"
+unicode-truncate = "0.1.1"
+comrak = "0.9.0"
+
+[build-dependencies]
+actix-web-static-files = "2.0"

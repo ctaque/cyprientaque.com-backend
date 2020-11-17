@@ -1,4 +1,5 @@
-use crate::models::{ProjectCategory, ProjectImage, User};
+use crate::command::cli::AppData;
+use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User};
 use actix_web::{web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
@@ -9,15 +10,19 @@ use rest_macro::{
     DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel,
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
-use serde::Deserialize;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
+use serde_json::{
+    json,
+    value::{Map},
+};
 use slugify::slugify;
 use std::env::{temp_dir, var};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::process::Command;
+use crate::utils::iso_date_format;
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, HttpFind, HttpAll, HttpDelete)]
+#[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
     pub id: i32,
     pub category_id: i32,
@@ -27,7 +32,9 @@ pub struct Project {
     pub views_count: i32,
     pub likes_count: i32,
     pub deleted_at: Option<NaiveDateTime>,
+    #[serde(with = "iso_date_format")]
     pub created_at: Option<NaiveDateTime>,
+    #[serde(with = "iso_date_format")]
     pub updated_at: Option<NaiveDateTime>,
     pub sketchfab_model_number: Option<String>,
     pub user_id: i32,
@@ -37,9 +44,10 @@ pub struct Project {
     pub is_pro: bool,
     pub bitbucket_project_key: Option<String>,
     pub published: bool,
+    pub primary_image: Option<ProjectImage>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct NewProject {
     pub category_id: i32,
     pub title: String,
@@ -51,7 +59,7 @@ pub struct NewProject {
     pub bitbucket_project_key: Option<String>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct UpdatableProject {
     pub id: i32,
     pub title: String,
@@ -200,9 +208,7 @@ pub struct Id {
 
 impl Id {
     pub fn new(row: &Row) -> Id {
-        Id {
-            id: row.get("id")
-        }
+        Id { id: row.get("id") }
     }
 }
 
@@ -210,6 +216,11 @@ impl Id {
 pub struct SearchQuery {
     pub s: String,
     pub category_id: i32,
+}
+
+#[derive(Deserialize)]
+pub struct HttpBlogDetailSlug {
+    slug: String,
 }
 
 impl Project {
@@ -233,6 +244,7 @@ impl Project {
             category: None,
             images: None,
             user: None,
+            primary_image: None,
         }
     }
 
@@ -287,23 +299,53 @@ impl Project {
         Ok(projects)
     }
 
+    pub async fn of_category_hardcoded(
+        cat: ProjectCategoryHardcoded,
+    ) -> Result<Vec<Project>, Error> {
+        let rows: Vec<Row> = Self::db()
+            .await
+            .query(
+                "select * from projects where category_id = $1 and published = true and deleted_at is null;",
+                &[&cat.value()]
+            ).await?;
+        let mut projects = Vec::new();
+        for row in rows {
+            let project = Project::new(&row);
+            let project = project.attach_category().await?;
+            let project = project.attach_user().await?;
+            let project = project.attach_images().await?;
+            projects.push(project);
+        }
+        Ok(projects)
+    }
+
     pub async fn search_projects(terms: String, category_id: i32) -> Result<Vec<i32>, Error> {
         let mut q = String::from("select id from projects where published = true and deleted_at is null and category_id <> 5 and to_tsvector(title || ' ' || content) @@ to_tsquery($1)");
         let mut ids = Vec::new();
         let split: Vec<&str> = terms.split(" ").collect();
-        let without_space: Vec<String> = split.iter().filter(|v| v.to_string() != String::from("")).map(|v| v.to_string()).collect();
+        let without_space: Vec<String> = split
+            .iter()
+            .filter(|v| v.to_string() != String::from(""))
+            .map(|v| v.to_string())
+            .collect();
         let mut formatted_terms = without_space.join(":* & ").to_string();
         formatted_terms.push_str(":*");
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
-            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&formatted_terms, &category_id]).await?;
+            let rows: Vec<Row> = Self::db()
+                .await
+                .query(q.as_str(), &[&formatted_terms, &category_id])
+                .await?;
             for row in rows {
                 let id = Id::new(&row);
                 ids.push(id);
             }
             Ok(ids.iter().map(|id| id.id).collect())
         } else {
-            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&formatted_terms]).await?;
+            let rows: Vec<Row> = Self::db()
+                .await
+                .query(q.as_str(), &[&formatted_terms])
+                .await?;
             for row in rows {
                 let id = Id::new(&row);
                 ids.push(id);
@@ -368,6 +410,8 @@ impl Project {
             let i = ProjectImage::new(&row);
             images.push(i);
         }
+
+        self.primary_image = ProjectImage::get_primary_image(images.clone());
         self.images = Some(images);
         Ok(self)
     }
@@ -381,6 +425,18 @@ impl Project {
         let user = user.attach_profile_images().await?;
         self.user = Some(user);
         Ok(self)
+    }
+
+    pub async fn get_by_slug(slug: String) -> Result<Option<Project>, Error> {
+        let row = Self::db()
+            .await
+            .query_one("select * from projects where slug = $1 and published = true and deleted_at is null", &[&slug])
+            .await?;
+        let project = Self::new(&row);
+        let project = project.attach_images().await?;
+        let project = project.attach_user().await?;
+        let project = project.attach_category().await?;
+        Ok(Some(project))
     }
 
     pub async fn http_get_published_projects() -> Result<HttpResponse, HttpResponse> {
@@ -471,10 +527,51 @@ impl Project {
         }
     }
 
+    pub async fn http_blog_detail(
+        info: web::Path<HttpBlogDetailSlug>,
+        app_data: web::Data<AppData>,
+    ) -> Result<HttpResponse, HttpResponse> {
+        println!("Reached HEre");
+        let result_article = Self::get_by_slug(info.slug.clone()).await;
+        match result_article {
+            Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
+            Ok(article_opt) => match article_opt {
+                Some(article) => {
+                    let mut data = Map::new();
+                    data.insert("article".to_string(), json!(article));
+                    data.insert("base".to_string(), json!("base".to_string()));
+                    let result = app_data.handlebars.render("blog_detail", &data);
+                    match result {
+                        Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
+                        Ok(html) => Ok(HttpResponse::Ok().body(html)),
+                    }
+                }
+                None => Err(HttpResponse::NotFound().body("Not found")),
+            },
+        }
+    }
+
+    pub async fn http_blog_index(
+        app_data: web::Data<AppData>,
+    ) -> Result<HttpResponse, HttpResponse> {
+        let articles = Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog)
+            .await
+            .unwrap();
+        let mut data = Map::new();
+        data.insert("articles".to_string(), json!(articles));
+        data.insert("base".to_string(), json!("base".to_string()));
+        let result = app_data.handlebars.render("blog_index", &data);
+        match result {
+            Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
+            Ok(html) => Ok(HttpResponse::Ok().body(html)),
+        }
+    }
+
     pub async fn http_text_search_projects(
         info: web::Query<SearchQuery>,
     ) -> Result<HttpResponse, HttpResponse> {
-        let result: Result<Vec<i32>, Error> = Project::search_projects(info.s.to_string(), info.category_id).await;
+        let result: Result<Vec<i32>, Error> =
+            Project::search_projects(info.s.to_string(), info.category_id).await;
         match result {
             Ok(projects) => Ok(HttpResponse::Ok().body(json!(projects))),
             Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
