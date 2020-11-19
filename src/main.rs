@@ -4,6 +4,7 @@ extern crate log;
 extern crate rest_macro;
 extern crate rest_macro_derive;
 extern crate slugify;
+extern crate rust_embed;
 
 #[macro_use]
 extern crate diesel_migrations;
@@ -15,9 +16,9 @@ use diesel::pg::PgConnection;
 use diesel_migrations::{embed_migrations, RunMigrationsError};
 use dotenv::dotenv;
 use handlebars::Handlebars;
+use std::collections::HashMap;
 use structopt::StructOpt;
 use tokio;
-use std::collections::HashMap;
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
@@ -27,6 +28,9 @@ fn run_migrations(connection: &PgConnection) -> Result<(), RunMigrationsError> {
     embedded_migrations::run(connection)
 }
 
+#[derive(rust_embed::RustEmbed)]
+#[folder = "./static"]
+struct Asset;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -35,23 +39,32 @@ async fn main() -> std::io::Result<()> {
     let args = Cmd::from_args();
 
     let mut handlebars = Handlebars::new();
+    let blog_index = String::from_utf8(Asset::get("blog_index.hbs").unwrap().into_owned()).unwrap();
+    let blog_detail = String::from_utf8(Asset::get("blog_detail.hbs").unwrap().into_owned()).unwrap();
+    let base = String::from_utf8(Asset::get("partials/base.hbs").unwrap().into_owned()).unwrap();
     handlebars
-        .register_template_file("blog_index", "./static/templates/blog_index.hbs")
+        .register_template_string(
+            "blog_index",
+            blog_index
+        )
         .unwrap();
     handlebars
-        .register_template_file("blog_detail", "./static/templates/blog_detail.hbs")
+        .register_template_string(
+            "blog_detail",
+            blog_detail
+        )
         .unwrap();
     handlebars
-        .register_template_file("base", "./static/templates/partials/base.hbs")
+        .register_template_string("base", base)
         .unwrap();
-    handlebars
-        .register_helper("unicode_truncate", Box::new(view_utils::unicode_truncate_helper));
+    handlebars.register_helper(
+        "unicode_truncate",
+        Box::new(view_utils::unicode_truncate_helper),
+    );
 
-    handlebars
-        .register_helper("render_markdown", Box::new(view_utils::render_markdown));
+    handlebars.register_helper("render_markdown", Box::new(view_utils::render_markdown));
 
-    handlebars
-        .register_helper("format_date", Box::new(view_utils::format_date));
+    handlebars.register_helper("format_date", Box::new(view_utils::format_date));
 
     let static_files_list = generate();
 
@@ -63,7 +76,15 @@ async fn main() -> std::io::Result<()> {
         Cmd::Publish => HandleCmd::publish().await,
         Cmd::Unpublish => HandleCmd::unpublish().await,
         Cmd::Listen { address, port } => {
-            HandleCmd::listen(address, port, &connection, run_migrations, static_files_list, handlebars).await
+            HandleCmd::listen(
+                address,
+                port,
+                &connection,
+                run_migrations,
+                static_files_list,
+                handlebars,
+            )
+            .await
         }
     }
 }
