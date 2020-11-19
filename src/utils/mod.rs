@@ -72,7 +72,7 @@ pub mod view_utils {
             .ok_or(RenderError::new("Param 0 is required for format helper."))?;
 
         let dt: String = iso_date.value().as_str().unwrap().to_string();
-        let dt_result = NaiveDateTime::parse_from_str(&dt, "%Y-%m-%d %H:%M:%S%.3f");
+        let dt_result = NaiveDateTime::parse_from_str(&dt, "%Y-%m-%dT%H:%M:%S%.6f");
 
         match dt_result {
             Err(_) => {
@@ -97,11 +97,11 @@ pub mod iso_date_format {
     use chrono::{ NaiveDateTime };
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    const FORMAT: &'static str = "%Y-%m-%d %H:%M:%S%.3f";
+    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.6f";
 
     // The signature of a serialize_with function must follow the pattern:
     //
-    //    fn serialize<S>(&T, S) -> Result<S::Ok, S::Error>
+    //    fn serialize<S>(&T, S) -> Result<S::Ok, S::Error
     //    where
     //        S: Serializer
     //
@@ -115,7 +115,7 @@ pub mod iso_date_format {
                 let s = format!("{}", d.format(FORMAT));
                 serializer.serialize_str(&s)
             }
-            None => serializer.serialize_str(""),
+            None => serializer.serialize_none()
         }
     }
 
