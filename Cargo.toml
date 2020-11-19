@@ -17,7 +17,7 @@ clap = "~2.33.0"
 tokio = { version = "0.2", features = ["full"] }
 actix-web = { version="3", features=["rust-tls"] }
 actix-files = "0.2.0"
-actix-web-static-files = { path = "../actix-web-static-files" }
+actix-web-static-files = { git = "https://github.com/ctaque/actix-web-static-files.git", branch = "22-implementation-clone-for-Resource"}
 actix-http = "2.1.0"
 actix-multipart = "0.3.0"
 actix-cors = "0.5.3"
@@ -55,4 +55,4 @@ unicode-truncate = "0.1.1"
 comrak = "0.9.0"
 
 [build-dependencies]
-actix-web-static-files = { path = "../actix-web-static-files" }
+actix-web-static-files = { git = "https://github.com/ctaque/actix-web-static-files.git", branch = "22-implementation-clone-for-Resource"}

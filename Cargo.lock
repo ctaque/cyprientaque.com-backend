@@ -477,6 +477,7 @@ dependencies = [
 [[package]]
 name = "actix-web-static-files"
 version = "3.0.1"
+source = "git+https://github.com/ctaque/actix-web-static-files.git?branch=22-implementation-clone-for-Resource#befce7afa2fb4d9837cd85713c42a0eb8e557aed"
 dependencies = [
  "actix-service",
  "actix-web 3.2.0",
