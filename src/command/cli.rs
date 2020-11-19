@@ -26,8 +26,7 @@ use structopt::StructOpt;
 use url::Url;
 use actix_web_static_files;
 use std::collections::HashMap;
-
-include!(concat!(env!("OUT_DIR"), "/generated.rs"));
+use actix_web_static_files::Resource;
 
 arg_enum! {
     #[derive(Debug)]
@@ -381,6 +380,7 @@ impl HandleCmd {
         port: String,
         connection: &PgConnection,
         run_migrations: RunMigrationCb,
+        generated_static_files_list: HashMap<&'static str, Resource>,
         hb: Handlebars<'static>,
     ) -> std::io::Result<()> {
         let migration_run = run_migrations(&connection);
@@ -412,12 +412,11 @@ impl HandleCmd {
         let app_data = Data::new(AppData { handlebars: hb });
 
         let server = HttpServer::new(move || {
-            let generated = generate();
             App::new()
                 .wrap(auth_middleware::Authentication)
                 .wrap(Logger::default())
                 .wrap(
-                    Cors::new() // <- Construct CORS middleware builder
+                    Cors::default() // <- Construct CORS middleware builder
                         .allowed_origin(match is_prod {
                             true => "https://www.cyprientaque.com",
                             false => "http://localhost:3000",
@@ -429,11 +428,10 @@ impl HandleCmd {
                             http::header::CONTENT_TYPE,
                         ])
                         .max_age(3600)
-                        .finish(),
                 )
                 .service(actix_web_static_files::ResourceFiles::new(
                     "/static",
-                    generated
+                    generated_static_files_list.clone()
                 ))
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .app_data(app_data.clone())

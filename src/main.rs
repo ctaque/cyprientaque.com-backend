@@ -17,12 +17,16 @@ use dotenv::dotenv;
 use handlebars::Handlebars;
 use structopt::StructOpt;
 use tokio;
+use std::collections::HashMap;
+
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 embed_migrations!();
 
 fn run_migrations(connection: &PgConnection) -> Result<(), RunMigrationsError> {
     embedded_migrations::run(connection)
 }
+
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -49,6 +53,8 @@ async fn main() -> std::io::Result<()> {
     handlebars
         .register_helper("format_date", Box::new(view_utils::format_date));
 
+    let static_files_list = generate();
+
     match args {
         Cmd::List => HandleCmd::list().await,
         Cmd::Create => HandleCmd::create().await,
@@ -57,7 +63,7 @@ async fn main() -> std::io::Result<()> {
         Cmd::Publish => HandleCmd::publish().await,
         Cmd::Unpublish => HandleCmd::unpublish().await,
         Cmd::Listen { address, port } => {
-            HandleCmd::listen(address, port, &connection, run_migrations, handlebars).await
+            HandleCmd::listen(address, port, &connection, run_migrations, static_files_list, handlebars).await
         }
     }
 }

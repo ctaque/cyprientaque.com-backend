@@ -15,12 +15,12 @@ structopt = { version = "0.3.13" }
 dialoguer = "0.6.2"
 clap = "~2.33.0"
 tokio = { version = "0.2", features = ["full"] }
-actix-web = { version="2", features=["rust-tls"] }
+actix-web = { version="3", features=["rust-tls"] }
 actix-files = "0.2.0"
-actix-web-static-files = "2.0"
-actix-http = "2.0.0-alpha.4"
-actix-multipart = "0.2.0"
-actix-cors = "0.2.0-alpha.1"
+actix-web-static-files = { path = "../actix-web-static-files" }
+actix-http = "2.1.0"
+actix-multipart = "0.3.0"
+actix-cors = "0.5.3"
 actix-rt = "1.1.1"
 chrono = { version = "0.4", features = ["serde"] }
 mime = "0.3.16"
@@ -55,4 +55,4 @@ unicode-truncate = "0.1.1"
 comrak = "0.9.0"
 
 [build-dependencies]
-actix-web-static-files = "2.0"
+actix-web-static-files = { path = "../actix-web-static-files" }

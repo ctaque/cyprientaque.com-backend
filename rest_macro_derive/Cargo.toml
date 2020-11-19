@@ -10,7 +10,7 @@ edition = "2018"
 syn = { version = "1.0.44", features = ["parsing"]}
 quote = "1.0"
 rest_macro = { version = "0.1.0", path = "../rest_macro" }
-actix-web = { version="2", features=["rust-tls"] }
+actix-web = { version="3", features=["rust-tls"] }
 darling = "0.10.2"
 proc-macro2 = "1.0.24"
 
