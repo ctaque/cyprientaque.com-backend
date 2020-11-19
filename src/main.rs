@@ -37,11 +37,10 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let connection = establish_connection();
     let args = Cmd::from_args();
-
     let mut handlebars = Handlebars::new();
-    let blog_index = String::from_utf8(Asset::get("blog_index.hbs").unwrap().into_owned()).unwrap();
-    let blog_detail = String::from_utf8(Asset::get("blog_detail.hbs").unwrap().into_owned()).unwrap();
-    let base = String::from_utf8(Asset::get("partials/base.hbs").unwrap().into_owned()).unwrap();
+    let blog_index = String::from_utf8(Asset::get("templates/blog_index.hbs").unwrap().into_owned()).unwrap();
+    let blog_detail = String::from_utf8(Asset::get("templates/blog_detail.hbs").unwrap().into_owned()).unwrap();
+    let base = String::from_utf8(Asset::get("templates/partials/base.hbs").unwrap().into_owned()).unwrap();
     handlebars
         .register_template_string(
             "blog_index",
