@@ -24,9 +24,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use structopt::StructOpt;
 use url::Url;
-use actix_web_static_files;
-use std::collections::HashMap;
-use actix_web_static_files::Resource;
 
 arg_enum! {
     #[derive(Debug)]
@@ -68,6 +65,8 @@ pub enum Cmd {
 pub struct HandleCmd;
 
 type RunMigrationCb = fn(connection: &PgConnection) -> Result<(), RunMigrationsError>;
+
+type StaticFiles = fn(path: web::Path<String>) -> HttpResponse;
 
 pub struct AppData {
     pub handlebars: Handlebars<'static>,
@@ -380,8 +379,8 @@ impl HandleCmd {
         port: String,
         connection: &PgConnection,
         run_migrations: RunMigrationCb,
-        generated_static_files_list: HashMap<&'static str, Resource>,
         hb: Handlebars<'static>,
+        static_files: StaticFiles,
     ) -> std::io::Result<()> {
         let migration_run = run_migrations(&connection);
         match migration_run {
@@ -429,10 +428,7 @@ impl HandleCmd {
                         ])
                         .max_age(3600)
                 )
-                .service(actix_web_static_files::ResourceFiles::new(
-                    "/static",
-                    generated_static_files_list.clone()
-                ))
+                .service(web::resource("/static/{_:.*}", ).route(web::get().to(static_files)))
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .app_data(app_data.clone())
                 .route("/blog/{slug}", web::get().to(Project::http_blog_detail))

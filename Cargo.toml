@@ -3,7 +3,6 @@ name = "ctprods"
 version = "0.1.0"
 authors = ["Cyprien Taque <cyprien.taque@gmail.com>"]
 edition = "2018"
-build = "build.rs"
 
 [target.x86_64-unknown-linux-gnu]
 linker = "x86_64-linux-gnu-gcc"
@@ -17,7 +16,6 @@ clap = "~2.33.0"
 tokio = { version = "0.2", features = ["full"] }
 actix-web = { version="3", features=["rust-tls"] }
 actix-files = "0.4.0"
-actix-web-static-files = { git = "https://github.com/ctaque/actix-web-static-files.git", branch = "master"}
 actix-http = "2.1.0"
 actix-multipart = "0.3.0"
 actix-cors = "0.5.3"
@@ -54,6 +52,3 @@ handlebars = "3.5.1"
 unicode-truncate = "0.1.1"
 comrak = "0.9.0"
 rust-embed = "5.6.0"
-
-[build-dependencies]
-actix-web-static-files = { git = "https://github.com/ctaque/actix-web-static-files.git", branch = "master"}

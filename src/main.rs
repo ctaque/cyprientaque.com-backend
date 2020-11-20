@@ -3,8 +3,8 @@ extern crate diesel;
 extern crate log;
 extern crate rest_macro;
 extern crate rest_macro_derive;
-extern crate slugify;
 extern crate rust_embed;
+extern crate slugify;
 
 #[macro_use]
 extern crate diesel_migrations;
@@ -12,15 +12,15 @@ extern crate diesel_migrations;
 use self::ctprods::command::cli::{Cmd, HandleCmd};
 use self::ctprods::establish_connection;
 use self::ctprods::utils::view_utils;
+use actix_web::{body::Body, web, HttpResponse};
 use diesel::pg::PgConnection;
 use diesel_migrations::{embed_migrations, RunMigrationsError};
 use dotenv::dotenv;
 use handlebars::Handlebars;
-use std::collections::HashMap;
+use mime_guess::from_path;
+use std::borrow::Cow;
 use structopt::StructOpt;
 use tokio;
-
-include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 embed_migrations!();
 
@@ -30,7 +30,26 @@ fn run_migrations(connection: &PgConnection) -> Result<(), RunMigrationsError> {
 
 #[derive(rust_embed::RustEmbed)]
 #[folder = "./static"]
-struct Asset;
+pub struct Asset;
+
+fn static_files(path: web::Path<String>) -> HttpResponse {
+    match Asset::get(&path.0) {
+        Some(content) => {
+            let body: Body = match content {
+                Cow::Borrowed(bytes) => bytes.into(),
+                Cow::Owned(bytes) => bytes.into(),
+            };
+            HttpResponse::Ok()
+                .content_type(from_path(&path.0).first_or_octet_stream().as_ref())
+                .body(body)
+        }
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+
+fn get_template_string(path: &str) -> String {
+    String::from_utf8(Asset::get(path).unwrap().into_owned()).unwrap()
+}
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -38,23 +57,20 @@ async fn main() -> std::io::Result<()> {
     let connection = establish_connection();
     let args = Cmd::from_args();
     let mut handlebars = Handlebars::new();
-    let blog_index = String::from_utf8(Asset::get("templates/blog_index.hbs").unwrap().into_owned()).unwrap();
-    let blog_detail = String::from_utf8(Asset::get("templates/blog_detail.hbs").unwrap().into_owned()).unwrap();
-    let base = String::from_utf8(Asset::get("templates/partials/base.hbs").unwrap().into_owned()).unwrap();
     handlebars
         .register_template_string(
             "blog_index",
-            blog_index
+            get_template_string("templates/blog_index.hbs"),
         )
         .unwrap();
     handlebars
         .register_template_string(
             "blog_detail",
-            blog_detail
+            get_template_string("templates/blog_detail.hbs"),
         )
         .unwrap();
     handlebars
-        .register_template_string("base", base)
+        .register_template_string("base", get_template_string("templates/partials/base.hbs"))
         .unwrap();
     handlebars.register_helper(
         "unicode_truncate",
@@ -64,8 +80,6 @@ async fn main() -> std::io::Result<()> {
     handlebars.register_helper("render_markdown", Box::new(view_utils::render_markdown));
 
     handlebars.register_helper("format_date", Box::new(view_utils::format_date));
-
-    let static_files_list = generate();
 
     match args {
         Cmd::List => HandleCmd::list().await,
@@ -80,8 +94,8 @@ async fn main() -> std::io::Result<()> {
                 port,
                 &connection,
                 run_migrations,
-                static_files_list,
                 handlebars,
+                static_files,
             )
             .await
         }
