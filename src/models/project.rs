@@ -1,6 +1,6 @@
 use crate::command::cli::AppData;
 use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User};
-use actix_web::{web, HttpResponse};
+use actix_web::{http, web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
 use postgres::{error::Error, Row};
@@ -427,16 +427,21 @@ impl Project {
         Ok(self)
     }
 
-    pub async fn get_by_slug(slug: String) -> Result<Option<Project>, Error> {
-        let row = Self::db()
+    pub async fn get_by_slug(slug: String) -> Option<Project> {
+        let result_row = Self::db()
             .await
             .query_one("select * from projects where slug = $1 and published = true and deleted_at is null", &[&slug])
-            .await?;
-        let project = Self::new(&row);
-        let project = project.attach_images().await?;
-        let project = project.attach_user().await?;
-        let project = project.attach_category().await?;
-        Ok(Some(project))
+            .await;
+        match result_row {
+            Ok(row) => {
+                let project = Self::new(&row);
+                let project = project.attach_images().await.unwrap();
+                let project = project.attach_user().await.unwrap();
+                let project = project.attach_category().await.unwrap();
+                Some(project)
+            },
+            _ => None,
+        }
     }
 
     pub async fn http_get_published_projects() -> Result<HttpResponse, HttpResponse> {
@@ -532,22 +537,19 @@ impl Project {
         app_data: web::Data<AppData>,
     ) -> Result<HttpResponse, HttpResponse> {
         println!("Reached HEre");
-        let result_article = Self::get_by_slug(info.slug.clone()).await;
-        match result_article {
-            Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
-            Ok(article_opt) => match article_opt {
-                Some(article) => {
-                    let mut data = Map::new();
-                    data.insert("article".to_string(), json!(article));
-                    data.insert("base".to_string(), json!("base".to_string()));
-                    let result = app_data.handlebars.render("blog_detail", &data);
-                    match result {
-                        Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
-                        Ok(html) => Ok(HttpResponse::Ok().body(html)),
-                    }
+        let opt_article = Self::get_by_slug(info.slug.clone()).await;
+        match opt_article {
+            None => Err(HttpResponse::Found().header(http::header::LOCATION, "/blog").finish().into_body()),
+            Some(article) => {
+                let mut data = Map::new();
+                data.insert("article".to_string(), json!(article));
+                data.insert("base".to_string(), json!("base".to_string()));
+                let result = app_data.handlebars.render("blog_detail", &data);
+                match result {
+                    Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
+                    Ok(html) => Ok(HttpResponse::Ok().body(html)),
                 }
-                None => Err(HttpResponse::NotFound().body("Not found")),
-            },
+            }
         }
     }
 
