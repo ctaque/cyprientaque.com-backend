@@ -437,9 +437,6 @@ nav.desktop{
         h1, h2, h3, h4, h5, h6{
             color: rgba(255, 255, 255, 0.9);
         }
-        p{
-            color: rgba(255, 255, 255, 0.8);
-        }
         ul > li {
             color: rgba(255, 255, 255, 0.8);
             text-indent: -5px;
@@ -468,6 +465,15 @@ nav.desktop{
             margin: 0;
             padding: 0.1em 1.4em;
         }
+        p{
+            color: rgba(255, 255, 255, 0.9);
+            text-align: justify;
+            img{
+                max-width: 100%;
+                border-radius: 5px;
+            }
+        }
+
     }
     .footer{
         color: rgba(255, 255, 255, 0.57);

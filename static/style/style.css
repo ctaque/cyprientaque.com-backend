@@ -333,8 +333,6 @@ nav.desktop {
               margin: .1em; } }
   .article .content h1, .article .content h2, .article .content h3, .article .content h4, .article .content h5, .article .content h6 {
     color: rgba(255, 255, 255, 0.9); }
-  .article .content p {
-    color: rgba(255, 255, 255, 0.8); }
   .article .content ul > li {
     color: rgba(255, 255, 255, 0.8);
     text-indent: -5px; }
@@ -358,6 +356,12 @@ nav.desktop {
     border-radius: 5px;
     margin: 0;
     padding: 0.1em 1.4em; }
+  .article .content p {
+    color: rgba(255, 255, 255, 0.9);
+    text-align: justify; }
+    .article .content p img {
+      max-width: 100%;
+      border-radius: 5px; }
   .article .footer {
     color: rgba(255, 255, 255, 0.57);
     font-size: 80%; }
