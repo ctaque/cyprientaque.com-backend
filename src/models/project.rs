@@ -20,7 +20,7 @@ use std::env::{temp_dir, var};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::process::Command;
-use crate::utils::iso_date_format;
+use crate::utils::{utils::Sorter, iso_date_format };
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -556,10 +556,11 @@ impl Project {
     pub async fn http_blog_index(
         app_data: web::Data<AppData>,
     ) -> Result<HttpResponse, HttpResponse> {
-        let articles = Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog)
+        let mut articles = Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog)
             .await
             .unwrap();
         let mut data = Map::new();
+        articles.sort_by(Sorter::CreatedAt.project());
         data.insert("articles".to_string(), json!(articles));
         data.insert("base".to_string(), json!("base".to_string()));
         let result = app_data.handlebars.render("blog_index", &data);

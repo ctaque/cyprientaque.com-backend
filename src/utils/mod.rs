@@ -1,10 +1,43 @@
 pub mod token_utils;
-
 pub mod utils {
     use unicode_truncate::UnicodeTruncateStr;
+    use crate::models::{ Project, ProjectCategory, ProjectImage};
+
     pub fn unicode_truncate(input: String, len: u64) -> String {
         let (rv, _w) = input.as_str().unicode_truncate(len as usize);
         rv.to_string()
+    }
+
+
+    #[derive(Clone)]
+    pub enum Sorter{
+        CreatedAt,
+        UpdatedAt,
+        DeletedAt,
+    }
+
+    impl Sorter{
+        pub fn project(self) -> Box<dyn FnMut(&Project, &Project) -> std::cmp::Ordering>{
+            match self{
+                Sorter::CreatedAt => Box::new(| a, b | b.created_at.cmp(&a.created_at)),
+                Sorter::UpdatedAt => Box::new(| a, b | b.updated_at.cmp(&a.updated_at)),
+                Sorter::DeletedAt => Box::new(| a, b | b.deleted_at.cmp(&a.deleted_at)),
+            }
+        }
+        pub fn project_category(self) -> Box<dyn FnMut(&ProjectCategory, &ProjectCategory) -> std::cmp::Ordering>{
+            match self{
+                Sorter::CreatedAt => Box::new(| a, b | b.created_at.cmp(&a.created_at)),
+                Sorter::UpdatedAt => Box::new(| a, b | b.updated_at.cmp(&a.updated_at)),
+                Sorter::DeletedAt => Box::new(| a, b | b.deleted_at.cmp(&a.deleted_at)),
+            }
+        }
+        pub fn project_image(self) -> Box<dyn FnMut(&ProjectImage, &ProjectImage) -> std::cmp::Ordering>{
+            match self{
+                Sorter::CreatedAt => Box::new(| a, b | b.created_at.cmp(&a.created_at)),
+                Sorter::UpdatedAt => Box::new(| a, b | b.updated_at.cmp(&a.updated_at)),
+                Sorter::DeletedAt => Box::new(| a, b | b.deleted_at.cmp(&a.deleted_at)),
+            }
+        }
     }
 }
 

@@ -20,20 +20,20 @@ use uuid::Uuid;
 
 #[derive(serde::Serialize, Debug, Clone, serde::Deserialize, HttpAll, HttpFind, HttpDelete)]
 pub struct ProjectImage {
-    id: i32,
-    w1500_keyname: String,
-    w350_keyname: String,
-    w1500_object_url: String,
-    original_object_url: Option<String>,
-    w350_object_url: String,
-    primary: bool,
-    views_count: i32,
-    project_image_category_id: i32,
-    category: Option<ProjectImageCategory>,
-    project_id: i32,
-    created_at: Option<NaiveDateTime>,
-    updated_at: Option<NaiveDateTime>,
-    deleted_at: Option<NaiveDateTime>,
+    pub id: i32,
+    pub w1500_keyname: String,
+    pub w350_keyname: String,
+    pub w1500_object_url: String,
+    pub original_object_url: Option<String>,
+    pub w350_object_url: String,
+    pub primary: bool,
+    pub views_count: i32,
+    pub project_image_category_id: i32,
+    pub category: Option<ProjectImageCategory>,
+    pub project_id: i32,
+    pub created_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
 #[async_trait]
