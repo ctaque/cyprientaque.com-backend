@@ -562,6 +562,7 @@ impl Project {
                 .finish()
                 .into_body()),
             Some(article) => {
+                let article = article.add_view().await.unwrap();
                 let mut data = Map::new();
                 data.insert("article".to_string(), json!(article));
                 data.insert("base".to_string(), json!("base".to_string()));
