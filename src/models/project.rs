@@ -536,7 +536,6 @@ impl Project {
         info: web::Path<HttpBlogDetailSlug>,
         app_data: web::Data<AppData>,
     ) -> Result<HttpResponse, HttpResponse> {
-        println!("Reached HEre");
         let opt_article = Self::get_by_slug(info.slug.clone()).await;
         match opt_article {
             None => Err(HttpResponse::Found().header(http::header::LOCATION, "/blog").finish().into_body()),
