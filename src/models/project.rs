@@ -1,5 +1,6 @@
 use crate::command::cli::AppData;
 use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User};
+use crate::utils::{iso_date_format, utils::Sorter};
 use actix_web::{http, web, HttpResponse};
 use async_trait::async_trait;
 use chrono::naive::NaiveDateTime;
@@ -11,16 +12,12 @@ use rest_macro::{
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
 use serde::{Deserialize, Serialize};
-use serde_json::{
-    json,
-    value::{Map},
-};
+use serde_json::{json, value::Map};
 use slugify::slugify;
 use std::env::{temp_dir, var};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::process::Command;
-use crate::utils::{utils::Sorter, iso_date_format };
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -439,7 +436,7 @@ impl Project {
                 let project = project.attach_user().await.unwrap();
                 let project = project.attach_category().await.unwrap();
                 Some(project)
-            },
+            }
             _ => None,
         }
     }
@@ -470,13 +467,24 @@ impl Project {
         }
     }
 
+    pub async fn add_view(mut self) -> Result<Project, Error> {
+        Self::db()
+            .await
+            .query_one(
+                "UPDATE projects SET views_count = views_count + 1 WHERE id = $1 RETURNING *",
+                &[&self.id],
+            )
+            .await?;
+        self.views_count = self.views_count + 1;
+        Ok(self)
+    }
+
     pub async fn http_add_view(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
 
         match result {
-            Ok(mut project) => {
-                project.views_count = project.views_count + 1;
-                let result = project.update().await;
+            Ok(project) => {
+                let result = project.add_view().await;
                 match result {
                     Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                     Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
@@ -486,12 +494,23 @@ impl Project {
         }
     }
 
+    pub async fn add_like(mut self) -> Result<Project, Error> {
+        Self::db()
+            .await
+            .query_one(
+                "UPDATE projects SET likes_count = likes_count + 1 WHERE id = $1 RETURNING *",
+                &[&self.id],
+            )
+            .await?;
+        self.likes_count = self.likes_count + 1;
+        Ok(self)
+    }
+
     pub async fn http_add_like(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
         match result {
-            Ok(mut project) => {
-                project.likes_count = project.likes_count + 1;
-                let result = project.update().await;
+            Ok(project) => {
+                let result = project.add_like().await;
                 match result {
                     Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                     Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
@@ -538,7 +557,10 @@ impl Project {
     ) -> Result<HttpResponse, HttpResponse> {
         let opt_article = Self::get_by_slug(info.slug.clone()).await;
         match opt_article {
-            None => Err(HttpResponse::Found().header(http::header::LOCATION, "/blog").finish().into_body()),
+            None => Err(HttpResponse::Found()
+                .header(http::header::LOCATION, "/blog")
+                .finish()
+                .into_body()),
             Some(article) => {
                 let mut data = Map::new();
                 data.insert("article".to_string(), json!(article));
