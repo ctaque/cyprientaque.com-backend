@@ -605,10 +605,12 @@ impl Project {
 
     pub fn pretty_print(self) -> () {
         println!(
-            "Project id: {}, Title: {}, published: {}, created_at: {}, updated_at: {}, deleted_at: {}",
+            "Project id: {}, Title: {}, published: {}, views_count: {}, likes_count: {}, created_at: {}, updated_at: {}, deleted_at: {}",
             self.id,
             self.title,
             self.published,
+            self.views_count,
+            self.likes_count,
             self.created_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
             self.updated_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
             self.deleted_at.and_then(|date| Some(date.to_string())).unwrap_or("null".to_string()),
