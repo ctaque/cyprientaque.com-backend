@@ -124,7 +124,7 @@ impl Model<Project> for Project {
     {
         let rows: Vec<Row> = Self::db()
             .await
-            .query("select * from projects where deleted_at is null;", &[])
+            .query("select * from projects where deleted_at is null order by id;", &[])
             .await?;
         let mut projects = Vec::new();
         for row in rows {
