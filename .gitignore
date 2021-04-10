@@ -1,3 +1,4 @@
 /target
 /db.sql
+/rest_macro_derive/target
 .env
