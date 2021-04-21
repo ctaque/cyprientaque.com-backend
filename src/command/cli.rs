@@ -60,6 +60,8 @@ pub enum Cmd {
         #[structopt(short = "f", long = "file")]
         file: String,
     },
+    #[structopt(name = "change-title")]
+    ChangeTitle,
 }
 
 pub struct HandleCmd;
@@ -315,6 +317,47 @@ impl HandleCmd {
         Ok(())
     }
 
+    pub async fn change_title() -> std::io::Result<()> {
+        let projects: Vec<Project> = Project::all().await.unwrap();
+        let selectified_projects: Vec<String> = Project::selectify(&projects);
+        let selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Choisir un projet")
+            .default(0)
+            .paged(true)
+            .items(&selectified_projects[..])
+            .interact()
+            .unwrap();
+        let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
+
+        let new_title = Input::<String>::new()
+                         .with_prompt("New title?")
+                         .with_initial_text(&selected_project.title)
+                         .interact().unwrap();
+        let slug: String = slugify!(&new_title);
+        let found = Project::get_by_slug(slug.clone()).await;
+        match found {
+            Some(p) => {
+                if &p.id != &selected_project.id {
+                    return Err(
+                        std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            String::from("Slug already used")
+                        )
+                    )
+                } else {
+                    println!("Slug unchanged");
+                    return Ok(())
+                }
+            }
+            None =>  {
+                selected_project.title = new_title;
+                selected_project.slug = slug;
+                selected_project.update().await.expect("Couldn't save project :/");
+                println!("Project saved !");
+                return Ok(())
+            }
+        }
+    }
     pub async fn publish() -> std::io::Result<()> {
         let projects: Vec<Project> = Project::all().await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
