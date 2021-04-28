@@ -2,7 +2,7 @@ table! {
     comments (id) {
         id -> Int4,
         content -> Text,
-        user_id -> Int4,
+        user_id -> Nullable<Int4>,
         project_id -> Int4,
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
@@ -106,6 +106,7 @@ table! {
         sketchfab_model_number -> Nullable<Varchar>,
         is_pro -> Bool,
         bitbucket_project_key -> Nullable<Varchar>,
+        tags -> Nullable<Varchar>,
     }
 }
 
@@ -140,7 +141,6 @@ table! {
 }
 
 joinable!(comments -> projects (project_id));
-joinable!(comments -> users (user_id));
 joinable!(profile_user_images -> users (user_id));
 joinable!(project_images -> project_image_categories (project_image_category_id));
 joinable!(project_images -> projects (project_id));
