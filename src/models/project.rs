@@ -368,6 +368,39 @@ impl Project {
             .collect::<String>();
         Ok(tags)
     }
+    pub async fn get_projects_by_tag(tag: String, category_id: i32) -> Result<Vec<Project>, Error> {
+        let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE '%$1%'");
+        if category_id != 0 {
+            q.push_str(" and category_id  = $2");
+            let rows: Vec<Row> = Self::db()
+                .await
+                .query(q.as_str(), &[&tag, &category_id])
+                .await?;
+            let mut out = Vec::new();
+            for row in rows {
+                let p = Project::new(&row);
+                let p = p.attach_category().await?;
+                let p = p.attach_user().await?;
+                let p = p.attach_images().await?;
+                out.push(p);
+            }
+            Ok(out)
+        } else {
+            let rows: Vec<Row> = Self::db()
+                .await
+                .query(q.as_str(), &[&tag])
+                .await?;
+            let mut out = Vec::new();
+            for row in rows {
+                let p = Project::new(&row);
+                let p = p.attach_category().await?;
+                let p = p.attach_user().await?;
+                let p = p.attach_images().await?;
+                out.push(p);
+            }
+            Ok(out)
+        }
+    }
     pub async fn publish(self) -> Result<Project, Error> {
         let row = Self::db()
             .await
