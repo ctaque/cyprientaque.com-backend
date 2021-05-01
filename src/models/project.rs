@@ -18,6 +18,7 @@ use std::env::{temp_dir, var};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::process::Command;
+use std::collections::HashSet;
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -355,6 +356,18 @@ impl Project {
         }
     }
 
+    pub async fn get_uniq_tags(self) -> Result<String, Error> {
+        let rows = Self::db()
+            .await
+            .query("select tags from projects where tags <> ''", &[])
+            .await?;
+        let tags = rows.iter()
+            .map::<String, _>(| row | row.get("tags"))
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect::<String>();
+        Ok(tags)
+    }
     pub async fn publish(self) -> Result<Project, Error> {
         let row = Self::db()
             .await
