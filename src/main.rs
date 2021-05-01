@@ -89,6 +89,7 @@ async fn main() -> std::io::Result<()> {
         Cmd::Publish => HandleCmd::publish().await,
         Cmd::Unpublish => HandleCmd::unpublish().await,
         Cmd::ChangeTitle => HandleCmd::change_title().await,
+        Cmd::EditTags => HandleCmd::edit_tags().await,
         Cmd::Listen { address, port } => {
             HandleCmd::listen(
                 address,

@@ -106,7 +106,7 @@ table! {
         sketchfab_model_number -> Nullable<Varchar>,
         is_pro -> Bool,
         bitbucket_project_key -> Nullable<Varchar>,
-        tags -> Nullable<Varchar>,
+        tags -> Varchar,
     }
 }
 

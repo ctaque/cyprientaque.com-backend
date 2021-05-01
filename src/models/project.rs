@@ -42,6 +42,7 @@ pub struct Project {
     pub bitbucket_project_key: Option<String>,
     pub published: bool,
     pub primary_image: Option<ProjectImage>,
+    pub tags: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -153,7 +154,8 @@ impl Model<Project> for Project {
                 updated_at = CURRENT_TIMESTAMP,
                 sketchfab_model_number = $10,
                 user_id = $11,
-                published = $12
+                published = $12,
+                tags = $13
                 where id = $1 returning *;",
                 &[
                     &self.id,
@@ -168,6 +170,7 @@ impl Model<Project> for Project {
                     &self.sketchfab_model_number,
                     &self.user_id,
                     &self.published,
+                    &self.tags,
                 ],
             )
             .await?;
@@ -242,6 +245,7 @@ impl Project {
             images: None,
             user: None,
             primary_image: None,
+            tags: row.get("tags"),
         }
     }
 

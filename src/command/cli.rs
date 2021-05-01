@@ -62,6 +62,8 @@ pub enum Cmd {
     },
     #[structopt(name = "change-title")]
     ChangeTitle,
+    #[structopt(name = "edit-tags")]
+    EditTags,
 }
 
 pub struct HandleCmd;
@@ -357,6 +359,27 @@ impl HandleCmd {
                 return Ok(())
             }
         }
+    }
+
+    pub async fn edit_tags() -> std::io::Result<()> {
+        let projects: Vec<Project> = Project::all().await.unwrap();
+        let selectified_projects: Vec<String> = Project::selectify(&projects);
+        let selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Choisir un projet")
+            .default(0)
+            .paged(true)
+            .items(&selectified_projects[..])
+            .interact()
+            .unwrap();
+        let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
+
+        let new_tags = Input::<String>::new()
+                         .with_prompt("New tags?")
+                         .with_initial_text(&selected_project.tags)
+                         .interact().unwrap();
+        selected_project.tags = new_tags;
+        selected_project.update().await.expect("Couldn't save project :/");
+        return Ok(())
     }
     pub async fn publish() -> std::io::Result<()> {
         let projects: Vec<Project> = Project::all().await.unwrap();
