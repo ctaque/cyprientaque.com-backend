@@ -356,7 +356,7 @@ impl Project {
         }
     }
 
-    pub async fn get_uniq_tags(self) -> Result<String, Error> {
+    pub async fn get_uniq_tags() -> Result<Vec<String>, Error> {
         let rows = Self::db()
             .await
             .query("select tags from projects where tags <> ''", &[])
@@ -365,7 +365,10 @@ impl Project {
             .map::<String, _>(| row | row.get("tags"))
             .collect::<HashSet<_>>()
             .into_iter()
-            .collect::<String>();
+            .collect::<String>()
+            .split(",")
+            .map(|current| current.to_string())
+            .collect();
         Ok(tags)
     }
     pub async fn get_projects_by_tag(tag: String, category_id: i32) -> Result<Vec<Project>, Error> {
@@ -631,9 +634,12 @@ impl Project {
         let mut articles = Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog)
             .await
             .unwrap();
+        let tags = Self::get_uniq_tags().await.unwrap();
         let mut data = Map::new();
+
         articles.sort_by(Sorter::CreatedAt.project());
         data.insert("articles".to_string(), json!(articles));
+        data.insert("tags".to_string(), json!(tags));
         data.insert("base".to_string(), json!("base".to_string()));
         let result = app_data.handlebars.render("blog_index", &data);
         match result {
