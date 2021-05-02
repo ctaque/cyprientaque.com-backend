@@ -367,10 +367,10 @@ impl Project {
         }
     }
 
-    pub async fn get_uniq_tags() -> Result<Vec<String>, Error> {
+    pub async fn get_uniq_tags(category_id: i32) -> Result<Vec<String>, Error> {
         let rows = Self::db()
             .await
-            .query("select tags from projects where tags <> ''", &[])
+            .query("select tags from projects where tags <> '' and category_id = $1", &[&category_id])
             .await?;
         let mut tags: Vec<String> = rows.iter()
             .map::<String, _>(| row | row.get("tags"))
@@ -655,7 +655,7 @@ impl Project {
             Some(tag) =>  Project::get_projects_by_tag(tag, ProjectCategoryHardcoded::Blog.value()).await.unwrap(),
             None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog).await.unwrap()
         };
-        let tags = Self::get_uniq_tags().await.unwrap();
+        let tags = Self::get_uniq_tags(ProjectCategoryHardcoded::Blog.value()).await.unwrap();
         let tags = tags.into_iter()
         .map::<TagActive, _>(|current| -> TagActive {
             TagActive {
