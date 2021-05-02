@@ -378,7 +378,7 @@ impl Project {
         Ok(tags)
     }
     pub async fn get_projects_by_tag(tag: String, category_id: i32) -> Result<Vec<Project>, Error> {
-        let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE CONCAT('%', $1, '%')");
+        let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE CONCAT('%', $1::text, '%')");
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
             let rows: Vec<Row> = Self::db()
@@ -638,7 +638,6 @@ impl Project {
         app_data: web::Data<AppData>,
         query: web::Query<BlogIndexQuery>
     ) -> Result<HttpResponse, HttpResponse> {
-
         let mut articles = match query.tag.clone() {
             Some(tag) =>  Project::get_projects_by_tag(tag, ProjectCategoryHardcoded::Blog.value()).await.unwrap(),
             None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog).await.unwrap()
