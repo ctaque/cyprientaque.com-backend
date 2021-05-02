@@ -675,7 +675,6 @@ impl Project {
         data.insert("tags".to_string(), json!(tags));
         data.insert("current_tag".to_string(), json!(query.tag.clone()));
         data.insert("base".to_string(), json!("base".to_string()));
-        println!("{:#?}", &data);
         let result = app_data.handlebars.render("blog_index", &data);
         match result {
             Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
