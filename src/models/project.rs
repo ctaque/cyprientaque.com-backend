@@ -228,6 +228,11 @@ pub struct HttpBlogDetailSlug {
 pub struct BlogIndexQuery{
     tag: Option<String>
 }
+#[derive(Serialize)]
+pub struct TagActive {
+    tag: String,
+    active: bool,
+}
 
 
 impl Project {
@@ -367,14 +372,22 @@ impl Project {
             .await
             .query("select tags from projects where tags <> ''", &[])
             .await?;
-        let tags = rows.iter()
+        let mut tags: Vec<String> = rows.iter()
             .map::<String, _>(| row | row.get("tags"))
+            .collect::<Vec<String>>()
+            .join(",")
+            .split(',')
             .collect::<HashSet<_>>()
             .into_iter()
-            .collect::<String>()
+            .map(|x| x.to_owned())
+            .collect::<Vec<String>>()
+            .join(",")
             .split(",")
             .map(|current| current.to_string())
-            .collect();
+            .collect::<Vec<String>>();
+
+        tags.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+
         Ok(tags)
     }
     pub async fn get_projects_by_tag(tag: String, category_id: i32) -> Result<Vec<Project>, Error> {
@@ -643,12 +656,26 @@ impl Project {
             None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog).await.unwrap()
         };
         let tags = Self::get_uniq_tags().await.unwrap();
+        let tags = tags.into_iter()
+        .map::<TagActive, _>(|current| -> TagActive {
+            TagActive {
+                tag: current.clone(),
+                active: if let Some(from_query) = query.tag.clone() {
+                    from_query == current
+                } else {
+                    false
+                }
+            }
+        })
+        .collect::<Vec<TagActive>>();
         let mut data = Map::new();
 
         articles.sort_by(Sorter::CreatedAt.project());
         data.insert("articles".to_string(), json!(articles));
         data.insert("tags".to_string(), json!(tags));
+        data.insert("current_tag".to_string(), json!(query.tag.clone()));
         data.insert("base".to_string(), json!("base".to_string()));
+        println!("{:#?}", &data);
         let result = app_data.handlebars.render("blog_index", &data);
         match result {
             Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),

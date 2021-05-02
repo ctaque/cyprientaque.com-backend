@@ -1,5 +1,13 @@
 
 {{#*inline "page"}}
+<h3>Tags</h3>
+<div class="tags-list">
+<a href="/blog" class="tag {{#if current_tag }} {{else}}active{{/if}}">All</a>
+{{#each tags}}
+<a href="/blog?tag={{this.tag}}" class="tag {{#if this.active}}active{{/if}}">{{this.tag}}</a>
+{{/each}}
+</div>
+{{#if current_tag}}<h1>active</h1>{{/if}}
 <div class="articles-list--with-banner">
     <div class="articles-list">
         {{#each articles}}

@@ -520,3 +520,20 @@ nav.desktop{
         }
     }
 }
+
+.tags-list{
+    display: flex;
+    flex-wrap: wrap;
+    .tag{
+        margin: .2rem;
+        padding: .25rem .5rem;
+        font-size: 1.3rem;
+        background-color: #515151;
+        color:rgba(255, 255, 255, 0.7);
+        border-radius: .2rem;
+        &.active{
+            background-color: $purple;
+            color: #fff;
+        }
+    }
+}
