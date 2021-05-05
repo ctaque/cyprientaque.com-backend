@@ -452,10 +452,10 @@ impl HandleCmd {
         match migration_run {
             Err(e) => match e {
                 RunMigrationsError::MigrationError(e) => {
-                    panic!(format!("Error while migrating : {}", e.to_string()))
+                    panic!("Error while migrating : {}", e.to_string())
                 }
                 RunMigrationsError::QueryError(e) => {
-                    panic!(format!("Error while migrating : {}", e.to_string()))
+                    panic!("Error while migrating : {}", e.to_string())
                 }
                 _ => println!("Nothing to migrate"),
             },
