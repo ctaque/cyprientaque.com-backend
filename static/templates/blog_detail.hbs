@@ -19,6 +19,15 @@
             </div>
         </div>
     </div>
+    {{#if article.tags_list}}
+    <h3>Tags</h3>
+    <div class="tags-list">
+        {{#each article.tags_list}}
+            <a href="/blog?tag={{this}}" class="tag">{{this}}</a>
+        {{/each}}
+    </div>
+    <div class="separator-h"></div>
+    {{/if}}
     <div class="">
         <div class="content">
             {{render_markdown article.content}}

@@ -19,6 +19,7 @@ use std::fs::{self, File};
 use std::io::prelude::*;
 use std::process::Command;
 use std::collections::HashSet;
+use std::iter::FromIterator;
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -44,6 +45,7 @@ pub struct Project {
     pub published: bool,
     pub primary_image: Option<ProjectImage>,
     pub tags: String,
+    pub tags_list: Vec<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -258,6 +260,7 @@ impl Project {
             user: None,
             primary_image: None,
             tags: row.get("tags"),
+            tags_list: Vec::from_iter(row.get::<_, String>("tags").split(",").map(|s| s.trim()).filter(|s| s != &"").map(String::from))
         }
     }
 
