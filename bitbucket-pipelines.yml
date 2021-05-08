@@ -1,0 +1,18 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image:  rustlang/rust:nightly
+
+pipelines:
+  default:
+      - step:
+          script:
+            - echo "Your build and test goes here..."; cargo build --release
+
+      - step:
+          name: 'Deployment to Production'
+          deployment: production
+          trigger: 'manual'
+          script:
+            - echo "Your deployment to production script goes here..."
