@@ -5,12 +5,13 @@
 image: rustlang/rust:nightly
 
 pipelines:
-  default:
+  branches:
+    master:
       - step:
           script:
-            - echo "Your build and test goes here..."; cargo build --release
+            - echo "Building..."; cargo build --release
           artifacts:
-            - target/**
+            - target/release/ctprods
           caches:
             - cargo
             - rust-target
@@ -23,7 +24,7 @@ pipelines:
                 USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
                 REMOTE_PATH: '/home/cyprien/.bin/'
-                LOCAL_PATH: $BITBUCKET_CLONE_DIR/*
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods
                 DEBUG: 'true'
 definitions:
   caches:
