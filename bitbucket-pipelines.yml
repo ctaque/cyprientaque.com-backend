@@ -2,7 +2,7 @@
 # Use a skeleton to build, test and deploy using manual and parallel steps
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image:  rustlang/rust:nightly
+image: rustlang/rust:nightly
 
 pipelines:
   default:
@@ -13,6 +13,11 @@ pipelines:
       - step:
           name: 'Deployment to Production'
           deployment: production
-          trigger: 'manual'
           script:
-            - echo "Your deployment to production script goes here..."
+            - pipe: atlassian/scp-deploy:1.0.1
+              variables:
+                USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                REMOTE_PATH: '/home/cyprien/.bin/'
+                LOCAL_PATH: './target/release/ctprods'
+                DEBUG: 'true'
