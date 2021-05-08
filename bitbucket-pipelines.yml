@@ -26,5 +26,5 @@ pipelines:
                 DEBUG: 'true'
 definitions:
   caches:
-    - cargo: /usr/local/cargo
-    - rust-target: $BITBUCKET_CLONE_DIR/target
+    cargo: /usr/local/cargo
+    rust-target: $BITBUCKET_CLONE_DIR/target
