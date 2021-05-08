@@ -22,7 +22,7 @@ pipelines:
                 USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
                 REMOTE_PATH: '/home/cyprien/.bin/'
-                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/*
                 DEBUG: 'true'
 definitions:
   caches:
