@@ -13,11 +13,18 @@ pipelines:
       - step:
           name: 'Deployment to Production'
           deployment: production
+          caches:
+            - cargo
+            - rust-target
           script:
             - pipe: atlassian/scp-deploy:1.0.1
               variables:
                 USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
                 REMOTE_PATH: '/home/cyprien/.bin/'
-                LOCAL_PATH: './target/release/ctprods'
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods
                 DEBUG: 'true'
+definitions:
+  caches:
+    - cargo: /usr/local/cargo
+    - rust-target: $BITBUCKET_CLONE_DIR/target
