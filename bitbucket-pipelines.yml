@@ -9,13 +9,14 @@ pipelines:
       - step:
           script:
             - echo "Your build and test goes here..."; cargo build --release
-
-      - step:
-          name: 'Deployment to Production'
-          deployment: production
+          artifacts:
+            - target/**
           caches:
             - cargo
             - rust-target
+      - step:
+          name: 'Deployment to Production'
+          deployment: production
           script:
             - pipe: atlassian/scp-deploy:1.0.1
               variables:
