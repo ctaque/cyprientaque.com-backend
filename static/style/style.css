@@ -406,7 +406,12 @@ nav.desktop {
     font-size: 1.3rem;
     background-color: #515151;
     color: rgba(255, 255, 255, 0.7);
-    border-radius: .2rem; }
+    border-radius: .2rem;
+    white-space: nowrap;
+    text-align: center; }
+    @media screen and (max-width: 480px) {
+      .tags-list .tag {
+        flex: 1; } }
     .tags-list .tag.active {
       background-color: #b98ceb;
       color: #fff; }

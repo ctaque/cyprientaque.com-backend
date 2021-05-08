@@ -531,6 +531,11 @@ nav.desktop{
         background-color: #515151;
         color:rgba(255, 255, 255, 0.7);
         border-radius: .2rem;
+        @media screen and (max-width: 480px){
+            flex: 1;
+        }
+        white-space: nowrap;
+        text-align: center;
         &.active{
             background-color: $purple;
             color: #fff;
