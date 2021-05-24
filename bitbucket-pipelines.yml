@@ -1,0 +1,32 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: rustlang/rust:nightly
+
+pipelines:
+  branches:
+    master:
+      - step:
+          script:
+            - echo "Building..."; cargo build --release
+          artifacts:
+            - target/release/ctprods
+          caches:
+            - cargo
+            - rust-target
+      - step:
+          name: 'Deployment to Production'
+          deployment: production
+          script:
+            - pipe: atlassian/scp-deploy:1.0.1
+              variables:
+                USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                REMOTE_PATH: '/home/cyprien/.bin/'
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods
+                DEBUG: 'true'
+definitions:
+  caches:
+    cargo: /usr/local/cargo
+    rust-target: $BITBUCKET_CLONE_DIR/target
