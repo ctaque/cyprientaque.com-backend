@@ -457,15 +457,8 @@ impl Project {
     }
 
     pub async fn attach_category(mut self) -> Result<Project, Error> {
-        let row = Self::db()
-            .await
-            .query_one(
-                "select * from project_categories where id = $1",
-                &[&self.category_id],
-            )
-            .await?;
-        let cat = ProjectCategory::new(&row);
-        self.category = Some(cat);
+        let cat:Option<ProjectCategory> = ProjectCategory::find(self.category_id).await.ok();
+        self.category = cat;
         Ok(self)
     }
 

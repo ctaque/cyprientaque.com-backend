@@ -37,7 +37,9 @@ pub struct ProjectCategory {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub color_hex: String,
-    pub project_count: Option<i64>
+    pub project_count: Option<i64>,
+    pub parent: Option<Box<ProjectCategory>>,
+    pub parent_id: Option<i32>,
 }
 
 impl ProjectCategory{
@@ -52,6 +54,8 @@ impl ProjectCategory{
             deleted_at: row.get("deleted_at"),
             color_hex: row.get("color_hex"),
             project_count: None,
+            parent_id: row.get("parent_category_id"),
+            parent: None,
         }
     }
     async fn attach_project_count(mut self) -> Result<ProjectCategory, Error> {
@@ -96,7 +100,12 @@ impl Model<ProjectCategory> for ProjectCategory {
     async fn find(id: i32) -> Result<ProjectCategory, Error>
     where ProjectCategory: 'async_trait{
         let row: Row = Self::db().await.query_one("select * from project_categories where id = $1 and deleted_at is null;",  &[&id]).await?;
-        let c = ProjectCategory::new(&row);
+        let mut c = ProjectCategory::new(&row);
+        let parent:Option<Box<ProjectCategory>> = match c.parent_id {
+            Some(parent_id) => Some(Box::new(ProjectCategory::find(parent_id.clone()).await.expect("failed to find category"))),
+            None => None
+        };
+        c.parent = parent;
         Ok(c)
     }
     async fn all() -> Result<Vec<ProjectCategory>, Error>
