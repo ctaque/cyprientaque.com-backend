@@ -59,7 +59,7 @@ impl ProjectCategory{
         }
     }
     async fn attach_project_count(mut self) -> Result<ProjectCategory, Error> {
-        let row: Row = Self::db().await.query_one("SELECT count(id) as project_count from projects where category_id = $1", &[&self.id]).await?;
+        let row: Row = Self::db().await.query_one("SELECT count(id) as project_count from projects where category_id = $1 and published = true", &[&self.id]).await?;
         self.project_count = row.get("project_count");
         Ok(self)
     }
