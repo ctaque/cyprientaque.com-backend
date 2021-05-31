@@ -10,8 +10,9 @@ pipelines:
       - step:
           script:
             - echo "Building..."; cargo build --release
+            - mv target/release/ctprods target/release/ctprods.new
           artifacts:
-            - target/release/ctprods
+            - target/release/ctprods.new
           caches:
             - cargo
             - rust-target
@@ -19,13 +20,25 @@ pipelines:
           name: 'Deployment to Production'
           deployment: production
           script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm $HOME/.bin/ctprods.new 2> /dev/null'
+                MODE: 'command'
             - pipe: atlassian/scp-deploy:1.0.1
               variables:
                 USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                REMOTE_PATH: '/home/cyprien/.bin/'
-                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods
+                REMOTE_PATH: '/home/cyprien/.bin'
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods.new
                 DEBUG: 'true'
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm $HOME/.bin/ctprods.bak 2> /dev/null && mv $HOME/.bin/ctprods $HOME/.bin/ctprods.bak && sudo service ctprods restart'
+                MODE: 'command' # Optional
 definitions:
   caches:
     cargo: /usr/local/cargo
