@@ -33,7 +33,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-    e           COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
                 MODE: 'command'
             - pipe: atlassian/scp-deploy:1.0.1
               variables:
