@@ -8,6 +8,15 @@ pipelines:
   branches:
     master:
       - step:
+          name: 'Delete old binary'
+          script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm /home/cyprien/.bin/ctprods.new'
+                MODE: 'command'
+      - step:
           script:
             - echo "Building..."; cargo build --release
             - mv target/release/ctprods target/release/ctprods.new
