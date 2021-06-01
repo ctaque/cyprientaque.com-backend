@@ -14,7 +14,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                COMMAND: 'rm /home/cyprien/.bin/ctprods.new 2> /dev/null'
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
                 MODE: 'command'
       - step:
           script:
@@ -33,7 +33,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                COMMAND: 'rm /home/cyprien/.bin/ctprods.new 2> /dev/null'
+    e           COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
                 MODE: 'command'
             - pipe: atlassian/scp-deploy:1.0.1
               variables:
@@ -46,7 +46,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                COMMAND: 'rm /home/cyprien/.bin/ctprods.bak 2> /dev/null && mv /home/cyprien/.bin/ctprods /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods.new /home/cyprien/.bin/ctprods && sudo service ctprods restart'
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods.new /home/cyprien/.bin/ctprods && sudo service ctprods restart'
                 MODE: 'command'
 definitions:
   caches:
