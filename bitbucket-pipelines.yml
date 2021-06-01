@@ -14,7 +14,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                COMMAND: 'rm /home/cyprien/.bin/ctprods.new'
+                COMMAND: 'rm /home/cyprien/.bin/ctprods.new 2> /dev/null'
                 MODE: 'command'
       - step:
           script:
