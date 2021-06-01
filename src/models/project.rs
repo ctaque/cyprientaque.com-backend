@@ -373,7 +373,7 @@ impl Project {
     pub async fn get_uniq_tags(category_id: i32) -> Result<Vec<String>, Error> {
         let rows = Self::db()
             .await
-            .query("select tags from projects where tags <> '' and category_id = $1", &[&category_id])
+            .query("select tags from projects where tags <> '' and category_id = $1 and published = true", &[&category_id])
             .await?;
         let mut tags: Vec<String> = rows.iter()
             .map::<String, _>(| row | row.get("tags"))
