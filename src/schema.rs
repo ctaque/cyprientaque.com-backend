@@ -51,7 +51,7 @@ table! {
     project_categories (id) {
         id -> Int4,
         name -> Varchar,
-        picture_url -> Nullable<Varchar>,
+        picture_url -> Varchar,
         slug -> Nullable<Varchar>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
