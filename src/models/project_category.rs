@@ -64,6 +64,15 @@ impl ProjectCategory{
         Ok(self)
     }
 
+    async fn attach_parent(mut self) -> ProjectCategory {
+        let row: Result<Row, Error> = Self::db().await.query_one("SELECT * from project_categories where id = $1", &[&self.parent_id]).await;
+        self.parent = match row {
+            Ok(cat) => Some(Box::new(Self::new(&cat))),
+            Err(_) => None
+        };
+        self
+    }
+
     pub fn pretty_print(self) -> (){
         println!(
             "Category id: {}, name: {}, color hex: {}, picture url: {}, created_at: {}, updated_at: {}, deleted_at: {}",
@@ -93,6 +102,7 @@ impl ProjectCategory{
     pub fn selectify_categories(categories: &Vec<ProjectCategory>) -> Vec<String> {
         categories.into_iter().map(| x | format!("id: {}, name: {}", x.id, x.name)).collect()
     }
+
 }
 
 #[async_trait]
@@ -115,6 +125,7 @@ impl Model<ProjectCategory> for ProjectCategory {
         for row in rows{
             let p = ProjectCategory::new(&row);
             let p = p.attach_project_count().await?;
+            let p = p.attach_parent().await;
             categories.push(p);
         }
         Ok(categories)
