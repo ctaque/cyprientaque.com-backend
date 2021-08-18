@@ -16,11 +16,22 @@
                         <img alt="Presentation image of the article" src="{{this.primary_image.w350_object_url}}"/>
                     {{/if}}
                 </div>
-                <div class="date-views">
-                    <small class="date">{{format_date this.created_at "%A %d %B %Y"}}</small>
-                    <small><img src="/static/svg/eye.svg"/>{{this.views_count}}</small>
+                <div class="date-title-outer">
+                    <div class="date">
+                        <span class="day">{{format_date this.created_at "%d"}}</span>
+                        <span class="month">{{format_date this.created_at "%b"}}</span>
+                        <span class="year">{{format_date this.created_at "%Y"}}</span>
+                    </div>
+                    <h2 class="title">
+                        <div class="date-views">
+                            <div class="date-views-inner">
+                                <img src="/static/svg/eye.svg"/>
+                                <span>{{this.views_count}}</span>
+                            </div>
+                        </div>
+                        {{this.title}}
+                    </h2>
                 </div>
-                <h2 class="title">{{this.title}}</h2>
                 <div class="preview">{{unicode_truncate this.content 200}}...</div>
             </a>
         {{/each}}
