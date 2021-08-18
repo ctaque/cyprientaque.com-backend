@@ -428,7 +428,7 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   width: 100%;
 }
 .article .header .page-title {
-  align-items: center;
+  align-items: flex-end;
   bottom: 0;
   display: flex;
   left: 0;
@@ -436,7 +436,6 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   position: absolute;
 }
 .article .header .page-title .back-link {
-  color: rgba(0, 0, 0, 0.6);
   display: flex;
   font-size: 2.5em;
   justify-content: center;
@@ -445,11 +444,11 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   margin-left: 0.3em;
   margin-right: 0.3em;
   padding: 0;
-  transform: rotate(180deg);
   background: transparent;
   border: none;
   outline: none;
   cursor: pointer;
+  margin-bottom: 1rem;
 }
 @media screen and (max-width: 500px) {
   .article .header .page-title .back-link {
@@ -458,32 +457,69 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
     zoom: 0.7;
   }
 }
-.article .header .page-title .title {
+.article .header .page-title .date-title-outer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-end;
+  margin-bottom: 1rem;
 }
-.article .header .page-title .title h1 {
-  color: gainsboro;
+.article .header .page-title .date-title-outer .title {
+  color: rgba(255, 255, 255, 0.95);
   border-radius: 3px;
   font-size: 2em;
   margin: 0;
   text-shadow: 1px 1px 3px #737272;
 }
 @media screen and (max-width: 500px) {
-  .article .header .page-title .title h1 {
+  .article .header .page-title .date-title-outer .title {
     font-size: 0.9em;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .article .header .page-title .date-title-outer .title .date-views {
+    align-self: flex-start;
   }
 }
-.article .header .page-title .title small.date {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8em;
-  font-weight: 400;
-  margin: 0.5em 0;
+.article .header .page-title .date-title-outer .title .date-views {
+  flex-direction: column;
+  display: inline-block;
+  vertical-align: middle;
 }
-@media screen and (max-width: 500px) {
-  .article .header .page-title .title small.date {
-    margin: 0.1em;
-  }
+.article .header .page-title .date-title-outer .title .date-views .date-views-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.article .header .page-title .date-title-outer .title .date-views .date-views-inner img {
+  width: 1.2rem;
+  height: 1rem;
+}
+.article .header .page-title .date-title-outer .title .date-views .date-views-inner span {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1rem;
+  align-items: center;
+}
+.article .header .page-title .date-title-outer .date {
+  padding-right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.95);
+}
+.article .header .page-title .date-title-outer .date .day {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+.article .header .page-title .date-title-outer .date .month {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+.article .header .page-title .date-title-outer .date .year {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.95);
 }
 .article .content h1, .article .content h2, .article .content h3, .article .content h4, .article .content h5, .article .content h6 {
   color: rgba(255, 255, 255, 0.9);
