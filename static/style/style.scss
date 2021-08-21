@@ -332,7 +332,13 @@ nav.desktop{
             margin-top: 1.5em;
             cursor: pointer;
             width: calc(( 100% / 2 ) - 1.5em );
-            @media screen and (max-width: 950px){
+            @media screen and (max-width: 480px){
+                width: calc(100% - 1em);
+                margin-left: .5em !important;
+                margin-right: .5em !important;
+                zoom: .9;
+            }
+            @media screen and (min-width: 481px) and (max-width: 950px){
                 &:nth-child(even){
                     margin-left: .5em;
                 }

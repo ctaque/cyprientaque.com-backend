@@ -320,7 +320,15 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
 .articles-list--with-banner .articles-list .list-item:nth-child(odd) {
   margin-right: 1.5em;
 }
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 480px) {
+  .articles-list--with-banner .articles-list .list-item {
+    width: calc(100% - 1em);
+    margin-left: 0.5em !important;
+    margin-right: 0.5em !important;
+    zoom: 0.9;
+  }
+}
+@media screen and (min-width: 481px) and (max-width: 950px) {
   .articles-list--with-banner .articles-list .list-item {
     zoom: 0.7;
     width: calc(( 100% / 2 ) - .5em );
