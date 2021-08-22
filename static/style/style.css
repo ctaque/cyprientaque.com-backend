@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@200;300;400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Alata&display=swap");
 * {
   box-sizing: border-box;
 }
@@ -388,6 +389,7 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   color: rgba(255, 255, 255, 0.95);
   font-size: 1rem;
   align-items: center;
+  font-family: "Alata", sans-serif;
 }
 .articles-list--with-banner .articles-list .list-item .date-title-outer .date {
   padding-right: 1rem;
@@ -396,18 +398,22 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.95);
+  font-family: "Alata", sans-serif;
 }
 .articles-list--with-banner .articles-list .list-item .date-title-outer .date .day {
   font-size: 2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .articles-list--with-banner .articles-list .list-item .date-title-outer .date .month {
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .articles-list--with-banner .articles-list .list-item .date-title-outer .date .year {
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .articles-list--with-banner .articles-list .list-item .preview {
   color: rgba(255, 255, 255, 0.69);
@@ -493,6 +499,7 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   flex-direction: column;
   display: inline-block;
   vertical-align: middle;
+  font-family: "Alata", sans-serif;
 }
 .article .header .page-title .date-title-outer .title .date-views .date-views-inner {
   display: flex;
@@ -508,6 +515,7 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   color: rgba(255, 255, 255, 0.95);
   font-size: 1rem;
   align-items: center;
+  font-family: inherit;
 }
 .article .header .page-title .date-title-outer .date {
   padding-right: 1rem;
@@ -516,18 +524,22 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.95);
+  font-family: "Alata", sans-serif;
 }
 .article .header .page-title .date-title-outer .date .day {
   font-size: 2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .article .header .page-title .date-title-outer .date .month {
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .article .header .page-title .date-title-outer .date .year {
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
 }
 .article .content h1, .article .content h2, .article .content h3, .article .content h4, .article .content h5, .article .content h6 {
   color: rgba(255, 255, 255, 0.9);

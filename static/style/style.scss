@@ -7,6 +7,8 @@ $bg-color: rgb(20,19,22);
 
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alata&display=swap');
+
 *{
     box-sizing: border-box;
 }
@@ -395,6 +397,7 @@ nav.desktop{
                                 color: rgba(255,255,255,0.95);
                                 font-size: 1rem;
                                 align-items: center;
+                                font-family: 'Alata', sans-serif;
                             }
                         }
                     }
@@ -407,17 +410,21 @@ nav.desktop{
                     align-items: center;
                     justify-content: center;
                     color: rgba(255,255,255,0.95);
+                    font-family: 'Alata', sans-serif;
                     .day{
                         font-size: 2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                     .month{
                         font-size: 1.2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                     .year{
                         font-size: 1.2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                 }
             }
@@ -500,6 +507,7 @@ nav.desktop{
                         flex-direction: column;
                         display: inline-block;
                         vertical-align: middle;
+                        font-family: 'Alata', sans-serif;
                         .date-views-inner{
                             display: flex;
                             flex-direction: column;
@@ -513,6 +521,7 @@ nav.desktop{
                                 color: rgba(255,255,255,0.95);
                                 font-size: 1rem;
                                 align-items: center;
+                                font-family: inherit;
                             }
                         }
                     }
@@ -525,17 +534,21 @@ nav.desktop{
                     align-items: center;
                     justify-content: center;
                     color: rgba(255,255,255,0.95);
+                    font-family: 'Alata', sans-serif;
                     .day{
                         font-size: 2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                     .month{
                         font-size: 1.2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                     .year{
                         font-size: 1.2rem;
                         color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
                     }
                 }
             }
