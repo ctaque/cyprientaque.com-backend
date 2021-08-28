@@ -353,7 +353,6 @@ impl HandleCmd {
             }
             None =>  {
                 selected_project.title = new_title;
-                selected_project.slug = slug;
                 selected_project.update().await.expect("Couldn't save project :/");
                 println!("Project saved !");
                 return Ok(())
