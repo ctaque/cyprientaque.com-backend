@@ -68,25 +68,25 @@ pub struct HttpAllOptionalQueryParams {
 }
 
 impl HttpAllOptionalQueryParams {
-    pub fn author(&self) -> bool{
+    pub fn attach_author(&self) -> bool{
         if let Some(_) = self.author {
             return true;
         };
         false
     }
-    pub fn category(&self) -> bool{
+    pub fn attach_category(&self) -> bool{
         if let Some(_) = self.category {
            return true;
         };
         false
     }
-    pub fn images(&self) -> bool{
+    pub fn attach_images(&self) -> bool{
         if let Some(_) = self.images {
             return true;
         };
         false
     }
-    pub fn primary_image(&self) -> bool{
+    pub fn attach_primary_image(&self) -> bool{
         if let Some(_) = self.primary_image {
             return true;
         };

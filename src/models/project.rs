@@ -76,11 +76,14 @@ impl UpdatableModel<Project> for UpdatableProject {
             "update projects set category_id = $1, title = $2, content = $3, user_id = $4 where id = $5 returning *",
             &[&self.category_id, &self.title, &self.content, &self.user_id, &self.id]
         ).await?;
-        let project = Project::new(&row);
-        let project = project.attach_category().await?;
-        let project = project.attach_user().await?;
-        let project = project.attach_images().await?;
-        Ok(project)
+
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+        Project::new(&row, &params).await
     }
 }
 
@@ -116,11 +119,15 @@ impl Model<Project> for Project {
                 &[&project_id],
             )
             .await?;
-        let p = Project::new(&row);
-        let p = p.attach_category().await?;
-        let p = p.attach_user().await?;
-        let p = p.attach_images().await;
-        p
+
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+
+        Project::new(&row, &params).await
     }
     async fn all(query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error>
     where
@@ -131,27 +138,12 @@ impl Model<Project> for Project {
             .query("select * from projects where deleted_at is null order by id;", &[])
             .await?;
         let mut projects = Vec::new();
-        let attach_cat = query.category();
-        let attach_author = query.author();
-        let attach_images = query.images();
         for row in rows {
-            let p = Project::new(&row);
-            let p = if attach_cat {
-                 p.attach_category().await?
-            } else {
-                p
-            };
-            let p = if attach_author {
-                p.attach_user().await?
-            } else {
-                p
-            };
-            let p = if attach_images {
-                p.attach_images().await?
-            } else {
-                p
-            };
-            projects.push(p);
+
+            let p = Project::new(&row, &query).await;
+            if let Ok(project) = p {
+                projects.push(project);
+            }
         }
         Ok(projects)
     }
@@ -192,11 +184,15 @@ impl Model<Project> for Project {
                 ],
             )
             .await?;
-        let p = Project::new(&row);
-        let p = p.attach_category().await?;
-        let p = p.attach_user().await?;
-        let p = p.attach_images().await?;
-        Ok(p)
+
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+
+        Project::new(&row, &params).await
     }
     async fn delete(mut self) -> Result<Project, Error> {
         let row = Self::db()
@@ -206,11 +202,15 @@ impl Model<Project> for Project {
                 &[&self.id],
             )
             .await?;
-        let p = Project::new(&row);
-        let p = p.attach_category().await?;
-        let p = p.attach_user().await?;
-        let p = p.attach_images().await?;
-        Ok(p)
+
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+
+        Project::new(&row, &params).await
     }
 }
 
@@ -253,8 +253,8 @@ pub struct TagActive {
 
 
 impl Project {
-    pub fn new<'a>(row: &Row) -> Project {
-        Project {
+    pub async fn new<'a>(row: &Row, query: &HttpAllOptionalQueryParams) -> Result<Project, Error> {
+        let mut p = Project {
             id: row.get("id"),
             category_id: row.get("category_id"),
             title: row.get("title"),
@@ -276,7 +276,28 @@ impl Project {
             primary_image: None,
             tags: row.get("tags"),
             tags_list: Vec::from_iter(row.get::<_, String>("tags").split(",").map(|s| s.trim()).filter(|s| s != &"").map(String::from))
-        }
+        };
+
+        let attach_cat = query.attach_category();
+        let attach_author = query.attach_author();
+        let attach_images = query.attach_images();
+        let attach_primary_image = query.attach_primary_image();
+        if attach_cat {
+            p.attach_category().await?;
+        };
+        if attach_author {
+            p.attach_author().await?;
+        };
+        if attach_images {
+            p.attach_images().await?;
+        };
+        if attach_primary_image {
+            let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
+            if let Ok(image) = image_res {
+                p.primary_image = Some(image);
+            }
+        };
+        Ok(p)
     }
 
     pub async fn all_published() -> Result<Vec<Project>, Error> {
@@ -288,12 +309,17 @@ impl Project {
             )
             .await?;
         let mut projects = Vec::new();
+        let params = HttpAllOptionalQueryParams {
+            category: Some(true),
+            author: Some(true),
+            images: Some(true),
+            ..Default::default()
+        };
         for row in rows {
-            let p = Project::new(&row);
-            let p = p.attach_category().await?;
-            let p = p.attach_user().await?;
-            let p = p.attach_images().await?;
-            projects.push(p);
+            let p = Project::new(&row, &params).await;
+            if let Ok(project) = p {
+                projects.push(project);
+            };
         }
         Ok(projects)
     }
@@ -301,12 +327,17 @@ impl Project {
     pub async fn all_but_not_blog() -> Result<Vec<Project>, Error> {
         let rows: Vec<Row> = Self::db().await.query("select * from projects where deleted_at is null and category_id != 5 and published = true;", &[]).await?;
         let mut projects = Vec::new();
+        let params = HttpAllOptionalQueryParams {
+            category: Some(true),
+            author: Some(true),
+            images: Some(true),
+            ..Default::default()
+        };
         for row in rows {
-            let p = Project::new(&row);
-            let p = p.attach_category().await?;
-            let p = p.attach_user().await?;
-            let p = p.attach_images().await?;
-            projects.push(p);
+            let p = Project::new(&row, &params).await;
+            if let Ok(project) = p {
+                projects.push(project);
+            };
         }
         Ok(projects)
     }
@@ -320,27 +351,11 @@ impl Project {
             )
             .await?;
         let mut projects = Vec::new();
-        let attach_cat = query.category();
-        let attach_author = query.author();
-        let attach_images = query.images();
         for row in rows {
-            let p = Project::new(&row);
-            let p = if attach_cat {
-                p.attach_category().await?
-            } else {
-                p
+            let p = Project::new(&row, &query).await;
+            if let Ok(project) = p {
+                projects.push(project);
             };
-            let p = if attach_author {
-                p.attach_user().await?
-            } else {
-                p
-            };
-            let p = if attach_images {
-                p.attach_images().await?
-            } else {
-                p
-            };
-            projects.push(p);
         }
         Ok(projects)
     }
@@ -356,42 +371,11 @@ impl Project {
                 &[&cat.value()]
             ).await?;
         let mut projects = Vec::new();
-        let attach_cat = query.category();
-        let attach_author = query.author();
-        let attach_images = query.images();
-        let attach_primary_image = query.primary_image();
         for row in rows {
-            let p = Project::new(&row);
-            let p = if attach_cat {
-                p.attach_category().await?
-            } else {
-                p
+            let p = Project::new(&row, &query).await;
+            if let Ok(project) = p {
+                projects.push(project);
             };
-            let p = if attach_author {
-                p.attach_user().await?
-            } else {
-                p
-            };
-            let mut p = if attach_images {
-                p.attach_images().await?
-            } else {
-                p
-            };
-            let p = if attach_primary_image {
-                let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
-                match image_res {
-                    Ok(image) => {
-                        p.primary_image = Some(image);
-                        p
-                    },
-                    _ => {
-                        p
-                    }
-                }
-            } else {
-                p
-            };
-            projects.push(p);
         }
         Ok(projects)
     }
@@ -456,10 +440,6 @@ impl Project {
     }
     pub async fn get_projects_by_tag(tag: String, category_id: i32, query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error> {
         let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE CONCAT('%', $1::text, '%')");
-        let attach_cat = query.category();
-        let attach_author = query.author();
-        let attach_images = query.images();
-        let attach_primary_image = query.primary_image();
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
             let rows: Vec<Row> = Self::db()
@@ -468,37 +448,10 @@ impl Project {
                 .await?;
             let mut out = Vec::new();
             for row in rows {
-                let p = Project::new(&row);
-                let p = if attach_cat {
-                    p.attach_category().await?
-                } else {
-                    p
+                let p = Project::new(&row, &query).await;
+                if let Ok(project) = p {
+                    out.push(project);
                 };
-                let p = if attach_author {
-                    p.attach_user().await?
-                } else {
-                    p
-                };
-                let mut p = if attach_images {
-                    p.attach_images().await?
-                } else {
-                    p
-                };
-                let p = if attach_primary_image {
-                    let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
-                    match image_res {
-                        Ok(image) => {
-                            p.primary_image = Some(image);
-                            p
-                        },
-                        _ => {
-                            p
-                        }
-                    }
-                } else {
-                    p
-                };
-                out.push(p);
             }
             Ok(out)
         } else {
@@ -508,37 +461,10 @@ impl Project {
                 .await?;
             let mut out = Vec::new();
             for row in rows {
-                let p = Project::new(&row);
-                let p = if attach_cat {
-                    p.attach_category().await?
-                } else {
-                    p
+                let p = Project::new(&row, &query).await;
+                if let Ok(project) = p {
+                    out.push(project);
                 };
-                let p = if attach_author {
-                    p.attach_user().await?
-                } else {
-                    p
-                };
-                let mut p = if attach_images {
-                    p.attach_images().await?
-                } else {
-                    p
-                };
-                let p = if attach_primary_image {
-                    let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
-                    match image_res {
-                        Ok(image) => {
-                            p.primary_image = Some(image);
-                            p
-                        },
-                        _ => {
-                            p
-                        }
-                    }
-                } else {
-                    p
-                };
-                out.push(p);
             }
             Ok(out)
         }
@@ -551,10 +477,13 @@ impl Project {
                 &[&self.id],
             )
             .await?;
-        let project = Project::new(&row);
-        let project = project.attach_images().await?;
-        let project = project.attach_user().await?;
-        let project = project.attach_category().await?;
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+        let project = Project::new(&row, &params).await?;
         Ok(project)
     }
 
@@ -566,20 +495,23 @@ impl Project {
                 &[&self.id],
             )
             .await?;
-        let project = Project::new(&row);
-        let project = project.attach_images().await?;
-        let project = project.attach_user().await?;
-        let project = project.attach_category().await?;
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+        let project = Project::new(&row, &params).await?;
         Ok(project)
     }
 
-    pub async fn attach_category(mut self) -> Result<Project, Error> {
+    pub async fn attach_category(&mut self) -> Result<(), Error> {
         let cat:Option<ProjectCategory> = ProjectCategory::find(self.category_id).await.ok();
         self.category = cat;
-        Ok(self)
+        Ok(())
     }
 
-    pub async fn attach_images(mut self) -> Result<Project, Error> {
+    pub async fn attach_images(&mut self) -> Result<(), Error> {
         let rows = Self::db()
             .await
             .query(
@@ -595,10 +527,10 @@ impl Project {
 
         self.primary_image = ProjectImage::get_primary_image(images.clone());
         self.images = Some(images);
-        Ok(self)
+        Ok(())
     }
 
-    pub async fn attach_user(mut self) -> Result<Project, Error> {
+    pub async fn attach_author(&mut self) -> Result<(), Error> {
         let row = Self::db()
             .await
             .query_one("select * from users where id = $1", &[&self.user_id])
@@ -606,7 +538,7 @@ impl Project {
         let user = User::new(&row);
         let user = user.attach_profile_images().await?;
         self.user = Some(user);
-        Ok(self)
+        Ok(())
     }
 
     pub async fn get_by_slug(slug: String) -> Option<Project> {
@@ -616,11 +548,17 @@ impl Project {
             .await;
         match result_row {
             Ok(row) => {
-                let project = Self::new(&row);
-                let project = project.attach_images().await.unwrap();
-                let project = project.attach_user().await.unwrap();
-                let project = project.attach_category().await.unwrap();
-                Some(project)
+                let params = HttpAllOptionalQueryParams{
+                    images: Some(true),
+                    author: Some(true),
+                    category: Some(true),
+                    ..Default::default()
+                };
+                let project_res = Project::new(&row, &params).await;
+                match project_res {
+                    Ok(project) => Some(project),
+                    Err(_e) => None
+                }
             }
             _ => None,
         }
@@ -889,11 +827,13 @@ impl NewModel<Project> for NewProject {
         let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id, is_pro, bitbucket_project_key) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7, $8) returning *;",
                                     &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id, &self.is_pro, &self.bitbucket_project_key]).await?;
 
-        let project = Project::new(&row);
-        let project = project.attach_category().await?;
-        let project = project.attach_user().await?;
-        let project = project.attach_images().await?;
-        Ok(project)
+        let params = HttpAllOptionalQueryParams{
+            images: Some(true),
+            author: Some(true),
+            category: Some(true),
+            ..Default::default()
+        };
+        Project::new(&row, &params).await
     }
 }
 
