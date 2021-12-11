@@ -2,7 +2,7 @@
 # Use a skeleton to build, test and deploy using manual and parallel steps
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: rustlang/rust:nightly
+image: rust:buster
 
 pipelines:
   branches:
