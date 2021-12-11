@@ -20,7 +20,7 @@ pub trait Model<T> {
         client
     }
     async fn find(id: i32) -> Result<T, Error>;
-    async fn all() -> Result<Vec<T>, Error>;
+    async fn all(query: HttpAllOptionalQueryParams) -> Result<Vec<T>, Error>;
     async fn update(self: Self) -> Result<T, Error>;
     async fn delete(self: Self) -> Result<T, Error>;
 }
@@ -59,9 +59,44 @@ pub trait UpdatableModel<T> {
     async fn update(self: Self) -> Result<T, Error>;
 }
 
+#[derive(Deserialize, Default)]
+pub struct HttpAllOptionalQueryParams {
+    pub author: Option<bool>,
+    pub category: Option<bool>,
+    pub images: Option<bool>,
+    pub primary_image: Option<bool>,
+}
+
+impl HttpAllOptionalQueryParams {
+    pub fn author(&self) -> bool{
+        if let Some(_) = self.author {
+            return true;
+        };
+        false
+    }
+    pub fn category(&self) -> bool{
+        if let Some(_) = self.category {
+           return true;
+        };
+        false
+    }
+    pub fn images(&self) -> bool{
+        if let Some(_) = self.images {
+            return true;
+        };
+        false
+    }
+    pub fn primary_image(&self) -> bool{
+        if let Some(_) = self.primary_image {
+            return true;
+        };
+        false
+    }
+}
+
 #[async_trait]
 pub trait HttpAll {
-    async fn http_all() -> Result<HttpResponse, HttpResponse>;
+    async fn http_all(query: web::Query<HttpAllOptionalQueryParams>) -> Result<HttpResponse, HttpResponse>;
 }
 
 #[derive(Deserialize)]

@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use postgres::{ error::Error };
 use chrono::naive::NaiveDateTime;
 use rest_macro_derive::{HttpAll, HttpFind, HttpDelete };
-use rest_macro::{HttpAll, HttpFind, HttpDelete, DeleteInfo, FindInfo, Model };
+use rest_macro::{HttpAll, HttpAllOptionalQueryParams, HttpFind, HttpDelete, DeleteInfo, FindInfo, Model };
 use actix_web::{ HttpResponse, web };
 use serde_json::json;
 
@@ -41,7 +41,8 @@ impl ProjectImageCategory{
     }
 
     pub async fn print_all() -> Result<(), String> {
-        let result = Self::all().await;
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let result = Self::all(options).await;
         match result {
             Ok(cats) => {
                 for cat in cats {
@@ -66,7 +67,7 @@ impl Model<ProjectImageCategory> for ProjectImageCategory {
         let c = ProjectImageCategory::new(&row);
         Ok(c)
     }
-    async fn all() -> Result<Vec<ProjectImageCategory>, Error>
+    async fn all(_params: HttpAllOptionalQueryParams) -> Result<Vec<ProjectImageCategory>, Error>
         where ProjectImageCategory: 'async_trait{
         let rows: Vec<Row> = Self::db().await.query("select * from project_image_categories;", &[]).await?;
         let mut categories = Vec::new();

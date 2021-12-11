@@ -16,7 +16,7 @@ use diesel::pg::PgConnection;
 use diesel_migrations::RunMigrationsError;
 use env_logger;
 use handlebars::Handlebars;
-use rest_macro::{HttpAll, HttpDelete, HttpFind};
+use rest_macro::{HttpAll, HttpAllOptionalQueryParams, HttpDelete, HttpFind};
 use rest_macro::{Model, NewModel};
 use slugify::slugify;
 use std::env;
@@ -99,7 +99,8 @@ impl HandleCmd {
     }
 
     pub async fn create() -> std::io::Result<()> {
-        let categories: Vec<ProjectCategory> = ProjectCategory::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let categories: Vec<ProjectCategory> = ProjectCategory::all(options).await.unwrap();
         let selectified_categories: Vec<String> =
             ProjectCategory::selectify_categories(&categories);
         loop {
@@ -167,9 +168,11 @@ impl HandleCmd {
     }
 
     pub async fn add_image(file: String) -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options_projects: HttpAllOptionalQueryParams = Default::default();
+        let options_images_categories: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options_projects).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
-        let categories: Vec<ProjectImageCategory> = ProjectImageCategory::all().await.unwrap();
+        let categories: Vec<ProjectImageCategory> = ProjectImageCategory::all(options_images_categories).await.unwrap();
         let selectified_categories: Vec<String> = ProjectImageCategory::selectify(&categories);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -297,7 +300,8 @@ impl HandleCmd {
     }
 
     pub async fn edit() -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -320,7 +324,8 @@ impl HandleCmd {
     }
 
     pub async fn change_title() -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -362,7 +367,8 @@ impl HandleCmd {
     }
 
     pub async fn edit_tags() -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -382,7 +388,8 @@ impl HandleCmd {
         return Ok(())
     }
     pub async fn publish() -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -406,7 +413,8 @@ impl HandleCmd {
     }
 
     pub async fn unpublish() -> std::io::Result<()> {
-        let projects: Vec<Project> = Project::all().await.unwrap();
+        let options: HttpAllOptionalQueryParams = Default::default();
+        let projects: Vec<Project> = Project::all(options).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")

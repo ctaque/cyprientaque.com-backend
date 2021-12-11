@@ -1,5 +1,5 @@
 use chrono::naive::NaiveDateTime;
-use rest_macro::{ Model };
+use rest_macro::{ Model, HttpAllOptionalQueryParams };
 use async_trait::async_trait;
 use postgres::{ Row, error::Error };
 
@@ -45,7 +45,7 @@ impl Model<ProfileUserImage> for ProfileUserImage {
         let p = ProfileUserImage::new(&row);
         Ok(p)
     }
-    async fn all() -> Result<Vec<ProfileUserImage>, Error>
+    async fn all(_params: HttpAllOptionalQueryParams) -> Result<Vec<ProfileUserImage>, Error>
     where ProfileUserImage: 'async_trait{
         let rows: Vec<Row> = Self::db().await.query("select * from profile_user_images;", &[]).await?;
         let mut images = Vec::new();

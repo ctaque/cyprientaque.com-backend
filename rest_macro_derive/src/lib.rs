@@ -13,8 +13,9 @@ fn impl_http_all_macro(ast: &syn::DeriveInput) -> proc_macro::TokenStream {
     let gen = quote! {
         #[async_trait]
         impl HttpAll for #name {
-            async fn http_all() -> Result<HttpResponse, HttpResponse>{
-                let result = #name::all().await;
+            async fn http_all(query: web::Query<HttpAllOptionalQueryParams>) -> Result<HttpResponse, HttpResponse>{
+                let params = query.into_inner();
+                let result = #name::all(params).await;
                 match result {
                     Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
                     Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string()))

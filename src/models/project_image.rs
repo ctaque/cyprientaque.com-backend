@@ -8,7 +8,7 @@ use chrono::naive::NaiveDateTime;
 use futures::stream::{StreamExt, TryStreamExt};
 use image::{self, error::ImageResult, GenericImageView, ImageOutputFormat};
 use postgres::{error::Error, Row};
-use rest_macro::{DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel};
+use rest_macro::{DeleteInfo, FindInfo, HttpAll, HttpAllOptionalQueryParams, HttpDelete, HttpFind, Model, NewModel};
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
 use rusoto_core::RusotoError;
 use rusoto_s3::PutObjectError;
@@ -52,7 +52,7 @@ impl Model<ProjectImage> for ProjectImage {
         let p = ProjectImage::new(&row);
         Ok(p)
     }
-    async fn all() -> Result<Vec<ProjectImage>, Error>
+    async fn all(_params: HttpAllOptionalQueryParams) -> Result<Vec<ProjectImage>, Error>
     where
         ProjectImage: 'async_trait,
     {

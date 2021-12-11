@@ -2,7 +2,7 @@ use chrono::naive::NaiveDateTime;
 use postgres::{ Row, error::Error };
 use async_trait::async_trait;
 use crate::models::{ ProfileUserImage };
-use rest_macro::{ Model };
+use rest_macro::{ Model, HttpAllOptionalQueryParams };
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
@@ -63,7 +63,7 @@ impl Model<User> for User {
         let u = User::new(&row);
         Ok(u)
     }
-    async fn all() -> Result<Vec<User>, Error>
+    async fn all(_params: HttpAllOptionalQueryParams) -> Result<Vec<User>, Error>
     where User: 'async_trait{
         let rows: Vec<Row> = Self::db().await.query("select * from users where deleted_at is null;", &[]).await?;
         let mut users = Vec::new();

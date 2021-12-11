@@ -8,7 +8,7 @@ use postgres::{error::Error, Row};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use rest_macro::{
-    DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel,
+    DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel, HttpAllOptionalQueryParams
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
 use serde::{Deserialize, Serialize};
@@ -122,7 +122,7 @@ impl Model<Project> for Project {
         let p = p.attach_images().await;
         p
     }
-    async fn all() -> Result<Vec<Project>, Error>
+    async fn all(query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error>
     where
         Project: 'async_trait,
     {
@@ -131,11 +131,26 @@ impl Model<Project> for Project {
             .query("select * from projects where deleted_at is null order by id;", &[])
             .await?;
         let mut projects = Vec::new();
+        let attach_cat = query.category();
+        let attach_author = query.author();
+        let attach_images = query.images();
         for row in rows {
             let p = Project::new(&row);
-            let p = p.attach_category().await?;
-            let p = p.attach_user().await?;
-            let p = p.attach_images().await?;
+            let p = if attach_cat {
+                 p.attach_category().await?
+            } else {
+                p
+            };
+            let p = if attach_author {
+                p.attach_user().await?
+            } else {
+                p
+            };
+            let p = if attach_images {
+                p.attach_images().await?
+            } else {
+                p
+            };
             projects.push(p);
         }
         Ok(projects)
@@ -296,7 +311,7 @@ impl Project {
         Ok(projects)
     }
 
-    pub async fn by_category(cat_id: i32) -> Result<Vec<Project>, Error> {
+    pub async fn by_category(cat_id: i32, query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error> {
         let rows: Vec<Row> = Self::db()
             .await
             .query(
@@ -305,18 +320,34 @@ impl Project {
             )
             .await?;
         let mut projects = Vec::new();
+        let attach_cat = query.category();
+        let attach_author = query.author();
+        let attach_images = query.images();
         for row in rows {
-            let project = Project::new(&row);
-            let project = project.attach_category().await?;
-            let project = project.attach_user().await?;
-            let project = project.attach_images().await?;
-            projects.push(project);
+            let p = Project::new(&row);
+            let p = if attach_cat {
+                p.attach_category().await?
+            } else {
+                p
+            };
+            let p = if attach_author {
+                p.attach_user().await?
+            } else {
+                p
+            };
+            let p = if attach_images {
+                p.attach_images().await?
+            } else {
+                p
+            };
+            projects.push(p);
         }
         Ok(projects)
     }
 
     pub async fn of_category_hardcoded(
         cat: ProjectCategoryHardcoded,
+        query: HttpAllOptionalQueryParams
     ) -> Result<Vec<Project>, Error> {
         let rows: Vec<Row> = Self::db()
             .await
@@ -325,12 +356,42 @@ impl Project {
                 &[&cat.value()]
             ).await?;
         let mut projects = Vec::new();
+        let attach_cat = query.category();
+        let attach_author = query.author();
+        let attach_images = query.images();
+        let attach_primary_image = query.primary_image();
         for row in rows {
-            let project = Project::new(&row);
-            let project = project.attach_category().await?;
-            let project = project.attach_user().await?;
-            let project = project.attach_images().await?;
-            projects.push(project);
+            let p = Project::new(&row);
+            let p = if attach_cat {
+                p.attach_category().await?
+            } else {
+                p
+            };
+            let p = if attach_author {
+                p.attach_user().await?
+            } else {
+                p
+            };
+            let mut p = if attach_images {
+                p.attach_images().await?
+            } else {
+                p
+            };
+            let p = if attach_primary_image {
+                let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
+                match image_res {
+                    Ok(image) => {
+                        p.primary_image = Some(image);
+                        p
+                    },
+                    _ => {
+                        p
+                    }
+                }
+            } else {
+                p
+            };
+            projects.push(p);
         }
         Ok(projects)
     }
@@ -393,8 +454,12 @@ impl Project {
 
         Ok(tags)
     }
-    pub async fn get_projects_by_tag(tag: String, category_id: i32) -> Result<Vec<Project>, Error> {
+    pub async fn get_projects_by_tag(tag: String, category_id: i32, query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error> {
         let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE CONCAT('%', $1::text, '%')");
+        let attach_cat = query.category();
+        let attach_author = query.author();
+        let attach_images = query.images();
+        let attach_primary_image = query.primary_image();
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
             let rows: Vec<Row> = Self::db()
@@ -404,9 +469,35 @@ impl Project {
             let mut out = Vec::new();
             for row in rows {
                 let p = Project::new(&row);
-                let p = p.attach_category().await?;
-                let p = p.attach_user().await?;
-                let p = p.attach_images().await?;
+                let p = if attach_cat {
+                    p.attach_category().await?
+                } else {
+                    p
+                };
+                let p = if attach_author {
+                    p.attach_user().await?
+                } else {
+                    p
+                };
+                let mut p = if attach_images {
+                    p.attach_images().await?
+                } else {
+                    p
+                };
+                let p = if attach_primary_image {
+                    let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
+                    match image_res {
+                        Ok(image) => {
+                            p.primary_image = Some(image);
+                            p
+                        },
+                        _ => {
+                            p
+                        }
+                    }
+                } else {
+                    p
+                };
                 out.push(p);
             }
             Ok(out)
@@ -418,9 +509,35 @@ impl Project {
             let mut out = Vec::new();
             for row in rows {
                 let p = Project::new(&row);
-                let p = p.attach_category().await?;
-                let p = p.attach_user().await?;
-                let p = p.attach_images().await?;
+                let p = if attach_cat {
+                    p.attach_category().await?
+                } else {
+                    p
+                };
+                let p = if attach_author {
+                    p.attach_user().await?
+                } else {
+                    p
+                };
+                let mut p = if attach_images {
+                    p.attach_images().await?
+                } else {
+                    p
+                };
+                let p = if attach_primary_image {
+                    let image_res = ProjectImage::get_image_with_max_views_for_project(p.id).await;
+                    match image_res {
+                        Ok(image) => {
+                            p.primary_image = Some(image);
+                            p
+                        },
+                        _ => {
+                            p
+                        }
+                    }
+                } else {
+                    p
+                };
                 out.push(p);
             }
             Ok(out)
@@ -527,8 +644,9 @@ impl Project {
 
     pub async fn http_get_projects_by_category(
         info: web::Path<CategoryId>,
+        params: web::Query<HttpAllOptionalQueryParams>
     ) -> Result<HttpResponse, HttpResponse> {
-        let result = Project::by_category(info.category_id.into()).await;
+        let result = Project::by_category(info.category_id.into(), params.into_inner()).await;
         match result {
             Ok(res) => Ok(HttpResponse::Ok().body(json!(res))),
             Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
@@ -647,9 +765,13 @@ impl Project {
         app_data: web::Data<AppData>,
         query: web::Query<BlogIndexQuery>
     ) -> Result<HttpResponse, HttpResponse> {
+        let mut default_params: HttpAllOptionalQueryParams = Default::default();
+        default_params.primary_image = Some(true);
+        let mut default_params_tags: HttpAllOptionalQueryParams = Default::default();
+        default_params_tags.primary_image = Some(true);
         let mut articles = match query.tag.clone() {
-            Some(tag) =>  Project::get_projects_by_tag(tag, ProjectCategoryHardcoded::Blog.value()).await.unwrap(),
-            None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog).await.unwrap()
+            Some(tag) =>  Project::get_projects_by_tag(tag, ProjectCategoryHardcoded::Blog.value(), default_params_tags).await.unwrap(),
+            None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog, default_params).await.unwrap()
         };
         let tags = Self::get_uniq_tags(ProjectCategoryHardcoded::Blog.value()).await.unwrap();
         let tags = tags.into_iter()
@@ -703,7 +825,8 @@ impl Project {
         );
     }
     pub async fn print_all() -> Result<(), String> {
-        let result = Project::all().await;
+        let opts: HttpAllOptionalQueryParams = Default::default();
+        let result = Project::all(opts).await;
         match result {
             Ok(projects) => {
                 for project in projects {
