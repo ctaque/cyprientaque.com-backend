@@ -225,8 +225,8 @@ pub struct Id {
 }
 
 impl Id {
-    pub fn new(row: &Row) -> Id {
-        Id { id: row.get("id") }
+    pub fn new(row: &Row) -> i32 {
+        Id { id: row.get("id") }.id
     }
 }
 
@@ -417,7 +417,7 @@ impl Project {
                 let id = Id::new(&row);
                 ids.push(id);
             }
-            Ok(ids.iter().map(|id| id.id).collect())
+            Ok(ids)
         } else {
             let rows: Vec<Row> = Self::db()
                 .await
@@ -427,7 +427,7 @@ impl Project {
                 let id = Id::new(&row);
                 ids.push(id);
             }
-            Ok(ids.iter().map(|id| id.id).collect())
+            Ok(ids)
         }
     }
 
