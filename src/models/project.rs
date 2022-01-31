@@ -690,6 +690,7 @@ impl Project {
                 let mut data = Map::new();
                 data.insert("article".to_string(), json!(article));
                 data.insert("base".to_string(), json!("base".to_string()));
+                data.insert("title".to_string(), json!(article.title.to_string()));
                 let result = app_data.handlebars.render("blog_detail", &data);
                 match result {
                     Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
@@ -731,6 +732,7 @@ impl Project {
         data.insert("tags".to_string(), json!(tags));
         data.insert("current_tag".to_string(), json!(query.tag.clone()));
         data.insert("base".to_string(), json!("base".to_string()));
+        data.insert("title".to_string(), json!("Blog de Cyprien Taque".to_string()));
         let result = app_data.handlebars.render("blog_index", &data);
         match result {
             Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
