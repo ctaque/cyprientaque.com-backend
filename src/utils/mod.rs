@@ -134,7 +134,7 @@ pub mod view_utils {
     ) -> Result<(), RenderError> {
         let param = h.param(0)
                      .ok_or(RenderError::new("Param 0 required for format helper."))?;
-        let count = param.value() as f64;
+        let count = param.value().as_f64().unwrap();
         let base = 1000_f64;
         let divided = count / base;
         let precision = 2;
