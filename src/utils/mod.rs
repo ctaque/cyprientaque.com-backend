@@ -124,6 +124,28 @@ pub mod view_utils {
             }
         }
     }
+    
+    pub fn format_views_count(
+        h: &Helper,
+        _: &Handlebars,
+        _: &Context,
+        _: &mut RenderContext,
+        out: &mut dyn Output,
+    ) -> Result<(), RenderError> {
+        let param = h.param(0)
+                     .ok_or(RenderError::new("Param 0 required for format helper."))?;
+        let count = param.value() as f64;
+        let base = 1000_f64;
+        let divided = count / base;
+        let precision = 2;
+        
+        if divided > 1.0 {
+            out.write(format!("{:.1$}k"), divided, precision)?;
+        } else {
+            out.write(format!("{}", count))?;
+        }
+        Ok(())
+    }
 }
 
 pub mod iso_date_format {
