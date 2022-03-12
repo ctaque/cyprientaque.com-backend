@@ -140,7 +140,7 @@ pub mod view_utils {
         let precision = 2;
         
         if divided > 1.0 {
-            out.write(format!("{:.1$}k"), divided, precision)?;
+            out.write(format!("{:.1$}k", divided, precision))?;
         } else {
             out.write(format!("{}", count))?;
         }
