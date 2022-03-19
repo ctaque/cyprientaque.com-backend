@@ -19,6 +19,8 @@ pipelines:
       - step:
           script:
             - rustup target add x86_64-unknown-linux-musl
+            - apt -y update
+            - apt install -y musl-tools musl-dev
             - echo "Building..."; cargo build --target x86_64-unknown-linux-musl --release
             - mv target/release/ctprods target/release/ctprods.new
           artifacts:
