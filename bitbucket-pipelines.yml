@@ -2,7 +2,7 @@
 # Use a skeleton to build, test and deploy using manual and parallel steps
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: rust:buster
+image: ekidd/rust-musl-builder:stable
 
 pipelines:
   branches:
@@ -18,10 +18,7 @@ pipelines:
                 MODE: 'command'
       - step:
           script:
-            - rustup target add x86_64-unknown-linux-musl
-            - apt -y update
-            - apt install -y musl-tools musl-dev gcc-multilib build-essential
-            - echo "Building..."; CC_x86_64_unknown_linux_musl=musl-gcc cargo build --target x86_64-unknown-linux-musl --release
+            - echo "Building..."; cargo build --release
             - mv target/release/ctprods target/release/ctprods.new
           artifacts:
             - target/release/ctprods.new
