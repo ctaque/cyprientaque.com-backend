@@ -631,3 +631,20 @@ nav.desktop{
         }
     }
 }
+
+.addLike{
+    display: flex;
+    margin: 1.5rem 0.5rem;
+    justify-content: flex-start;
+    align-items: center;
+    button{
+        border: none;
+        background-color: transparent;
+        padding: 0;
+    }
+    span.likesCount{
+        margin-left: .5rem;
+        font-size: 1.4em;
+        color: #fff;
+    }
+}

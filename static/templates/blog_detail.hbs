@@ -48,6 +48,16 @@
         {{#if article.updated_at}}
             <span class="">Last edited : {{format_date article.updated_at "%Y-%m-%d %H:%M:%S"}}</span>
         {{/if }}
+        <div id="addLike"></div>
+        <script>
+        var app = Elm.AddLike.init({
+            node: document.getElementById('addLike'),
+            flags: {
+                views_count: {{article.likes_count}},
+                project_id: {{article.id}}
+            }
+        });
+        </script>
     </div>
 </div>
 {{/inline}}

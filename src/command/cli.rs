@@ -493,6 +493,9 @@ impl HandleCmd {
                             true => "https://www.cyprientaque.com",
                             false => "http://localhost:3000",
                         })
+                        .allowed_origin(
+                            "http://localhost:8088"
+                        )
                         .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
                         .allowed_headers(vec![
                             http::header::AUTHORIZATION,

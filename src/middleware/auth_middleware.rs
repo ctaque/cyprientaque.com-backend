@@ -86,8 +86,13 @@ where
             }
         };
 
+        let route_pass = if req.uri().to_string().contains("addLike") {
+            true
+        } else {
+            false
+        };
 
-        if authenticate_pass {
+        if authenticate_pass || route_pass {
             let fut = self.service.call(req);
             Box::pin(async move {
                 let res = fut.await?;
