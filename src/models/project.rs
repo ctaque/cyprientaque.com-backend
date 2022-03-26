@@ -1,9 +1,11 @@
 use crate::command::cli::AppData;
-use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User};
+use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User, NewProjectLike};
 use crate::utils::{iso_date_format, utils::Sorter};
 use actix_web::{http, web, HttpResponse};
 use async_trait::async_trait;
+use chrono::{Utc, NaiveDate};
 use chrono::naive::NaiveDateTime;
+use ipnetwork::IpNetwork;
 use postgres::{error::Error, Row};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
@@ -20,6 +22,7 @@ use std::io::prelude::*;
 use std::process::Command;
 use std::collections::HashSet;
 use std::iter::FromIterator;
+use std::str::FromStr;
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
 pub struct Project {
@@ -618,23 +621,53 @@ impl Project {
         }
     }
 
-    pub async fn add_like(mut self) -> Result<Project, Error> {
-        Self::db()
-            .await
-            .query_one(
-                "UPDATE projects SET likes_count = likes_count + 1 WHERE id = $1 RETURNING *",
-                &[&self.id],
-            )
-            .await?;
-        self.likes_count = self.likes_count + 1;
-        Ok(self)
+    pub async fn add_like(mut self, ip: IpNetwork) -> Result<Project, Error> {
+        let new_project_like = NewProjectLike{
+            project_id: self.id,
+            ip,
+        };
+
+        let opt = new_project_like.toggle().await?;
+
+        if let Some(_) = opt {
+            Self::db()
+                .await
+                .query_one(
+                    "UPDATE projects SET likes_count = likes_count + 1 WHERE id = $1 RETURNING *",
+                    &[&self.id],
+                )
+                .await?;
+            self.likes_count = self.likes_count + 1;
+            Ok(self)
+        } else {
+            Self::db()
+                .await
+                .query_one(
+                    "UPDATE projects SET likes_count = likes_count - 1 WHERE id = $1 RETURNING *",
+                    &[&self.id],
+                )
+                .await?;
+            self.likes_count = self.likes_count - 1;
+            Ok(self)
+        }
+
     }
 
-    pub async fn http_add_like(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
+    pub async fn http_add_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
+        let ip: IpNetwork = if let Some(val) = req.peer_addr() {
+            let r = IpNetwork::from_str(&val.ip().to_string());
+            if let Ok(curr) = r {
+                curr
+            } else {
+                return Err(HttpResponse::BadRequest().body("Bad ip address"))
+            }
+        } else {
+            return Err(HttpResponse::BadRequest().body("Bad ip address"))
+        };
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
         match result {
             Ok(project) => {
-                let result = project.add_like().await;
+                let result = project.add_like(ip).await;
                 match result {
                     Ok(updated_project) => Ok(HttpResponse::Ok().body(json!(updated_project))),
                     Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),

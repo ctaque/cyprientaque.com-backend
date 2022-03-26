@@ -112,6 +112,15 @@ table! {
 }
 
 table! {
+    projects_likes (id) {
+        id -> Int4,
+        project_id -> Int4,
+        created_at -> Nullable<Timestamp>,
+        ip -> Inet,
+    }
+}
+
+table! {
     subscriptions (id) {
         id -> Int4,
         subscriber_id -> Int4,
@@ -146,6 +155,7 @@ joinable!(profile_user_images -> users (user_id));
 joinable!(project_images -> project_image_categories (project_image_category_id));
 joinable!(project_images -> projects (project_id));
 joinable!(projects -> project_categories (category_id));
+joinable!(projects_likes -> projects (project_id));
 
 allow_tables_to_appear_in_same_query!(
     comments,
@@ -156,6 +166,7 @@ allow_tables_to_appear_in_same_query!(
     project_image_categories,
     project_images,
     projects,
+    projects_likes,
     subscriptions,
     users,
 );
