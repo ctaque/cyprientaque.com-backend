@@ -74,6 +74,20 @@ impl NewProjectLike{
         }
     }
 
+    pub async fn is_liked(self) -> Result<bool, Error> {
+        let result_count_row: Result<Row, Error> = ProjectLike::db().await.query_one("SELECT count(id) as count from projects_likes where project_id = $1 AND ip = $2::text::inet", &[&self.project_id, &self.ip.to_string()]).await;
+        let count: i64 = if let Ok(count_row) = result_count_row{
+            count_row.get("count")
+        } else {
+            0i64
+        };
+        if count == 1 {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
     pub async fn delete(project_id: i32, ip: IpNetwork) -> Result<(), Error> {
         ProjectLike::db().await.query(
             "DELETE FROM projects_likes WHERE project_id = $1 AND ip = $2::text::inet",

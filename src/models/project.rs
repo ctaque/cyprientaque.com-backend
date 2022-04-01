@@ -677,6 +677,44 @@ impl Project {
         }
     }
 
+    pub async fn do_i_like(self, ip: IpNetwork) -> Result<bool, Error> {
+        let project_like = NewProjectLike{
+            project_id: self.id,
+            ip,
+        };
+        Ok(project_like.is_liked().await?)
+    }
+
+    pub async fn http_do_i_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
+        let ip: IpNetwork = if let Some(val) = req.peer_addr() {
+            let r = IpNetwork::from_str(&val.ip().to_string());
+            if let Ok(curr) = r {
+                curr
+            } else {
+                return Err(HttpResponse::BadRequest().body("Bad ip address"))
+            }
+        } else {
+            return Err(HttpResponse::BadRequest().body("Bad ip address"))
+        };
+
+        let result: Result<Project, Error> = Project::find(info.id.into()).await;
+        #[derive(Serialize)]
+        struct IsLikedResponse {
+            value: bool
+        }
+        match result {
+            Ok(project) => {
+                let result = project.do_i_like(ip).await;
+                match result {
+                    Ok(res) => Ok(HttpResponse::Ok().body(json!(IsLikedResponse{ value: res }))),
+                    Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
+                }
+            }
+            Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
+        }
+
+    }
+
     pub async fn http_publish_project(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
         match result {

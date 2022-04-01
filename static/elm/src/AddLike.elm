@@ -51,7 +51,7 @@ init flags =
       , project_id = flags.project_id
       , liked = False
       }
-    , Cmd.none
+    , doILike flags.project_id
     )
 
 
@@ -242,6 +242,12 @@ decodeProjectImageCategory =
         |> required "color_hex" string
 
 
+decodeDoILike : Decoder DoILike
+decodeDoILike =
+    Decode.succeed DoILike
+        |> required "value" bool
+
+
 toggleLike : Int -> Cmd Msg
 toggleLike project_id =
     Http.request
@@ -255,21 +261,48 @@ toggleLike project_id =
         }
 
 
+doILike : Int -> Cmd Msg
+doILike project_id =
+    Http.request
+        { url = "/projects/" ++ String.fromInt project_id ++ "/doILike"
+        , method = "GET"
+        , headers = []
+        , expect = expectJson DoILikeResponse decodeDoILike
+        , tracker = Maybe.Nothing
+        , body = Http.emptyBody
+        , timeout = Maybe.Nothing
+        }
+
+
+type alias DoILike =
+    { value : Bool
+    }
+
+
 type Msg
     = ToggleLike
     | ToggleLikeResponse (Result Http.Error Article)
+    | DoILikeResponse (Result Http.Error DoILike)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        DoILikeResponse result_do_i_like ->
+            case result_do_i_like of
+                Ok val ->
+                    ( { model | liked = val.value }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
         ToggleLike ->
             ( { model | views_count = model.views_count + 1 }, toggleLike model.project_id )
 
         ToggleLikeResponse result_article ->
             case result_article of
                 Ok article ->
-                    ( { model | views_count = article.likes_count }, Cmd.none )
+                    ( { model | views_count = article.likes_count }, doILike article.id )
 
                 _ ->
                     ( model, Cmd.none )
@@ -282,17 +315,34 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ HA.class "addLike" ]
-        [ button [ HE.onClick ToggleLike ]
+        [ div []
+            [ span [ HA.class "beforeButton" ] [ text "Was this article helpful ?" ]
+            ]
+        , button
+            [ HE.onClick ToggleLike
+            , case model.liked of
+                True ->
+                    HA.class "liked"
+
+                False ->
+                    HA.class "notliked"
+            ]
             [ svg
                 [ SvgA.viewBox "0 0 1024 1024"
-                , SvgA.width "30"
-                , SvgA.height "30"
-                , SvgA.fill "#ccc"
+                , SvgA.width "18"
+                , SvgA.height "18"
+                , case model.liked of
+                    True ->
+                        SvgA.fill "#fff"
+
+                    False ->
+                        SvgA.fill "#b98ceb"
                 ]
-                [ Svg.path [ SvgA.d "M149.333333 607.573333v174.933334a69.12 69.12 0 0 0 0 9.386666l-26.88-26.453333A140.373333 140.373333 0 0 1 85.333333 661.76v-174.933333c0-81.066667 58.453333-136.533333 73.813334-223.573334l19.2-110.506666a21.333333 21.333333 0 0 1 24.746666-17.066667A64 64 0 0 1 256 182.613333a40.106667 40.106667 0 0 1 0 17.493334l-42.666667 249.6a234.24 234.24 0 0 0-64 157.866666zM640 115.626667a42.666667 42.666667 0 0 0-60.586667-60.586667l-170.666666 170.666667a128 128 0 0 1 40.106666 80.213333z m227.84 442.88l-85.333333 85.333333a21.333333 21.333333 0 0 1-29.866667 0 21.333333 21.333333 0 0 1 0-30.293333l175.786667-175.786667a42.666667 42.666667 0 0 0 0-60.16 42.666667 42.666667 0 0 0-60.586667 0L689.92 554.666667a21.333333 21.333333 0 0 1-29.866667 0 21.333333 21.333333 0 0 1 0-30.293334L886.613333 298.666667a42.666667 42.666667 0 0 0 0-60.16 42.666667 42.666667 0 0 0-60.586666 0l-226.56 226.56a21.333333 21.333333 0 1 1-30.293334-30.293334L768 236.373333a42.666667 42.666667 0 1 0-60.586667-60.586666L384 497.493333V317.866667A63.573333 63.573333 0 0 0 331.093333 256a21.333333 21.333333 0 0 0-24.746666 17.066667L287.146667 384C271.786667 469.333333 213.333333 526.506667 213.333333 607.573333v174.933334a140.373333 140.373333 0 0 0 37.546667 103.68l58.026667 57.6a128 128 0 0 0 90.453333 37.546666h2.133333a258.56 258.56 0 0 0 124.16-32l131.84-73.386666a216.32 216.32 0 0 0 47.36-35.84l221.44-221.013334a42.666667 42.666667 0 0 0-60.586666-60.586666z" ] []
+                [ Svg.path [ SvgA.d "M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474c-6.1-7.7-15.3-12.2-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1 0.4-12.8-6.3-12.8z" ] []
                 ]
+            , text "Yes"
             ]
-        , span [ HA.class "likesCount" ] [ text (String.fromInt model.views_count) ]
+        , span [ HA.class "likesCount" ] [ text (String.fromInt model.views_count ++ " people found this helpful.") ]
         ]
 
 

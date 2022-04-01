@@ -490,16 +490,42 @@ nav.desktop {
 
 .addLike {
   display: flex;
-  margin: 1.5rem 0.5rem;
+  padding: 1.5rem 3.5rem;
+  margin: 3rem auto;
   justify-content: flex-start;
-  align-items: center; }
+  align-items: center;
+  flex-direction: column;
+  border-top: 1px solid #574ea0;
+  width: fit-content;
+  width: -moz-fit-content; }
+  .addLike span.beforeButton {
+    font-size: 1.3rem;
+    color: #dcd0ea; }
   .addLike button {
+    padding: .5rem 2rem;
+    margin-top: 1.5rem;
+    border-radius: .5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     border: none;
-    background-color: transparent;
-    padding: 0; }
+    transition: all .3s ease; }
+    .addLike button.liked {
+      background-color: #574ea0;
+      border: 1px solid #574ea0;
+      color: #fff; }
+    .addLike button.notliked {
+      border: 1px solid #b98ceb;
+      background: transparent;
+      color: #b98ceb; }
+    .addLike button svg {
+      transition: all .3s ease;
+      margin-right: .8rem; }
   .addLike span.likesCount {
-    margin-left: .5rem;
+    margin-top: 2rem;
     font-size: 1.4em;
-    color: #fff; }
+    color: #dcd0ea; }
 
 /*# sourceMappingURL=style.css.map */

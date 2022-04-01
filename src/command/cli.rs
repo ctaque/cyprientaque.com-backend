@@ -529,6 +529,7 @@ impl HandleCmd {
                 )
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects/{id}", web::delete().to(Project::http_delete))
+                .route("/projects/{id}/doILike", web::get().to(Project::http_do_i_like))
                 .route(
                     "/projects/{id}/addView",
                     web::put().to(Project::http_add_view),
