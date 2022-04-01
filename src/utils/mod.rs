@@ -46,6 +46,7 @@ pub mod view_utils {
     use chrono::NaiveDateTime;
     use comrak::{markdown_to_html, ComrakOptions};
     use handlebars::{Context, Handlebars, Helper, Output, RenderContext, RenderError};
+    use regex::Regex;
 
     pub fn unicode_truncate_helper(
         h: &Helper,
@@ -61,13 +62,16 @@ pub mod view_utils {
         let to_keep = h
             .param(1)
             .ok_or(RenderError::new("Param 1 is required for format helper."))?;
-
+        let iframe_regex = Regex::new(r"<iframe.*</iframe>").unwrap();
+        let output = iframe_regex.replace_all(to_truncate.value().as_str().unwrap(), "");
+        if(output.contains("Classical")){
+            println!("{}", &output);
+        }
         let truncated = super::utils::unicode_truncate(
-            to_truncate.value().as_str().unwrap().to_string(),
+            output.to_string(),
             to_keep.value().as_u64().unwrap(),
         );
-        let rendered = format!("{}", truncated);
-        out.write(rendered.as_ref())?;
+        out.write(&truncated)?;
         Ok(())
     }
 
@@ -83,9 +87,12 @@ pub mod view_utils {
             .param(0)
             .ok_or(RenderError::new("Param 0 is required for format helper."))?;
 
+        let mut opts = ComrakOptions::default();
+        opts.render.unsafe_ = true;
+
         let html: String = markdown_to_html(
             &md.value().as_str().unwrap().to_string(),
-            &ComrakOptions::default(),
+            &opts,
         );
         let rendered = format!("{}", html);
         out.write(rendered.as_ref())?;
