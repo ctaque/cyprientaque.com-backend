@@ -64,7 +64,7 @@ pub mod view_utils {
             .ok_or(RenderError::new("Param 1 is required for format helper."))?;
         let iframe_regex = Regex::new(r"<iframe.*</iframe>").unwrap();
         let output = iframe_regex.replace_all(to_truncate.value().as_str().unwrap(), "");
-        if(output.contains("Classical")){
+        if output.contains("Classical") {
             println!("{}", &output);
         }
         let truncated = super::utils::unicode_truncate(

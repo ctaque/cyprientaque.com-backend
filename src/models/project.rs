@@ -3,7 +3,6 @@ use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, Use
 use crate::utils::{iso_date_format, utils::Sorter};
 use actix_web::{http, web, HttpResponse};
 use async_trait::async_trait;
-use chrono::{Utc, NaiveDate};
 use chrono::naive::NaiveDateTime;
 use ipnetwork::IpNetwork;
 use postgres::{error::Error, Row};
