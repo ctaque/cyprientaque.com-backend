@@ -654,8 +654,9 @@ impl Project {
     }
 
     pub async fn http_add_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
-        let ip: IpNetwork = if let Some(val) = req.peer_addr() {
-            let r = IpNetwork::from_str(&val.ip().to_string());
+        let conn_info = req.connection_info();
+        let ip: IpNetwork = if let Some(val) = conn_info.realip_remote_addr() {
+            let r = IpNetwork::from_str(val);
             if let Ok(curr) = r {
                 curr
             } else {
@@ -686,8 +687,9 @@ impl Project {
     }
 
     pub async fn http_do_i_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
-        let ip: IpNetwork = if let Some(val) = req.peer_addr() {
-            let r = IpNetwork::from_str(&val.ip().to_string());
+        let conn_info = req.connection_info();
+        let ip: IpNetwork = if let Some(val) = conn_info.realip_remote_addr() {
+            let r = IpNetwork::from_str(val);
             if let Ok(curr) = r {
                 curr
             } else {
