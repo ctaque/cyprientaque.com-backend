@@ -3,7 +3,7 @@ $purple-dark: #574ea0;
 $purple-light: #dcd0ea;
 $grey: #bbb;
 $dark-grey: #555;
-$bg-color: rgb(20,19,22);
+$bg-color: #140026;
 
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
@@ -573,10 +573,6 @@ nav.desktop{
             border-radius: 4px;
             margin-bottom: 2em;
             margin-top: 2em;
-            overflow-y: scroll;
-            padding-bottom: 1em;
-            padding-left: 1em;
-            padding-top: 1em;
             code.hljs {
                 background: transparent;
             }
