@@ -573,9 +573,16 @@ nav.desktop{
             border-radius: 4px;
             margin-bottom: 2em;
             margin-top: 2em;
-            code.hljs {
-                background: transparent;
-            }
+        }
+
+        code.hljs {
+            background: transparent;
+        }
+        code:not([class]){
+            padding: 0.3rem 0.5rem;
+            background-color: $purple-dark;
+            border-radius: 0.4rem;
+            line-height: 1rem;
         }
         blockquote{
             color: rgba(255, 255, 255, 0.8);
