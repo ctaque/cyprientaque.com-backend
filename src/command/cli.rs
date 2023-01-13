@@ -438,12 +438,12 @@ impl HandleCmd {
 
     async fn index() -> Result<HttpResponse, HttpResponse> {
         Ok(HttpResponse::MovedPermanently()
-            .header("Location", "https://www.cyprientaque.com/")
+            .header("Location", "https://www.cyprientaque.com/blog")
             .await?)
     }
     async fn not_found_redirect() -> Result<HttpResponse, HttpResponse> {
         Ok(HttpResponse::MovedPermanently()
-            .header("Location", "https://www.cyprientaque.com/")
+            .header("Location", "https://www.cyprientaque.com/blog")
             .await?)
     }
 
