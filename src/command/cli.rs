@@ -172,7 +172,10 @@ impl HandleCmd {
         let options_images_categories: HttpAllOptionalQueryParams = Default::default();
         let projects: Vec<Project> = Project::all(options_projects).await.unwrap();
         let selectified_projects: Vec<String> = Project::selectify(&projects);
-        let categories: Vec<ProjectImageCategory> = ProjectImageCategory::all(options_images_categories).await.unwrap();
+        let categories: Vec<ProjectImageCategory> =
+            ProjectImageCategory::all(options_images_categories)
+                .await
+                .unwrap();
         let selectified_categories: Vec<String> = ProjectImageCategory::selectify(&categories);
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Choisir un projet")
@@ -337,30 +340,32 @@ impl HandleCmd {
         let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
 
         let new_title = Input::<String>::new()
-                         .with_prompt("New title?")
-                         .with_initial_text(&selected_project.title)
-                         .interact().unwrap();
+            .with_prompt("New title?")
+            .with_initial_text(&selected_project.title)
+            .interact()
+            .unwrap();
         let slug: String = slugify!(&new_title);
         let found = Project::get_by_slug(slug.clone()).await;
         match found {
             Some(p) => {
                 if &p.id != &selected_project.id {
-                    return Err(
-                        std::io::Error::new(
-                            std::io::ErrorKind::Other,
-                            String::from("Slug already used")
-                        )
-                    )
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        String::from("Slug already used"),
+                    ));
                 } else {
                     println!("Slug unchanged");
-                    return Ok(())
+                    return Ok(());
                 }
             }
-            None =>  {
+            None => {
                 selected_project.title = new_title;
-                selected_project.update().await.expect("Couldn't save project :/");
+                selected_project
+                    .update()
+                    .await
+                    .expect("Couldn't save project :/");
                 println!("Project saved !");
-                return Ok(())
+                return Ok(());
             }
         }
     }
@@ -379,12 +384,16 @@ impl HandleCmd {
         let mut selected_project: Project = projects.get(selection).unwrap().to_owned();
 
         let new_tags = Input::<String>::new()
-                         .with_prompt("New tags?")
-                         .with_initial_text(&selected_project.tags)
-                         .interact().unwrap();
+            .with_prompt("New tags?")
+            .with_initial_text(&selected_project.tags)
+            .interact()
+            .unwrap();
         selected_project.tags = new_tags;
-        selected_project.update().await.expect("Couldn't save project :/");
-        return Ok(())
+        selected_project
+            .update()
+            .await
+            .expect("Couldn't save project :/");
+        return Ok(());
     }
     pub async fn publish() -> std::io::Result<()> {
         let options: HttpAllOptionalQueryParams = Default::default();
@@ -503,13 +512,14 @@ impl HandleCmd {
                             http::header::ACCEPT,
                             http::header::CONTENT_TYPE,
                         ])
-                        .max_age(3600)
+                        .max_age(3600),
                 )
-                .service(web::resource("/static/{_:.*}", ).route(web::get().to(static_files)))
+                .service(web::resource("/static/{_:.*}").route(web::get().to(static_files)))
                 .app_data(web::PayloadConfig::new(900000000000000000))
                 .app_data(app_data.clone())
                 .route("/blog/{slug}", web::get().to(Project::http_blog_detail))
                 .route("/blog", web::get().to(Project::http_blog_index))
+                .route("/about", web::get().to(Project::http_about))
                 .route("/projects", web::get().to(Project::http_all))
                 .route("/projects", web::post().to(NewProject::http_create))
                 .route(
@@ -530,7 +540,10 @@ impl HandleCmd {
                 )
                 .route("/projects/{id}", web::get().to(Project::http_find))
                 .route("/projects/{id}", web::delete().to(Project::http_delete))
-                .route("/projects/{id}/doILike", web::get().to(Project::http_do_i_like))
+                .route(
+                    "/projects/{id}/doILike",
+                    web::get().to(Project::http_do_i_like),
+                )
                 .route(
                     "/projects/{id}/addView",
                     web::put().to(Project::http_add_view),
@@ -599,7 +612,6 @@ impl HandleCmd {
                     web::get().to(Bitbucket::refresh_token),
                 )
                 .route("/", web::get().to(Self::index))
-                .route("*", web::get().to(Self::not_found_redirect))
         })
         .bind(&addr)?
         .run()

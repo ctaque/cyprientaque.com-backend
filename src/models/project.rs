@@ -1,5 +1,7 @@
 use crate::command::cli::AppData;
-use crate::models::{ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User, NewProjectLike};
+use crate::models::{
+    NewProjectLike, ProjectCategory, ProjectCategoryHardcoded, ProjectImage, User,
+};
 use crate::utils::{iso_date_format, utils::Sorter};
 use actix_web::{http, web, HttpResponse};
 use async_trait::async_trait;
@@ -9,18 +11,19 @@ use postgres::{error::Error, Row};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use rest_macro::{
-    DeleteInfo, FindInfo, HttpAll, HttpDelete, HttpFind, Model, NewModel, UpdatableModel, HttpAllOptionalQueryParams
+    DeleteInfo, FindInfo, HttpAll, HttpAllOptionalQueryParams, HttpDelete, HttpFind, Model,
+    NewModel, UpdatableModel,
 };
 use rest_macro_derive::{HttpAll, HttpDelete, HttpFind};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, value::Map};
 use slugify::slugify;
+use std::collections::HashSet;
 use std::env::{temp_dir, var};
 use std::fs::{self, File};
 use std::io::prelude::*;
-use std::process::Command;
-use std::collections::HashSet;
 use std::iter::FromIterator;
+use std::process::Command;
 use std::str::FromStr;
 
 #[derive(Clone, Debug, Serialize, Deserialize, HttpFind, HttpAll, HttpDelete)]
@@ -79,7 +82,7 @@ impl UpdatableModel<Project> for UpdatableProject {
             &[&self.category_id, &self.title, &self.content, &self.user_id, &self.id]
         ).await?;
 
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -122,7 +125,7 @@ impl Model<Project> for Project {
             )
             .await?;
 
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -137,11 +140,13 @@ impl Model<Project> for Project {
     {
         let rows: Vec<Row> = Self::db()
             .await
-            .query("select * from projects where deleted_at is null order by id;", &[])
+            .query(
+                "select * from projects where deleted_at is null order by id;",
+                &[],
+            )
             .await?;
         let mut projects = Vec::new();
         for row in rows {
-
             let p = Project::new(&row, &query).await;
             if let Ok(project) = p {
                 projects.push(project);
@@ -187,7 +192,7 @@ impl Model<Project> for Project {
             )
             .await?;
 
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -205,7 +210,7 @@ impl Model<Project> for Project {
             )
             .await?;
 
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -244,15 +249,14 @@ pub struct HttpBlogDetailSlug {
 }
 
 #[derive(Deserialize)]
-pub struct BlogIndexQuery{
-    tag: Option<String>
+pub struct BlogIndexQuery {
+    tag: Option<String>,
 }
 #[derive(Serialize)]
 pub struct TagActive {
     tag: String,
     active: bool,
 }
-
 
 impl Project {
     pub async fn new<'a>(row: &Row, query: &HttpAllOptionalQueryParams) -> Result<Project, Error> {
@@ -277,7 +281,13 @@ impl Project {
             user: None,
             primary_image: None,
             tags: row.get("tags"),
-            tags_list: Vec::from_iter(row.get::<_, String>("tags").split(",").map(|s| s.trim()).filter(|s| s != &"").map(String::from))
+            tags_list: Vec::from_iter(
+                row.get::<_, String>("tags")
+                    .split(",")
+                    .map(|s| s.trim())
+                    .filter(|s| s != &"")
+                    .map(String::from),
+            ),
         };
 
         let attach_cat = query.attach_category();
@@ -344,7 +354,10 @@ impl Project {
         Ok(projects)
     }
 
-    pub async fn by_category(cat_id: i32, query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error> {
+    pub async fn by_category(
+        cat_id: i32,
+        query: HttpAllOptionalQueryParams,
+    ) -> Result<Vec<Project>, Error> {
         let rows: Vec<Row> = Self::db()
             .await
             .query(
@@ -364,7 +377,7 @@ impl Project {
 
     pub async fn of_category_hardcoded(
         cat: ProjectCategoryHardcoded,
-        query: HttpAllOptionalQueryParams
+        query: HttpAllOptionalQueryParams,
     ) -> Result<Vec<Project>, Error> {
         let rows: Vec<Row> = Self::db()
             .await
@@ -422,8 +435,9 @@ impl Project {
             .await
             .query("select tags from projects where tags <> '' and category_id = $1 and published = true", &[&category_id])
             .await?;
-        let mut tags: Vec<String> = rows.iter()
-            .map::<String, _>(| row | row.get("tags"))
+        let mut tags: Vec<String> = rows
+            .iter()
+            .map::<String, _>(|row| row.get("tags"))
             .collect::<Vec<String>>()
             .join(",")
             .split(',')
@@ -440,7 +454,11 @@ impl Project {
 
         Ok(tags)
     }
-    pub async fn get_projects_by_tag(tag: String, category_id: i32, query: HttpAllOptionalQueryParams) -> Result<Vec<Project>, Error> {
+    pub async fn get_projects_by_tag(
+        tag: String,
+        category_id: i32,
+        query: HttpAllOptionalQueryParams,
+    ) -> Result<Vec<Project>, Error> {
         let mut q = String::from("select * from projects where published = true and deleted_at is null and tags LIKE CONCAT('%', $1::text, '%')");
         if category_id != 0 {
             q.push_str(" and category_id  = $2");
@@ -457,10 +475,7 @@ impl Project {
             }
             Ok(out)
         } else {
-            let rows: Vec<Row> = Self::db()
-                .await
-                .query(q.as_str(), &[&tag])
-                .await?;
+            let rows: Vec<Row> = Self::db().await.query(q.as_str(), &[&tag]).await?;
             let mut out = Vec::new();
             for row in rows {
                 let p = Project::new(&row, &query).await;
@@ -479,7 +494,7 @@ impl Project {
                 &[&self.id],
             )
             .await?;
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -497,7 +512,7 @@ impl Project {
                 &[&self.id],
             )
             .await?;
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),
@@ -508,7 +523,7 @@ impl Project {
     }
 
     pub async fn attach_category(&mut self) -> Result<(), Error> {
-        let cat:Option<ProjectCategory> = ProjectCategory::find(self.category_id).await.ok();
+        let cat: Option<ProjectCategory> = ProjectCategory::find(self.category_id).await.ok();
         self.category = cat;
         Ok(())
     }
@@ -550,7 +565,7 @@ impl Project {
             .await;
         match result_row {
             Ok(row) => {
-                let params = HttpAllOptionalQueryParams{
+                let params = HttpAllOptionalQueryParams {
                     images: Some(true),
                     author: Some(true),
                     category: Some(true),
@@ -559,7 +574,7 @@ impl Project {
                 let project_res = Project::new(&row, &params).await;
                 match project_res {
                     Ok(project) => Some(project),
-                    Err(_e) => None
+                    Err(_e) => None,
                 }
             }
             _ => None,
@@ -584,7 +599,7 @@ impl Project {
 
     pub async fn http_get_projects_by_category(
         info: web::Path<CategoryId>,
-        params: web::Query<HttpAllOptionalQueryParams>
+        params: web::Query<HttpAllOptionalQueryParams>,
     ) -> Result<HttpResponse, HttpResponse> {
         let result = Project::by_category(info.category_id.into(), params.into_inner()).await;
         match result {
@@ -621,7 +636,7 @@ impl Project {
     }
 
     pub async fn add_like(mut self, ip: IpNetwork) -> Result<Project, Error> {
-        let new_project_like = NewProjectLike{
+        let new_project_like = NewProjectLike {
             project_id: self.id,
             ip,
         };
@@ -649,20 +664,22 @@ impl Project {
             self.likes_count = self.likes_count - 1;
             Ok(self)
         }
-
     }
 
-    pub async fn http_add_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
+    pub async fn http_add_like(
+        info: web::Path<Id>,
+        req: web::HttpRequest,
+    ) -> Result<HttpResponse, HttpResponse> {
         let conn_info = req.connection_info();
         let ip: IpNetwork = if let Some(val) = conn_info.realip_remote_addr() {
             let r = IpNetwork::from_str(val);
             if let Ok(curr) = r {
                 curr
             } else {
-                return Err(HttpResponse::BadRequest().body("Bad ip address"))
+                return Err(HttpResponse::BadRequest().body("Bad ip address"));
             }
         } else {
-            return Err(HttpResponse::BadRequest().body("Bad ip address"))
+            return Err(HttpResponse::BadRequest().body("Bad ip address"));
         };
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
         match result {
@@ -678,42 +695,44 @@ impl Project {
     }
 
     pub async fn do_i_like(self, ip: IpNetwork) -> Result<bool, Error> {
-        let project_like = NewProjectLike{
+        let project_like = NewProjectLike {
             project_id: self.id,
             ip,
         };
         Ok(project_like.is_liked().await?)
     }
 
-    pub async fn http_do_i_like(info: web::Path<Id>, req: web::HttpRequest) -> Result<HttpResponse, HttpResponse> {
+    pub async fn http_do_i_like(
+        info: web::Path<Id>,
+        req: web::HttpRequest,
+    ) -> Result<HttpResponse, HttpResponse> {
         let conn_info = req.connection_info();
         let ip: IpNetwork = if let Some(val) = conn_info.realip_remote_addr() {
             let r = IpNetwork::from_str(val);
             if let Ok(curr) = r {
                 curr
             } else {
-                return Err(HttpResponse::BadRequest().body("Bad ip address"))
+                return Err(HttpResponse::BadRequest().body("Bad ip address"));
             }
         } else {
-            return Err(HttpResponse::BadRequest().body("Bad ip address"))
+            return Err(HttpResponse::BadRequest().body("Bad ip address"));
         };
 
         let result: Result<Project, Error> = Project::find(info.id.into()).await;
         #[derive(Serialize)]
         struct IsLikedResponse {
-            value: bool
+            value: bool,
         }
         match result {
             Ok(project) => {
                 let result = project.do_i_like(ip).await;
                 match result {
-                    Ok(res) => Ok(HttpResponse::Ok().body(json!(IsLikedResponse{ value: res }))),
+                    Ok(res) => Ok(HttpResponse::Ok().body(json!(IsLikedResponse { value: res }))),
                     Err(err) => Err(HttpResponse::InternalServerError().body(err.to_string())),
                 }
             }
             Err(err) => Err(HttpResponse::NotFound().body(err.to_string())),
         }
-
     }
 
     pub async fn http_publish_project(info: web::Path<Id>) -> Result<HttpResponse, HttpResponse> {
@@ -774,29 +793,40 @@ impl Project {
 
     pub async fn http_blog_index(
         app_data: web::Data<AppData>,
-        query: web::Query<BlogIndexQuery>
+        query: web::Query<BlogIndexQuery>,
     ) -> Result<HttpResponse, HttpResponse> {
         let mut default_params: HttpAllOptionalQueryParams = Default::default();
         default_params.primary_image = Some(true);
         let mut default_params_tags: HttpAllOptionalQueryParams = Default::default();
         default_params_tags.primary_image = Some(true);
         let mut articles = match query.tag.clone() {
-            Some(tag) =>  Project::get_projects_by_tag(tag, ProjectCategoryHardcoded::Blog.value(), default_params_tags).await.unwrap(),
-            None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog, default_params).await.unwrap()
+            Some(tag) => Project::get_projects_by_tag(
+                tag,
+                ProjectCategoryHardcoded::Blog.value(),
+                default_params_tags,
+            )
+            .await
+            .unwrap(),
+            None => Self::of_category_hardcoded(ProjectCategoryHardcoded::Blog, default_params)
+                .await
+                .unwrap(),
         };
-        let tags = Self::get_uniq_tags(ProjectCategoryHardcoded::Blog.value()).await.unwrap();
-        let tags = tags.into_iter()
-        .map::<TagActive, _>(|current| -> TagActive {
-            TagActive {
-                tag: current.clone(),
-                active: if let Some(from_query) = query.tag.clone() {
-                    from_query == current
-                } else {
-                    false
+        let tags = Self::get_uniq_tags(ProjectCategoryHardcoded::Blog.value())
+            .await
+            .unwrap();
+        let tags = tags
+            .into_iter()
+            .map::<TagActive, _>(|current| -> TagActive {
+                TagActive {
+                    tag: current.clone(),
+                    active: if let Some(from_query) = query.tag.clone() {
+                        from_query == current
+                    } else {
+                        false
+                    },
                 }
-            }
-        })
-        .collect::<Vec<TagActive>>();
+            })
+            .collect::<Vec<TagActive>>();
         let mut data = Map::new();
 
         articles.sort_by(Sorter::CreatedAt.project());
@@ -804,8 +834,21 @@ impl Project {
         data.insert("tags".to_string(), json!(tags));
         data.insert("current_tag".to_string(), json!(query.tag.clone()));
         data.insert("base".to_string(), json!("base".to_string()));
-        data.insert("title".to_string(), json!("Blog de Cyprien Taque".to_string()));
+        data.insert(
+            "title".to_string(),
+            json!("Blog de Cyprien Taque".to_string()),
+        );
         let result = app_data.handlebars.render("blog_index", &data);
+        match result {
+            Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
+            Ok(html) => Ok(HttpResponse::Ok().body(html)),
+        }
+    }
+
+    pub async fn http_about(app_data: web::Data<AppData>) -> Result<HttpResponse, HttpResponse> {
+        let mut data = Map::new();
+        data.insert("base".to_string(), json!("base".to_string()));
+        let result = app_data.handlebars.render("about", &data);
         match result {
             Err(e) => Err(HttpResponse::InternalServerError().body(e.to_string())),
             Ok(html) => Ok(HttpResponse::Ok().body(html)),
@@ -901,7 +944,7 @@ impl NewModel<Project> for NewProject {
         let row: Row = Self::db().await.query_one("insert into projects (category_id, title, slug, content, created_at, sketchfab_model_number, user_id, is_pro, bitbucket_project_key) values ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7, $8) returning *;",
                                     &[&self.category_id, &self.title, &self.slug, &self.content, &self.sketchfab_model_number, &self.user_id, &self.is_pro, &self.bitbucket_project_key]).await?;
 
-        let params = HttpAllOptionalQueryParams{
+        let params = HttpAllOptionalQueryParams {
             images: Some(true),
             author: Some(true),
             category: Some(true),

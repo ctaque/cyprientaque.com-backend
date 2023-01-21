@@ -70,6 +70,9 @@ async fn main() -> std::io::Result<()> {
         )
         .unwrap();
     handlebars
+        .register_template_string("about", get_template_string("templates/about.hbs"))
+        .unwrap();
+    handlebars
         .register_template_string("base", get_template_string("templates/partials/base.hbs"))
         .unwrap();
     handlebars.register_helper(
@@ -80,10 +83,10 @@ async fn main() -> std::io::Result<()> {
     handlebars.register_helper("render_markdown", Box::new(view_utils::render_markdown));
 
     handlebars.register_helper("format_date", Box::new(view_utils::format_date));
-    
+
     handlebars.register_helper(
         "format_views_count",
-        Box::new(view_utils::format_views_count)
+        Box::new(view_utils::format_views_count),
     );
 
     match args {
