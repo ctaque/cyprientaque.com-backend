@@ -3,3 +3,22 @@
 /rest_macro_derive/target
 /rest_macro/target
 .env
+
+
+# react
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+/static/react/.env
+
+# dependencies
+/static/react/node_modules
+/static/react/elm-stuff
+
+/static/templates/partials
+
+/static/react/npm-debug.log*
+/static/react/yarn-debug.log*
+/static/react/yarn-error.log*
+
+
+#lsp-mode
+/static/react/.log
