@@ -3,8 +3,6 @@
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 # rust buster 2022-03-19
-image:
-  name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
 
 pipelines:
   branches:
@@ -19,6 +17,8 @@ pipelines:
                 COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
                 MODE: 'command'
       - step:
+          image:
+            name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
           script:
             - echo "Building..."; cargo build  --release
             - mv target/release/ctprods target/release/ctprods.new
@@ -50,6 +50,14 @@ pipelines:
                 SERVER: $PADOUK_IP
                 COMMAND: 'rm -f /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods.new /home/cyprien/.bin/ctprods && sudo service ctprods restart'
                 MODE: 'command'
+
+    integration-cyprientaquecom:
+      - step:
+          image:
+            name: node:11.15.0
+          script:
+            - echo "Installing dependencies"; npm --prefix /static/react/ ci
+            - echo "Building React..."; npm --prefix /static/react/ run build
 definitions:
   caches:
     cargo: /usr/local/cargo
