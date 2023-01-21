@@ -84,7 +84,7 @@ fetchArticles env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/category/5"
+                    "https://www.cyprientaque.com/projects/category/5"
 
                 _ ->
                     "http://localhost:8088/projects/category/5"
@@ -114,7 +114,7 @@ addView articletId env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/" ++ String.fromInt articletId ++ "/addView"
+                    "https://www.cyprientaque.com/projects/" ++ String.fromInt articletId ++ "/addView"
 
                 _ ->
                     "http://localhost:8088/projects/" ++ String.fromInt articletId ++ "/addView"
@@ -273,7 +273,7 @@ view model =
                             span [] []
                     , a
                         [ class model.style.blog "edit"
-                        , attribute "href" "https://ctprods.cyprientaque.com/login"
+                        , attribute "href" "https://www.cyprientaque.com/login"
                         , attribute "target" "_blank"
                         ]
                         [ text "edit" ]

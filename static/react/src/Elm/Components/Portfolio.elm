@@ -179,7 +179,7 @@ addView projectId env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/" ++ String.fromInt projectId ++ "/addView"
+                    "https://www.cyprientaque.com/projects/" ++ String.fromInt projectId ++ "/addView"
 
                 _ ->
                     "http://localhost:8088/projects/" ++ String.fromInt projectId ++ "/addView"
@@ -198,7 +198,7 @@ addImageView projectImageId env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
+                    "https://www.cyprientaque.com/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
 
                 _ ->
                     "http://localhost:8088/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
@@ -217,7 +217,7 @@ fetchProjects env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/all_but_not_blog"
+                    "https://www.cyprientaque.com/projects/all_but_not_blog"
 
                 _ ->
                     "http://localhost:8088/projects/all_but_not_blog"
@@ -236,7 +236,7 @@ searchProjects env jwtToken keyword categoryId =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/search?s=" ++ keyword ++ "&category_id=" ++ String.fromInt categoryId
+                    "https://www.cyprientaque.com/projects/search?s=" ++ keyword ++ "&category_id=" ++ String.fromInt categoryId
 
                 _ ->
                     "http://localhost:8088/projects/search?s=" ++ keyword ++ "&category_id=" ++ String.fromInt categoryId
@@ -255,7 +255,7 @@ fetchCategories env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/categories"
+                    "https://www.cyprientaque.com/categories"
 
                 _ ->
                     "http://localhost:8088/categories"
@@ -300,7 +300,7 @@ getAccessToken env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/bitbucket/accessToken"
+                    "https://www.cyprientaque.com/bitbucket/accessToken"
 
                 _ ->
                     "http://localhost:8088/bitbucket/accessToken"

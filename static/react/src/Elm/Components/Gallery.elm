@@ -83,7 +83,7 @@ fetchImages env jwtToken branch =
         baseUrl =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projectImage/includeExcludeProjectCategories"
+                    "https://www.cyprientaque.com/projectImage/includeExcludeProjectCategories"
 
                 _ ->
                     "http://localhost:8088/projectImage/includeExcludeProjectCategories"
@@ -111,7 +111,7 @@ addImageView projectImageId env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
+                    "https://www.cyprientaque.com/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
 
                 _ ->
                     "http://localhost:8088/projectImage/" ++ String.fromInt projectImageId ++ "/addView"
@@ -130,7 +130,7 @@ fetchProject projectId env jwtToken =
         { url =
             case env of
                 Production ->
-                    "https://ctprods.cyprientaque.com/projects/" ++ String.fromInt projectId
+                    "https://www.cyprientaque.com/projects/" ++ String.fromInt projectId
 
                 _ ->
                     "http://localhost:8088/projects/" ++ String.fromInt projectId
