@@ -24,7 +24,7 @@ pipelines:
             - echo "Installing dependencies"; npm --prefix ./static/react/ ci
             - echo "Building React..."; npm --prefix ./static/react/ run build
           artifacts:
-            - $BITBUCKET_CLONE_DIR/**
+            - static/**
       - step:
           image:
             name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
