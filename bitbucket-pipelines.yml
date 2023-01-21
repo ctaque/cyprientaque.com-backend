@@ -26,6 +26,7 @@ pipelines:
           artifacts:
             - static/**
       - step:
+          size: 2x
           image:
             name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
           script:
