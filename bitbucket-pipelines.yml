@@ -24,7 +24,7 @@ pipelines:
             - echo "Installing dependencies"; npm --prefix ./static/react/ ci
             - echo "Building React..."; npm --prefix ./static/react/ run build
           artifacts:
-            - static/**
+            - static/templates/**
       - step:
           size: 2x
           image:
