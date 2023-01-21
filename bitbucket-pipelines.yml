@@ -22,7 +22,7 @@ pipelines:
             name: node:11.15.0
           script:
             - echo "Installing dependencies"; npm --prefix ./static/react/ ci
-            - echo "Building React..."; npm --prefix ./static/react/ run build
+            - echo "Building React...";REACT_APP_JWT_SECRET=$JWT_SECRET npm --prefix ./static/react/ run build
           artifacts:
             - static/templates/**
       - step:
