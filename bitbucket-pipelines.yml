@@ -56,8 +56,8 @@ pipelines:
           image:
             name: node:11.15.0
           script:
-            - echo "Installing dependencies"; npm --prefix /static/react/ ci
-            - echo "Building React..."; npm --prefix /static/react/ run build
+            - echo "Installing dependencies"; npm --prefix ./static/react/ ci
+            - echo "Building React..."; npm --prefix ./static/react/ run build
 definitions:
   caches:
     cargo: /usr/local/cargo
