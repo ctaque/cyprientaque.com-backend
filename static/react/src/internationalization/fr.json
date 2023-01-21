@@ -1,0 +1,65 @@
+{
+    "header":{
+        "mainTitle": "Développeur logiciel",
+        "subTitle": "Développeur de webapps et plus depuis 2016",
+        "searchInputLabel": "Rechercher dans le site",
+        "switchLabel": {
+            "software": "Développement logiciel",
+            "wood": "Métiers du bois"
+        },
+        "cta": "Découvrir"
+    },
+    "home": {
+        "shortMenuTitle": "Introduction",
+        "age": "ans",
+        "resume": "CV.pdf"
+    },
+    "hobbies": {
+        "shortMenuTitle": "Loisirs"
+    },
+    "portfolio": {
+        "shortMenuTitle": "Portfolio",
+        "buttons":{
+            "development": "Développement",
+            "other": "Autres"
+        }
+    },
+    "experiences":{
+        "shortMenuTitle": "Expérience",
+        "menu":{
+            "software": "Développement logiciel",
+            "wood": "Transformation du bois et matériaux composites"
+        },
+        "mainTitle": {
+            "software": "Expérience en développement logiciel",
+            "wood": "Expérience en transformation du bois et matériaux composites"
+        },
+        "checkbox": {
+            "all": "Tout",
+            "contract" : "Contrat de travail",
+            "internship": "Stage"
+        }
+    },
+    "studies": {
+        "shortMenuTitle": "Etudes",
+        "menu": {
+            "software": "Développement logiciel",
+            "wood": "Transformation du bois et matériaux composites"
+        },
+        "mainTitle": {
+            "software": "Etudes en développement logiciel",
+            "wood": "Etudes en transformation du bois et matériaux composites"
+        }
+    },
+    "skills": {
+        "shortMenuTitle": "Compétences",
+        "menu": {
+            "software": "Développement logiciel",
+            "wood": "Transformation du bois et matériaux composites"
+        },
+        "mainTitle": {
+            "software": "Compétences en développement logiciel",
+            "wood": "Compétences en transformation du bois et matériaux composites"
+        }
+    }
+}

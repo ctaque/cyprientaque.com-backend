@@ -1,0 +1,148 @@
+{
+    "wood": [{
+        "name": "Solidworks",
+        "dates": {
+            "start": 2015,
+            "end": 2016
+        },
+        "en": "I used Soliworks to create design furniture and composite/metal sheet bathrooms",
+        "fr": "J'ai utilisé Solidworks pour concevoir du mobilier design et des salles de bains composites/tôle"
+    }, {
+        "name": "Inventor",
+        "dates": {
+            "start": 2013,
+            "end": 2014
+        },
+        "en": "I used Inventor for a project at work just a few days",
+        "fr": "J'ai utislisé Inventor au travail pour un projet de quelques jours"
+    }, {
+        "name": "Autocad",
+        "dates": {
+            "start": 2013,
+            "end": 2014
+        },
+        "en": "I used to draw furniture in Autocad",
+        "fr": "J'ai utilisé autocad pour extraire des plans de mobilier et créer des plans d'atelier et d'implantations"
+    }, {
+        "name": "Rhinoceros",
+        "dates": {
+            "start": 2011,
+            "end": 2014
+        },
+        "en": "Rhinoceros is a great software to create 3D models. I used to have a good level on Rhinoceros using it every day at work",
+        "fr": "J'ai utilisé Rhinoceros au travail pour créer du mobilier design non paramétrique et des rendu photo réalistes"
+    }, {
+        "name": "TopSolid",
+        "dates": {
+            "start": 2014,
+            "end": 2015
+        }
+    }],
+    "software": [{
+        "name": "Linux",
+        "dates": {
+            "start": 2016
+        },
+        "en": "I started using linux in 2016 when I started development, I started with Arch linux (wrong choice) and came to Debian and Ubuntu after",
+        "fr": "J'ai commencé à utiliser Linux en 2016 quand j'ai entamé ma reconversion, J'ai commencé avec Arch linux et je suis venu à Debian et Ubuntu par la suite, et peut être bientôt NixOs"
+    }, {
+        "name": "OS X",
+        "dates": {
+            "start": 2019
+        }
+    }, {
+        "name": "PHP",
+        "dates": {
+            "start": 2015,
+            "end": 2017
+        }
+    }, {
+        "name": "SQL",
+        "dates": {
+            "start": 2016
+        }
+    }, {
+        "name": "Javascript",
+        "dates": {
+            "start": 2016
+        }
+    }, {
+        "name": "Typescript",
+        "dates": {
+            "start": 2017
+        },
+        "en": "I have a good level on Typescript as I work on Webapps",
+        "fr": "J'ai un bon niveau en Typescript car je l'utilise tous les jours au travail"
+    }, {
+        "name": "Html",
+        "dates": {
+            "start": 2015
+        }
+    }, {
+        "name": "Css",
+        "dates": {
+            "start": 2015
+        }
+    }, {
+        "name": "Sass/Less",
+        "dates": {
+            "start": 2017
+        }
+    }, {
+        "name": "Elm",
+        "dates": {
+            "start": 2020
+        },
+        "en": "I did a pong Game and web components in elm. This life-long technology overview is done in Elm. Elm is my favourite language to work with",
+        "fr": "J'ai fait un jeu du Pong en Elm, et Ce site a des composants en Elm. Cet aperçu des technologies utilisées et le portfolio sont fait en Elm"
+    }, {
+        "name": "NodeJs",
+        "dates": {
+            "start": 2018
+        }
+    }, {
+        "name": "ReactJs",
+        "dates": {
+            "start": 2017
+        },
+        "en": "I worked on small to medium applications in React",
+        "fr": "J'ai travaillé sur des applis de petite à moyenne taille en React"
+    }, {
+        "name": "Redux",
+        "dates": {
+            "start": 2018
+        },
+        "en": "I use Redux with React at work since 2018",
+        "fr": "J'ai utilisé Redux avec React au travail depuis 2018"
+    }, {
+        "name": "ExtJs",
+        "dates": {
+            "start": 2018,
+            "end": 2020
+        },
+        "en": "I worked on a POS webapp for cinemas. ExtJs is by far not my favourite framework to work with",
+        "fr": "J'ai travaillé sur un logiciel de caisse de cinéma en ExtJS. C'est de loin pas ma techno préférée"
+    }, {
+        "name": "Git",
+        "dates": {
+            "start": 2016
+        }
+    }, {
+        "name": "Postgresql",
+        "dates": {
+            "start": 2016
+        }
+    }, {
+        "name": "Mongodb",
+        "dates": {
+            "start": 2019
+        }
+    }, {
+        "name": "Rust",
+        "dates": {
+            "start": 2020
+        },
+        "en": "I made a CLI and a web backend for personnal use",
+        "fr": "J'ai fait le backend et l'outil de gestion de contenu en ligne de commande de cyprientaque.com en Rust"
+    }]
+}

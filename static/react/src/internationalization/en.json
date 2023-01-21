@@ -1,0 +1,65 @@
+{
+    "header":{
+        "mainTitle": "Software developer",
+        "subTitle": "Developer of webapps and more since 2016",
+        "searchInputLabel": "Search in website",
+        "switchLabel": {
+            "software": "Software engineering",
+            "wood": "Wood industry"
+        },
+        "cta": "Discover"
+    },
+    "home": {
+        "shortMenuTitle": "Introduction",
+        "age": "yo",
+        "resume": "Resume.pdf"
+    },
+    "hobbies": {
+        "shortMenuTitle": "Hobbies"
+    },
+    "portfolio": {
+        "shortMenuTitle": "Portfolio",
+        "buttons":{
+            "development": "Development",
+            "other": "Other"
+        }
+    },
+    "experiences":{
+        "shortMenuTitle": "Experience",
+        "menu":{
+            "software": "Software development",
+            "wood": "Wood processing and composite materials"
+        },
+        "mainTitle": {
+            "software": "Experience in software development",
+            "wood": "Experience in wood processing and composite materials"
+        },
+        "checkbox": {
+            "all": "All",
+            "contract" : "Work contract",
+            "internship": "Internship"
+        }
+    },
+    "studies": {
+        "shortMenuTitle": "Studies",
+        "menu": {
+            "software": "Software development",
+            "wood": "Wood processing and composite materials"
+        },
+        "mainTitle": {
+            "software": "Studies in software development",
+            "wood": "Studies in wood processing and composite materials"
+        }
+    },
+    "skills": {
+        "shortMenuTitle": "Skills",
+        "menu": {
+            "software": "Software development",
+            "wood": "Wood processing and composite materials"
+        },
+        "mainTitle": {
+            "software": "Skills in software development",
+            "wood": "Skills in wood processing and composite materials"
+        }
+    }
+}
