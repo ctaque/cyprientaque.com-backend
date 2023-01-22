@@ -402,7 +402,7 @@ export default connector(
                 }} />
                 <br />
                 <div className="section" id="intro" ref={introRef}>
-                    <h1 className="regular purple">{Dataset.home.hello}</h1>
+                    <h1 className="regular purple">{Dataset.home.about}</h1>
                     <HighlightedText text={Dataset.home.intro} highlight={hl} className="grey fs15" />
                     <br />
                     <div className="home-content-wrapper">
@@ -684,11 +684,6 @@ export default connector(
                         <span>Hosted On :</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <img
-                            alt="Frontend hosted on Netlify"
-                            src="https://www.netlify.com/v3/img/components/netlify-color-bg.svg"
-                            style={{ height: '3.5rem', marginRight: '1rem' }}
-                        />
                         <img
                             alt="Backend hosted on DigitalOcean"
                             src="https://upload.wikimedia.org/wikipedia/commons/f/ff/DigitalOcean_logo.svg"

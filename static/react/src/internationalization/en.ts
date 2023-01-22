@@ -121,8 +121,8 @@ const data = {
         }],
     },
     home: {
-        hello: 'Hello !',
-        intro: `I am a software developer from France, this is my resume.`,
+        about: 'About',
+        titleDev: 'Software development',
         software: {
             title: 'Software development',
             introduction: `Software developer at [Ciné digital services](https://www.cinedigitalservice.com/cds/), I have 4 years of practice in webapps development. I am currently doing [Ciné boutique](https://leplessisrobinsonmaisondesarts.cine.boutique/),

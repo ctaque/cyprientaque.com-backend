@@ -1210,7 +1210,7 @@ nav.bm-item-list h3{
      left: 0;
      right: 0;
      bottom: 0;
-     background-color: #141416;
+     background-color: #238df6;
      -webkit-transition: .4s;
      transition: .4s;
      border-radius: 34px;
@@ -1227,14 +1227,14 @@ nav.bm-item-list h3{
      width: 12px;
      left: 4px;
      bottom: 4px;
-     background-color: #dcd0ea;
+     background-color: #fff;
      -webkit-transition: .4s;
      transition: .4s;
      border-radius: 50%;
  }
 
  input:checked + .slider {
-     background-color: #141416;
+     background-color: #238df6;
  }
 
  input:checked + .slider:before {
@@ -1251,9 +1251,9 @@ nav.bm-item-list h3{
      align-items: center;
      justify-content: center;
      padding: .5rem;
-     background-color: #464646;
      span{
          color: #dcd0ea;
+         font-weight: bold;
      }
      @media screen and (max-width:  1000px){
          zoom: .9;

@@ -1,20 +1,19 @@
 const data = {
     home: {
-        hello: 'Bonjour !',
-        intro: `Je suis développeur logiciel, voici mon cv.`,
+        about: 'A propos',
         titleDev: 'Développement logiciel',
         software: {
             title: 'Développement logiciel',
             introduction: `Je suis développeur depuis 2016, actuellement chez [Ciné Digital](https://www.cinedigitalservice.com/cds/),
  je réalise actuellement l'application de vente internet multisite [Ciné Boutique](https://leplessisrobinsonmaisondesarts.cine.boutique/) depuis juillet 2018.
-Je travaille donc sur des webapps, dans les technologies React/Redux, langages TypeScript / JavaScript / NodeJs occasionnellement Java, ExtJs et SQL. Je m'intéresse aussi au backend et à la programmation fonctionnelle (Elm, Rust). Mais pas que !`
+Je travaille donc sur des webapps, dans les technologies React/Redux, langages TypeScript / JavaScript / NodeJs occasionnellement Java, ExtJs et SQL. Je m'intéresse aussi au backend et à la programmation fonctionnelle (Elm, Rust).`
         },
         wood: {
             title: 'Transformation du bois',
             introduction: `Dans une autre vie...
 Mon parcours d'études et professionnel dans les métiers du bois m'a amené à éxercer le travail manuel du bois, l'apprentissage de l'utilisation des machines à bois, la théorie de la gestion de production et la pratique du dessin et de la conception assistée par ordinateur.
 J'ai éxercé le métier de technicien (dessinateur, chef de projets en recherche et développement) dans les domaines de la menuiserie industrielle,
-l'agencement mobilier et la conception de salles de bains en matériaux composites et tôle pliée. Mais ça, c'est du passé.`
+l'agencement mobilier et la conception de salles de bains en matériaux composites et tôle pliée.`
         }
     },
     studies: {
@@ -155,11 +154,11 @@ l'agencement mobilier et la conception de salles de bains en matériaux composit
             id: 1,
             institution: 'Ciné Digital',
             location: 'La Chapelle sur Erdre (44)',
-            tasks: `J\'interviens en tant que développeur FullStack Typescript/Node sur des thématiques de vente, dans une équipe de 6 développeurs : 
+            tasks: `J\'interviens en tant que développeur FullStack Typescript/Node sur des thématiques de vente, dans une équipe de 6 développeurs :
 
-De la suite logicielle Ciné Office (point de vente caisse, borne, internet). 22 millions de tickets délivrés. Applications en monolithique et microservices.
+Dans la suite logicielle Ciné Office (point de vente caisse, borne, internet). 22 millions de tickets délivrés. Applications en monolithique et microservices.
 
-De la plateforme de vente internet Ciné Boutique : Démarrage, développement, test et maintenance, évolution de la plateforme; un million de tickets délivrés en 3 ans; intégration du parcours d’achat dans des CMS; Paiement avec TPE Hipay, Paypal et Paybox. Gestion partielle de la montée en charge. (Front end Typescript/React, Backend NodeJs/MongoDB)
+Dans la plateforme de vente internet Ciné Boutique : Démarrage, développement, test et maintenance, évolution de la plateforme; un million de tickets délivrés en 3 ans; intégration du parcours d’achat dans des CMS; Paiement avec TPE Hipay, Paypal et Paybox. Gestion partielle de la montée en charge. (Front end Typescript/React, Backend NodeJs/MongoDB)
 
 Réalisation de deux sites vitrine avec un CMS headless et un parcours d\'achat internet en Typescript, React et NodeJs.
 
@@ -201,13 +200,13 @@ Maintient à jour de la documentation développeur.`,
                 level: 'Quelques semaines de pratique',
                 name: 'Rust',
                 technologies: [{
-                    content: 'Développement du backend de cyprientaque.com',
+                    content: 'Développement du backend de cyprientaque.com, framework Actix, déploiement automatisé avec le CI/CD Bitbucket, Front end React/Typescript/Elm',
                     id: 1,
-                    name: 'Web Backend'
+                    name: 'Web'
                 }, {
                     content: 'Développement d\'une [librairie](https://ctprods.cyprientaque.com/blog/a-rust-api-pattern-actix) pour le framework Actix',
                     id: 2,
-                    name: 'Lib'
+                    name: 'Librairie'
                 }]
             },
             {
