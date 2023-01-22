@@ -1,40 +1,44 @@
 
 {{#*inline "page"}}
-<h3>Tags</h3>
-<div class="tags-list">
-<a href="/blog" class="tag {{#if current_tag }} {{else}}active{{/if}}">All</a>
-{{#each tags}}
-<a href="/blog?tag={{this.tag}}" class="tag {{#if this.active}}active{{/if}}">{{this.tag}}</a>
-{{/each}}
-</div>
-<div class="articles-list--with-banner">
-    <div class="articles-list">
-        {{#each articles}}
-            <a class="list-item" href="/blog/{{this.slug}}">
-                <div class="header">
-                    {{#if this.primary_image}}
-                        <img alt="Presentation image of the article" src="{{this.primary_image.w350_object_url}}"/>
-                    {{/if}}
-                </div>
-                <div class="date-title-outer">
-                    <div class="date">
-                        <span class="day">{{format_date this.created_at "%d"}}</span>
-                        <span class="month">{{format_date this.created_at "%b"}}</span>
-                        <span class="year">{{format_date this.created_at "%Y"}}</span>
-                    </div>
-                    <h2 class="title">
-                        <div class="date-views">
-                            <div class="date-views-inner">
-                                <img src="/static/svg/eye.svg"/>
-                                <span>{{format_views_count this.views_count}}</span>
-                            </div>
-                        </div>
-                        {{this.title}}
-                    </h2>
-                </div>
-                <div class="preview">{{unicode_truncate this.content 200}}...</div>
-            </a>
+<div class="pageWrap">
+    <div class="page">
+        <h3>Tags</h3>
+        <div class="tags-list">
+        <a href="/blog" class="tag {{#if current_tag }} {{else}}active{{/if}}">All</a>
+        {{#each tags}}
+        <a href="/blog?tag={{this.tag}}" class="tag {{#if this.active}}active{{/if}}">{{this.tag}}</a>
         {{/each}}
+        </div>
+        <div class="articles-list--with-banner">
+            <div class="articles-list">
+                {{#each articles}}
+                    <a class="list-item" href="/blog/{{this.slug}}">
+                        <div class="header">
+                            {{#if this.primary_image}}
+                                <img alt="Presentation image of the article" src="{{this.primary_image.w350_object_url}}"/>
+                            {{/if}}
+                        </div>
+                        <div class="date-title-outer">
+                            <div class="date">
+                                <span class="day">{{format_date this.created_at "%d"}}</span>
+                                <span class="month">{{format_date this.created_at "%b"}}</span>
+                                <span class="year">{{format_date this.created_at "%Y"}}</span>
+                            </div>
+                            <h2 class="title">
+                                <div class="date-views">
+                                    <div class="date-views-inner">
+                                        <img src="/static/svg/eye.svg"/>
+                                        <span>{{format_views_count this.views_count}}</span>
+                                    </div>
+                                </div>
+                                {{this.title}}
+                            </h2>
+                        </div>
+                        <div class="preview">{{unicode_truncate this.content 200}}...</div>
+                    </a>
+                {{/each}}
+            </div>
+        </div>
     </div>
 </div>
 {{/inline}}

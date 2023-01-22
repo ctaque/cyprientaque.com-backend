@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { Link } from 'react-scroll';
 import { T } from '../internationalization/Trans';
 import ArrowNavLinks from './ArrowNavLinks';
-import ToggleSwitch from './ToggleSwitch';
 
 const hashs = [
     'intro',
@@ -80,7 +79,6 @@ const DesktopNav = (props: Props) => {
         >
             <div className="toggleSwitchLabelWrapper">
                 <span>{T.translate('header.switchLabel.software')}</span>
-                <ToggleSwitch location={location} />
                 <span>{T.translate('header.switchLabel.wood')}</span>
             </div>
             <div className="bg onlyDesktop" style={{ clipPath: getClipPath(offsetFromLeftPx) }} />
