@@ -22,8 +22,6 @@ import store from '../store/store';
 const skillsStyle = require('../Elm/Components/Skills.modules.scss');
 const portfolioStyle = require('../Elm/Components/Portfolio.modules.scss');
 
-(window as any).ga('send', 'pageview');
-
 interface Props {
     images: CarouselData[];
     imagekey: string;
