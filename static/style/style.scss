@@ -194,6 +194,16 @@ ul li{
 
 .headline{
     width: 100%;
+    a.links{
+        padding: .35rem .7rem;
+        border: 2px solid #ad97c6;
+        color: $purple-light;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-top: 1rem;
+        margin-right: .5rem;
+    }
 }
 
 .contactHeader{
@@ -681,3 +691,4 @@ nav.desktop{
         color: $purple-light;
     }
 }
+

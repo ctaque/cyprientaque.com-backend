@@ -187,6 +187,16 @@ ul li {
 .headline {
   width: 100%;
 }
+.headline a.links {
+  padding: 0.35rem 0.7rem;
+  border: 2px solid #ad97c6;
+  color: #dcd0ea;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 1rem;
+  margin-right: 0.5rem;
+}
 
 .contactHeader {
   width: 35%;
