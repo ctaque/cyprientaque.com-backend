@@ -57,8 +57,7 @@ const data = {
             id: 1,
             institution: 'Altor Industrie',
             location: 'Clisson (44)',
-            tasks: 'Mise à jour annuelle d\'un dossier de plan, amélioration et création de nouveaux modèles de cabines de bain en polyester et tôle d\'acier.',
-            technologies: 'Solidworks 2014, EPDM, Cegid PMI',
+            tasks: 'Dans le cadre de mes fonctions, j\'ai été en charge de la mise à jour annuelle d\'un dossier de plan, ainsi que l\'amélioration et la création de nouveaux modèles de cabines de bain en polyester et tôle d\'acier. J\'ai travaillé à l\'aide des technologies Solidworks 2014, EPDM et Cegid PMI.',
         }, {
             beginning: '10/2013',
             contract: 'cdi',
@@ -70,7 +69,7 @@ const data = {
             id: 2,
             institution: 'Comec',
             location: 'La Tessoualle (49)',
-            tasks: 'Création de plans pour l\'obtention d\'un procès verbal d\'autorisation de mise sur le marché, conception et dessin d\'un prototype de porte palière coupe feu et anti effraction, suivi de réalisation du prototype, contact fournisseurs, relevé de temps de fabrication pour l\'amélioration de l\'ERP interne, Logiciel: Topsolid V6',
+            tasks: 'Ce projet a impliqué plusieurs tâches telles que l\'élaboration de plans pour l\'obtention d\'une autorisation de mise sur le marché, la conception et le dessin d\'un prototype de porte palière coupe-feu et anti-effraction, ainsi que le suivi de sa réalisation. En outre, il a inclut également la gestion des contacts fournisseurs, le suivi du temps de fabrication pour améliorer l\'ERP interne et l\'utilisation du logiciel Topsolid V6.',
             technologies: 'Topsolid V6',
         }, {
             beginning: '10/2011',
@@ -83,8 +82,8 @@ const data = {
             id: 3,
             institution: 'Euroformes',
             location: 'Guichen (35)',
-            tasks: 'Conception de mobilier bois, métal, Corian, verre, préparation des plans et documents de fabrication, appels fournisseurs. Logiciels Autocad, Solidworks, Rhinoceros',
-            technologies: 'Rhinoceros, Solidworks, autocad',
+            tasks: 'J\'étais chargé de la conception de mobilier en bois, en métal, en Corian et en verre, ainsi que de la préparation des plans et des documents nécessaires à la fabrication. Mon travail comprenait également la gestion des appels fournisseurs. Pour mener à bien ces tâches, j\'utilisais les logiciels Autocad, Solidworks, Rhinoceros et le logiciel Excel.',
+            technologies: 'Rhinoceros, Solidworks, Autocad, Excel',
         }, {
             beginning: '01/2011',
             contract: 'stage',
@@ -96,8 +95,8 @@ const data = {
             id: 4,
             institution: 'Pasquet Menuiseries',
             location: 'Ile et vilaine',
-            tasks: 'Solutionnement d\'un aléa de production en menuiserie industrielle',
-            technologies: 'Excel, Powerpoint',
+            tasks: 'Dans le cadre de mes fonctions en menuiserie industrielle, j\'ai été chargé de résoudre un aléa de production.',
+            technologies: 'Logiciels Excel, Powerpoint',
         }, {
             beginning: '06/2010',
             contract: 'stage',
@@ -109,7 +108,7 @@ const data = {
             id: 5,
             institution: 'Suprême Homes',
             location: 'Canada',
-            tasks: 'Opérateur sur ligne de montage, solutionnement d\'un aléa de production',
+            tasks: 'Mon travail consistait à participer à la construction de maisons en tant qu\'opérateur sur la ligne de montage. Pendant mon stage, j\'ai également été chargé de résoudre un aléa de production.',
             technologies: 'Excel',
         }, {
             beginning: '05/2009',
@@ -122,7 +121,7 @@ const data = {
             id: 6,
             institution: 'ST Bois Concept',
             location: 'La Chevrolière (44)',
-            tasks: 'Fabrication de prototypes de mobilier pour bateaux et camping-cars',
+            tasks: 'Pendant mon stage, j\'ai eu l\'opportunité de fabriquer des prototypes de mobilier destinés aux bateaux et aux camping-cars.',
             technologies: 'Machines à bois d\'atelier, outillage électroportatif',
         }, {
             beginning: '12/2008',
@@ -135,7 +134,7 @@ const data = {
             id: 7,
             institution: 'Chantiers Bénéteau',
             location: 'Le Poiré sur Vie (85)',
-            tasks: 'Opérateur sur ligne de montage des bateaux de la gamme Océanis',
+            tasks: 'Pendant mon stage, j\'ai eu l\'opportunité d\'être opérateur sur la ligne de montage des bateaux de la gamme Océanis',
             technologies: 'Outillage électroportatif',
         }],
         software: [{
@@ -149,18 +148,14 @@ const data = {
             id: 1,
             institution: 'Ciné Digital',
             location: 'La Chapelle sur Erdre (44)',
-            tasks: `J\'interviens en tant que développeur FullStack Typescript/Node sur des thématiques de vente, dans une équipe de 6 développeurs :
+            tasks: `Je travaille en tant que développeur FullStack Typescript/Node au sein d'une équipe de 6 développeurs. Mes interventions portent sur des thématiques de vente, notamment dans la suite logicielle Ciné Office qui comprend une caisse enregistreuse, des bornes et une plateforme de vente en ligne. Nous avons délivré 22 millions de tickets grâce à des applications en monolithique et en microservices.
 
-Dans la suite logicielle Ciné Office (point de vente caisse, borne, internet). 22 millions de tickets délivrés. Applications en monolithique et microservices.
+Je suis également impliqué(e) dans la plateforme de vente en ligne Ciné Boutique, où j'ai participé au démarrage, au développement, aux tests et à la maintenance. J'ai travaillé sur l'évolution de la plateforme qui a délivré un million de tickets en 3 ans, ainsi que sur l'intégration du parcours d'achat dans des CMS et le paiement avec TPE Hipay, Paypal et Paybox. J'ai également partiellement géré la montée en charge. Pour cela, j'ai utilisé les technologies Front-end Typescript/React, le rendu côté serveur et le Back-end NodeJs/MongoDB.
 
-Dans la plateforme de vente internet Ciné Boutique : Démarrage, développement, test et maintenance, évolution de la plateforme; un million de tickets délivrés en 3 ans; intégration du parcours d’achat dans des CMS; Paiement avec TPE Hipay, Paypal et Paybox. Gestion partielle de la montée en charge. (Front end Typescript/React, Backend NodeJs/MongoDB)
+En outre, j'ai réalisé deux sites vitrine avec un CMS headless et un parcours d'achat en ligne en Typescript, React et NodeJs. J'ai automatisé le déploiement continu des services en développement grâce à Gitlab CI/CD et maintenu la documentation développeur à jour.
 
-Réalisation de deux sites vitrine avec un CMS headless et un parcours d\'achat internet en Typescript, React et NodeJs.
-
-Automatisation du déploiement continu des services en développement avec le CI/CD de Gitlab. 
-
-Maintient à jour de la documentation développeur.`,
-            technologies: 'Typescript, React, Jest, Webpack, Redux, Sass/Less, NodeJs, MongoDB, Postgresql, ExtJS, ERP Dolibarr, scheduler Rundeck; TPE Hipay, Paypal, Paybox; Outils : Ubuntu, Emacs, Docker compose, Gitlab, Gitlab CI/CD',
+J'ai également réalisé une application de lecture de sous titres en utilisant le langage Flutter`,
+            technologies: 'J\'ai utilisé Typescript, React, Jest, Webpack, Redux, Sass/Less, NodeJs, MongoDB, Postgresql, ExtJS, l\'ERP Dolibarr, le scheduler Rundeck; les TPE Hipay, Paypal, Paybox; Les outils GNU/Linux, Emacs, Docker compose, Gitlab, et le Gitlab CI/CD',
         }, {
             beginning: '06/2017',
             contract: 'stage',
@@ -172,7 +167,7 @@ Maintient à jour de la documentation développeur.`,
             id: 2,
             institution: 'Asmoza',
             location: 'Nantes',
-            tasks: 'Mise en place d\'une architecture MVC et d\'un ORM dans une application',
+            tasks: 'Pendant ce projet, j\'ai implémenté une architecture MVC et un ORM dans une application.',
             technologies: 'Backend php, SQL',
         }]
     },
@@ -181,10 +176,10 @@ Maintient à jour de la documentation développeur.`,
             {
                 icon: 'https://cdn.svgporn.com/logos/elm.svg',
                 id: 1,
-                level: 'Quelques jours de pratique',
+                level: 'J\'ai une expérience de quelques jours de pratique sur le langage Elm',
                 name: 'Elm',
                 technologies: [{
-                    content: 'Développement de ce site et d\'un [jeu Pong](https://el-pong.netlify.app/) ',
+                    content: 'En utilisant Elm, j\'ai développé ce site et un [jeu du Pong](https://el-pong.netlify.app/) ',
                     id: 1,
                     name: 'Jeu/Front-end web'
                 }]
@@ -192,14 +187,14 @@ Maintient à jour de la documentation développeur.`,
             {
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Cuddlyferris.svg',
                 id: 2,
-                level: 'Quelques semaines de pratique',
+                level: 'J\'ai une expérience de quelques semaines de pratique sur le langage Rust',
                 name: 'Rust',
                 technologies: [{
-                    content: 'Développement du backend de cyprientaque.com, framework Actix, déploiement automatisé avec le CI/CD Bitbucket, Front end React/Typescript/Elm',
+                    content: 'En utilisant Rust, le framework Actix, React, Typescript et Elm, j\'ai eu l\'occation de développer le backend ainsi que le front end de ce site, et également d\'automatiser le déploiement en utilisant le Bitbucket CI/CD.',
                     id: 1,
                     name: 'Web'
                 }, {
-                    content: 'Développement d\'une [librairie](https://ctprods.cyprientaque.com/blog/a-rust-api-pattern-actix) pour le framework Actix',
+                    content: 'J\'ai eu l\'occasion de développer une [librairie](https://ctprods.cyprientaque.com/blog/a-rust-api-pattern-actix) pour le framework Actix',
                     id: 2,
                     name: 'Librairie'
                 }]
@@ -207,22 +202,22 @@ Maintient à jour de la documentation développeur.`,
             {
                 icon: 'https://cdn.svgporn.com/logos/typescript-icon.svg',
                 id: 3,
-                level: 'Quelques années de pratique',
+                level: 'J\'ai une expérience de quelques années dans le langage Typescript et React',
                 name: 'Typescript/React',
                 technologies: [{
-                    content: 'Démarrage, développement, maintenance, refonte graphique de la plateforme de réservation de places de cinéma Ciné Boutique. (Exemple de [site](https://guerandecinepresquile.cine.boutique/)). Un million de tickets délivrés.',
+                    content: 'J\'ai eu l\'occation de travailler au démarrage, au développement, la maintenance et la refonte graphique de la plateforme de réservation de places de cinéma Ciné Boutique qui a délivré un million de tickets, par exemple sur le site (Exemple de [site](https://guerandecinepresquile.cine.boutique/)).',
                     id: 1,
                     name: 'Ciné Boutique',
                 }, {
-                    content: 'Démarrage, livraison de deux sites vitrine et d\'un parcours d\'achat de billets de cinéma [www.cineum.fr](https://www.cineum.fr) (Cannes), [www.cineplanet.fr](https://www.cineplanet.fr)',
+                    content: 'J\'ai eu l\'occation de travailler du démarrage à la livraison de deux sites vitrine et d\'un parcours d\'achat de billets de cinéma [www.cineum.fr](https://www.cineum.fr) (Cannes), [www.cineplanet.fr](https://www.cineplanet.fr)',
                     id: 2,
                     name: 'Cineum.fr - Cineplanet.fr'
                 }, {
-                    content: 'Démarrage d\'un projet d\'un tableau de bord d\'un système de gestion de cinéma (TMS, Theater Management System). Interfaçage avec un backend en Java.',
+                    content: 'J\'ai eu l\'occation de travailler sur le démarrage d\'un projet d\'un tableau de bord d\'un système de gestion de cinéma (TMS, Theater Management System) en m\'interfaçant avec un backend en Java.',
                     id: 3,
                     name: 'Hyperviseur de TMS'
                 }, {
-                    content: 'Développement web et maintenance de la suite logicielle ciné office. (22 millions de tickets délivrés).',
+                    content: 'J\'ai eu l\'occasion de participer au développement web et à la maintenance d\'un logiciel en ExtJS. (22 millions de tickets délivrés).',
                     id: 4,
                     name: 'Ciné office',
                 }]
@@ -244,10 +239,10 @@ Maintient à jour de la documentation développeur.`,
             id: 1,
             name: 'Sport',
             content: [{
-                content: 'Voile en [compétition](http://www.ffvoile.fr/ffv/sportif/ClmtCoureurFiche.asp?clid=1057876E) de 2002 à 2008 membre équipe régionale (dériveur).',
+                content: 'De l\'age de 6 ans à l\'âge de 18 ans j\'ai eu l\'occasion de pratiquer la voile en [compétition](http://www.ffvoile.fr/ffv/sportif/ClmtCoureurFiche.asp?clid=1057876E) de 2002 à 2008 en tant que membre de l\'équipe régionale, en utilisant les supports optimist, 420 puis à l\'age adulte en RS800 et 14 pieds international.',
                 id: 1,
             }, {
-                content: 'Natation, marche à pieds..',
+                content: 'Pendant mon temps libre, j\'aime aller nager',
                 id: 2,
             }]
         },
@@ -255,31 +250,28 @@ Maintient à jour de la documentation développeur.`,
             id: 2,
             name: 'Bricolage',
             content: [{
-                content: 'Création de meubles et objets en bois.',
+                content: 'Pendant mon temps libre j\'ai eu l\'occation de fabriquer des meubles et objets en bois et de rénover une fourgonette aménagée',
                 id: 1,
-            }, {
-                content: 'Rénovation d’un fourgon aménagé : electricité, menuiserie.',
-                id: 2,
             }]
         },
         {
             id: 3,
             name: 'Tourisme, voyages',
             content: [{
-                content: 'Mer, montagne, Canada (stage de 5 mois en 2010), Etats unis, Europe, Afrique du nord... J\'aime la nature et la [photo](https://www.flickr.com/people/114643587@N06/).',
+                content: 'J\'ai eu l\'occasion de voyager en Mer en bateau, à la montagne, au Canada et aux Etat Unis à l\'occasion d\'un stage de 5 mois en 2010, j\'ai également voyagé en Europe et en Afrique du nord. J\'apprécie de m\'avader dans la nature à l\'occasion d\'une bonne marche.',
                 id: 1,
             }]
         }, {
             id: 4,
             name: 'Culture',
             content: [{
-                content: 'Livres sur les langages, Reddit, Romans (John Irving, Jules Verne), autobiographies (Lisa Jobs) ...',
+                content: 'J\'aime me plonger dans des livres portant sur les langages de développement, ainsi que des romans tels que ceux de John Irving et Jules Verne. J\'aime également lire sur des sujets variés, tels que la course à pied, ou encore des autobiographies, comme celle de Lisa Jobs.',
                 id: 1
             }, {
-                content: 'Cinéma: cinéma d\'art et essai, (j\'adore !)',
+                content: 'J\'apprécie de temps en temps un bon film, notamment ceux du cinéma d\'art et essai.',
                 id: 2,
             }, {
-                content: 'Musique: Electronique minimaliste, classique, folk, et un peu de TECHNO',
+                content: 'J\'aime écouter de la musique comme de la musique électronique minimaliste, de la musique classique, ou du folk.',
                 id: 3,
             }]
         }
