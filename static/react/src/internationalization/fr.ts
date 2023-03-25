@@ -1,19 +1,14 @@
 const data = {
     home: {
-        about: 'A propos',
+        about: '',
         titleDev: 'Développement logiciel',
         software: {
-            title: 'Développement logiciel',
-            introduction: `Je suis développeur depuis 2016, actuellement chez [Ciné Digital](https://www.cinedigitalservice.com/cds/),
- je réalise actuellement l'application de vente internet multisite [Ciné Boutique](https://leplessisrobinsonmaisondesarts.cine.boutique/) depuis juillet 2018.
-Je travaille donc sur des webapps, dans les technologies React/Redux, langages TypeScript / JavaScript / NodeJs occasionnellement Java, ExtJs et SQL. Je m'intéresse aussi au backend et à la programmation fonctionnelle (Elm, Rust).`
+            title: 'Un développeur passionné et polyvalent avec une expertise dans les logiciels et l\'environnement GNU/Linux',
+            introduction: `Je suis un développeur passionné par les logiciels et l'environnement GNU/Linux, qui possède une vaste expérience dans différents domaines. J'ai travaillé sur des projets de développement web en utilisant React, Typescript et Sass, des applications mobiles en utilisant Flutter, Dart et Capacitor, et du développement backend en utilisant NodeJs et Rust. Je suis également compétent dans l'utilisation de bases de données telles que Postgresql, MongoDB et MySQL. En dehors de cela, j'ai également travaillé sur des projets variés tels que des web apps, des sites vitrines, des applications mobiles, ainsi que la personnalisation de mon environnement de développement Linux.`
         },
         wood: {
-            title: 'Transformation du bois',
-            introduction: `Dans une autre vie...
-Mon parcours d'études et professionnel dans les métiers du bois m'a amené à éxercer le travail manuel du bois, l'apprentissage de l'utilisation des machines à bois, la théorie de la gestion de production et la pratique du dessin et de la conception assistée par ordinateur.
-J'ai éxercé le métier de technicien (dessinateur, chef de projets en recherche et développement) dans les domaines de la menuiserie industrielle,
-l'agencement mobilier et la conception de salles de bains en matériaux composites et tôle pliée.`
+            title: 'Parcours académique et professionnel dans les métiers du bois',
+            introduction: `Mon parcours académique et professionnel dans le domaine de la menuiserie m'a permis d'acquérir de solides compétences pratiques telles que le travail manuel du bois et l'utilisation de machines à bois. J'ai également acquis des connaissances théoriques en gestion de production ainsi que des compétences en dessin et en conception assistée par ordinateur. Au cours de ma carrière, j'ai occupé le poste de technicien, assumant les rôles de dessinateur et de chef de projets en recherche et développement. J'ai travaillé dans les secteurs de la menuiserie industrielle, de l'agencement mobilier et de la conception de salles de bains en matériaux composites et en tôle pliée.`
         }
     },
     studies: {
