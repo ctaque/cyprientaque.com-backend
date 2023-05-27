@@ -37,4 +37,4 @@ definitions:
     rust-target: $BITBUCKET_CLONE_DIR/target
   services:
     docker:
-      memory: 3072
+      memory: 4096
