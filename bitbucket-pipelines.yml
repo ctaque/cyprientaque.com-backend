@@ -9,7 +9,7 @@ pipelines:
   branches:
     dockerfile:
       - step:
-          name: 'Build about page'
+          name: 'Install deps'
           image:
             name: node:11.15.0
           script:
@@ -30,9 +30,11 @@ pipelines:
             - rust-target
           services:
             - docker
-                memory: 2048
 
 definitions:
   caches:
     cargo: /usr/local/cargo
     rust-target: $BITBUCKET_CLONE_DIR/target
+  services:
+    docker:
+      memory: 2048
