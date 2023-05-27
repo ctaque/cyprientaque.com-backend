@@ -1,0 +1,67 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+# rust buster 2022-03-19
+
+pipelines:
+  branches:
+    integration-cyprientaquecom:
+      - step:
+          name: 'Delete old binary'
+          script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
+                MODE: 'command'
+      - step:
+          name: 'Build about page'
+          image:
+            name: node:11.15.0
+          script:
+            - echo "Installing dependencies"; npm --prefix ./static/react/ ci
+            - echo "Building React...";REACT_APP_JWT_SECRET=$JWT_SECRET npm --prefix ./static/react/ run build
+          artifacts:
+            - static/templates/**
+      - step:
+          size: 2x
+          image:
+            name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
+          script:
+            - echo "Building..."; cargo build  --release
+            - mv target/release/ctprods target/release/ctprods.new
+          artifacts:
+            - target/release/ctprods.new
+          caches:
+            - cargo
+            - rust-target
+      - step:
+          name: 'Deployment to Production'
+          deployment: production
+          script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.new'
+                MODE: 'command'
+            - pipe: atlassian/scp-deploy:1.0.1
+              variables:
+                USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                REMOTE_PATH: '/home/cyprien/.bin'
+                LOCAL_PATH: $BITBUCKET_CLONE_DIR/target/release/ctprods.new
+                DEBUG: 'true'
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'rm -f /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods /home/cyprien/.bin/ctprods.bak && mv /home/cyprien/.bin/ctprods.new /home/cyprien/.bin/ctprods && sudo service ctprods restart'
+                MODE: 'command'
+
+definitions:
+  caches:
+    cargo: /usr/local/cargo
+    rust-target: $BITBUCKET_CLONE_DIR/target
