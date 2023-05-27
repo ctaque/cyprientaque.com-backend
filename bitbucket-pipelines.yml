@@ -30,6 +30,7 @@ pipelines:
             - rust-target
           services:
             - docker
+                memory: 2048
 
 definitions:
   caches:
