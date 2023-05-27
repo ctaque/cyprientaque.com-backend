@@ -3,7 +3,8 @@
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 # rust buster 2022-03-19
-
+#
+docker: true
 pipelines:
   branches:
     dockerfile:
@@ -27,6 +28,8 @@ pipelines:
           caches:
             - cargo
             - rust-target
+          services:
+            - docker
 
 definitions:
   caches:
