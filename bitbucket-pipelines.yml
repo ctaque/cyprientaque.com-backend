@@ -38,8 +38,8 @@ pipelines:
             name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
           script:
             - docker login --username=deploy+ctaque --password=$CANISTER_SECRET cloud.canister.io:5000
-            - docker build -t cloud.canister.io:5000/ctprods:latest .
-            - docker push cloud.canister.io:5000/ctprods:latest
+            - docker build -t latest .
+            - docker push cloud.canister.io:5000/ctaque/ctprods
           caches:
             - cargo
             - rust-target
