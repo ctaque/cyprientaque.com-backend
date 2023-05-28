@@ -16,7 +16,7 @@ pipelines:
             - echo "Installing dependencies"; npm --prefix ./static/react/ ci
             - echo "Compiling frontend...";REACT_APP_JWT_SECRET=$JWT_SECRET npm --prefix ./static/react/ run build
           artifacts:
-            - static/react/**
+            - static/templates/**
 
       - step:
           name: 'Compile backend...'
@@ -52,4 +52,4 @@ definitions:
     rust-target: $BITBUCKET_CLONE_DIR/target
   services:
     docker:
-      memory: 256
+      memory: 128
