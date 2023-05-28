@@ -478,11 +478,15 @@ impl HandleCmd {
             Ok(_) => println!("Migration successfull"),
         };
 
+        let http_port = match env::var("NOMAD_PORT_http") {
+           Ok(p) => p,
+           Err(e) => port
+        };
         let is_prod = env::var("ENVIRONMENT").unwrap_or(String::from("development"))
             == String::from("production");
         let mut addr = address.to_string();
         addr.push_str(":");
-        addr.push_str(&port);
+        addr.push_str(&http_port);
         env::set_var("RUST_LOG", "actix_web=debug");
         env::set_var("RUST_BACKTRACE", "full");
         env_logger::init();
