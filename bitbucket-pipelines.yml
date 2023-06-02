@@ -44,6 +44,7 @@ pipelines:
 
       - step:
           name: 'Deployment to Production'
+          size: 2x
           deployment: production
           script:
             - pipe: atlassian/ssh-run:0.3.0
