@@ -53,6 +53,8 @@ pipelines:
                 SERVER: $PADOUK_IP
                 COMMAND: 'nomad job restart ctprods'
                 MODE: 'command'
+                ENV_VARS: >-
+                    NOMAD_TOKEN=${NOMAD_TOKEN}
 
 definitions:
   caches:
