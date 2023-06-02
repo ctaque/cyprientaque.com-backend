@@ -43,6 +43,17 @@ pipelines:
           services:
             - docker
 
+      - step:
+          name: 'Deployment to Production'
+          deployment: production
+          script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: $PADOUK_USER
+                SERVER: $PADOUK_IP
+                COMMAND: 'nomad job restart ctprods'
+                MODE: 'command'
+
 definitions:
   caches:
     cargo: /usr/local/cargo
