@@ -195,14 +195,14 @@ ul li{
 .headline{
     width: 100%;
     a.links{
-        padding: .35rem .7rem;
-        border: 2px solid #ad97c6;
+        margin-right: 1rem;
         color: $purple-light;
         border-radius: 5px;
         font-weight: bold;
         font-size: 1.2em;
         margin-top: 1rem;
         margin-right: .5rem;
+        text-decoration: underline;
     }
 }
 
@@ -216,9 +216,6 @@ ul li{
             word-break: break-word;
             color: #ad97c6;
             @media screen and (max-width: 550px){
-                /* .header{ */
-                /*     flex-direction: column; */
-                /* } */
                 header{
                     padding: 0.5em 0.5em 0 0.5em;
                 }
@@ -335,35 +332,18 @@ nav.desktop{
         flex-direction: row;
         flex-wrap: wrap;
         .list-item{
-            &:nth-child(even){
-                margin-left: 1.5em;
-            }
-            &:nth-child(odd){
-                margin-right: 1.5em;
-            }
-            margin-top: 1.5em;
-            cursor: pointer;
-            width: calc(( 100% / 2 ) - 1.5em );
+            margin-top: 5rem;
             @media screen and (max-width: 480px){
-                width: calc(100% - 1em);
+                width: 100%;
                 margin-left: .5em !important;
                 margin-right: .5em !important;
                 zoom: .9;
             }
             @media screen and (min-width: 481px) and (max-width: 950px){
-                &:nth-child(even){
-                    margin-left: .5em;
-                }
-                &:nth-child(odd){
-                    margin-right: .5em;
-                }
                 zoom: .7;
                 width: calc(( 100% / 2 ) - .5em );
             }
-            transition: margin .3s ease;
             &:hover{
-                margin-top: 1.3em;
-                margin-bottom: .2em;
                 .title{
                     color: #79589F;
                 }
@@ -378,63 +358,76 @@ nav.desktop{
             }
             .date-title-outer{
                 display: flex;
-                flex-direction: row;
+                flex-direction: column;
                 align-items: flex-start;
                 margin-bottom: 1rem;
-                .title {
-                    color: rgba(255, 255, 255, 0.95);
-                    font-size: 2em;
-                    margin: 0;
-                    padding: 0;
-                    transition: color .3s ease;
-                    &:hover{
-                        color: $purple;
-                    }
-                    .date-views{
-                        flex-direction: column;
-                        display: inline-block;
-                        vertical-align: middle;
-                        .date-views-inner{
+                .date{
+                    margin-right: 1rem;
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    color: rgba(255,255,255,0.95);
+                    font-family: 'Alata', sans-serif;
+                    opacity: .8;
+                    .project-tags{
+                        display: flex;
+                        align-items: center;
+                        div.tag{
+                            margin-right: 1rem;
                             display: flex;
-                            flex-direction: column;
-                            justify-content: center;
                             align-items: center;
-                            img{
-                                width: 1.2rem;
-                                height: 1rem;
-                            }
-                            span {
-                                color: rgba(255,255,255,0.95);
-                                font-size: 1rem;
-                                align-items: center;
+                            position: relative;
+                            span{
+                                color: $purple;
                                 font-family: 'Alata', sans-serif;
+                                text-transform: uppercase;
+                            }
+                            &:not(:last-child):after{
+                                content: '•';
+                                position: absolute;
+                                right: -.8rem;
+                                top: 0rem;
+                                color: $purple;
                             }
                         }
                     }
+                    .date-span-outer{
+                        margin-right: .5rem;
+                        .date-span{
+                            font-size: 1.5em;
+                            color: $purple;
+                            font-family: inherit;
+                            text-transform: uppercase;
+                        }
+                    }
                 }
-
-                .date{
-                    padding-right: 1rem;
+                .title {
+                    font-size: 1.8em;
+                    a{
+                        color: rgba(255, 255, 255, 0.95);
+                        cursor: pointer;
+                        font-weight: bold;
+                        &:hover{
+                            text-decoration: underline;
+                        }
+                    }
+                    margin: 0;
+                    padding: 0;
+                    transition: color .3s ease;
+                }
+                .views {
+                    opacity: .8;
                     display: flex;
-                    flex-direction: column;
-                    align-items: center;
+                    flex-direction: row;
                     justify-content: center;
-                    color: rgba(255,255,255,0.95);
-                    font-family: 'Alata', sans-serif;
-                    .day{
-                        font-size: 2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
-                    }
-                    .month{
-                        font-size: 1.2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
-                    }
-                    .year{
-                        font-size: 1.2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
+                    align-items: center;
+                    margin-right: 1rem;
+                    span {
+                        color: rgba(255,255,255,0.95);
+                        font-size: 1rem;
+                        align-items: center;
+                        font-family: 'Alata', sans-serif;
                     }
                 }
             }
@@ -442,6 +435,15 @@ nav.desktop{
                 color: rgba(255,255,255,0.69);
                 word-break: break-all;
                 font-size: 1.2em;
+                margin-bottom: .5rem;
+                font-family: 'JetBrains Mono';
+            }
+            .read{
+                font-size: 1.2em;
+                cursor: pointer;
+                &:hover{
+                    text-decoration: underline;
+                }
             }
         }
     }
@@ -449,10 +451,57 @@ nav.desktop{
 
 // /blog/{slug}
 .article {
-    margin-bottom: 2em;
-    margin-top: .5em;
+    .page-title{
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 4rem;
+        margin-top: 3rem;
+        @media screen and (max-width: 500px){
+            left: 1rem;
+            bottom: 1rem;
+        }
+        .date-title-outer{
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+
+            .top{
+                padding-right: 1rem;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                color: rgba(255,255,255,0.95);
+                font-family: 'Alata', sans-serif;
+                div{
+                    margin-right: 1rem;
+                    span{
+                        font-size: 1.2rem;
+                        color: rgba(255, 255, 255, 0.95);
+                        font-family: inherit;
+                        @media screen and (max-width: 500px){
+                            font-size:.9em;
+                        }
+                    }
+                }
+            }
+            .title {
+                color: rgba(255, 255, 255, 0.95);
+                border-radius: 3px;
+                font-size: 2em;
+                margin: 0;
+                text-shadow: 1px 1px 3px #737272;
+                @media screen and (max-width: 500px){
+                    font-size: 1.2em;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                }
+            }
+        }
+    }
     .header{
         position: relative;
+        padding: 0;
         .banner {
             border-radius: 4px;
             object-fit: contain;
@@ -465,103 +514,6 @@ nav.desktop{
             position: absolute;
             top: 0;
             width: 100%;
-        }
-        .page-title{
-            align-items: flex-end;
-            bottom: 0;
-            display: flex;
-            left: 0;
-            margin: 0 0 .5em;
-            position: absolute;
-            .back-link {
-                display: flex;
-                font-size: 2.5em;
-                justify-content: center;
-                line-height: 1.8em;
-                margin: 0;
-                margin-left: .3em;
-                margin-right: .3em;
-                padding: 0;
-                background: transparent;
-                border: none;
-                outline: none;
-                cursor: pointer;
-                margin-bottom: 1rem;
-                @media screen and (max-width: 500px){
-                    margin-left: .2em;
-                    margin-right: .2em;
-                    zoom: .7;
-                }
-            }
-            .date-title-outer{
-                display: flex;
-                flex-direction: row;
-                align-items: flex-end;
-                margin-bottom: 1rem;
-                .title {
-                    color: rgba(255, 255, 255, 0.95);
-                    border-radius: 3px;
-                    font-size: 2em;
-                    margin: 0;
-                    text-shadow: 1px 1px 3px #737272;
-                    @media screen and (max-width: 500px){
-                        font-size: .9em;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: flex-start;
-                        .date-views{
-                            align-self: flex-start;
-                        }
-                    }
-                    .date-views{
-                        flex-direction: column;
-                        display: inline-block;
-                        vertical-align: middle;
-                        font-family: 'Alata', sans-serif;
-                        .date-views-inner{
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            img{
-                                width: 1.2rem;
-                                height: 1rem;
-                            }
-                            span {
-                                color: rgba(255,255,255,0.95);
-                                font-size: 1rem;
-                                align-items: center;
-                                font-family: inherit;
-                            }
-                        }
-                    }
-                }
-
-                .date{
-                    padding-right: 1rem;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    color: rgba(255,255,255,0.95);
-                    font-family: 'Alata', sans-serif;
-                    .day{
-                        font-size: 2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
-                    }
-                    .month{
-                        font-size: 1.2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
-                    }
-                    .year{
-                        font-size: 1.2rem;
-                        color: rgba(255, 255, 255, 0.95);
-                        font-family: inherit;
-                    }
-                }
-            }
         }
     }
 
@@ -624,23 +576,20 @@ nav.desktop{
     display: flex;
     flex-wrap: wrap;
     .tag{
-        margin: .2rem;
-        padding: .25rem .5rem;
+        margin-right: 1rem;
         font-size: 1.3rem;
-        background-color: transparent;
-        border: 1px solid $purple;
         color: $purple;
         border-radius: .2rem;
-        @media screen and (max-width: 480px){
-            flex: 1;
-        }
         white-space: nowrap;
         text-align: center;
         transition: all .3s ease;
-        &.active, &:hover{
-            background-color: $purple-dark;
-            border-color: $purple-dark;
+        text-transform: uppercase;
+        font-family: 'Alata', sans-serif;
+        &.active{
             color: #fff;
+        }
+        &:hover{
+            text-decoration: underline;
         }
     }
 }
