@@ -10,9 +10,36 @@ const data = {
             headline: 'Software developper',
             id: 1,
             institution: 'Ciné Digital',
-            location: 'La Chapelle sur Erdre near Nantes',
-            tasks: 'Web development mainly Typescript/React + Nodejs. Unit testing. Last project: [Ciné boutique](http://cdsdemorc1.cine.boutique/)',
-            technologies: 'Typescript, React, Redux, Sass/Less, NodeJs, ExtJS',
+            location: 'Nantes',
+            tasks: `I work as a FullStack TypeScript/Node developer within a team of 6 developers. My work primarily revolves around sales-related topics, specifically in the software suite called Ciné Office, which includes a cash register, kiosks, and an online sales platform. We have delivered 22 million tickets using both monolithic and microservices-based applications.
+
+I am also involved in the Ciné Boutique online sales platform, where I participated in its inception, development, testing, and maintenance. I worked on enhancing the platform, which successfully delivered one million tickets over the span of 3 years. This involved integrating the purchasing journey into content management systems (CMS) and implementing payment options using TPE Hipay, Paypal, and Paybox. I also partially handled scalability management. For these tasks, I utilized TypeScript/React for the front-end, server-side rendering, and Node.js/MongoDB for the back-end.
+
+Additionally, I have created two showcase websites using a headless CMS and implemented an online purchasing flow using TypeScript, React, and Node.js. I automated the continuous deployment of development services using GitLab CI/CD and maintained up-to-date developer documentation.
+
+Furthermore, I developed a subtitle reading application using the Flutter framework.`,
+            technologies: `I have utilized a wide range of technologies and tools in my work, including:
+
+- TypeScript: A strongly-typed superset of JavaScript used for building scalable and maintainable applications.
+- React: A popular JavaScript library for building user interfaces.
+- Jest: A testing framework for JavaScript and TypeScript applications.
+- Webpack: A module bundler used for optimizing and packaging web applications.
+- Redux: A state management library often used with React to handle application state.
+- Sass/Less: Preprocessors for CSS that provide additional functionality and ease of development.
+- Node.js: A JavaScript runtime environment used for server-side development.
+- MongoDB: A NoSQL database known for its flexibility and scalability.
+- PostgreSQL: A powerful and open-source relational database management system.
+- ExtJS: A JavaScript framework for building feature-rich web applications.
+- ERP Dolibarr: An open-source ERP (Enterprise Resource Planning) system used for managing business processes.
+- Scheduler Rundeck: An open-source job scheduler and automation tool.
+- TPE (Terminal de Paiement Electronique) Hipay, Paypal, Paybox: Payment gateways used for processing online transactions.
+- GNU/Linux: A free and open-source operating system widely used in development environments.
+- Emacs: A highly extensible and customizable text editor.
+- Docker Compose: A tool for defining and running multi-container Docker applications.
+- GitLab: A web-based Git repository management and continuous integration/continuous deployment (CI/CD) platform.
+- GitLab CI/CD: The continuous integration and continuous deployment functionality provided by GitLab.
+
+These technologies and tools have been instrumental in my development work, allowing me to build robust applications, automate workflows, and collaborate effectively with teams.`,
         }, {
             beginning: '06/2017',
             contract: 'stage',
@@ -24,7 +51,13 @@ const data = {
             id: 2,
             institution: 'Asmoza',
             location: 'Nantes',
-            tasks: 'Backend web developement',
+            tasks: `During this project, I implemented an MVC (Model-View-Controller) architecture and an ORM (Object-Relational Mapping) in an application.
+
+The MVC architecture is a design pattern that separates the application logic into three interconnected components: the Model, the View, and the Controller. The Model represents the data and business logic, the View handles the presentation and user interface, and the Controller manages the flow of data and interactions between the Model and the View. By implementing this architecture, I was able to organize the codebase and improve maintainability, scalability, and code reusability.
+
+Additionally, I incorporated an ORM, which is a technique that enables seamless communication between the application and the underlying database. The ORM maps objects in the application to tables in the database, allowing developers to interact with the database using object-oriented paradigms rather than writing raw SQL queries. This abstraction simplifies database operations, enhances productivity, and reduces the likelihood of SQL injection vulnerabilities.
+
+By combining the MVC architecture and ORM, I created a structured and efficient application that separates concerns, promotes code organization, and simplifies database interactions.`,
             technologies: 'PHP, MySQL',
         }],
         wood: [{
@@ -124,14 +157,12 @@ const data = {
         about: 'About',
         titleDev: 'Software development',
         software: {
-            title: 'Software development',
-            introduction: `Software developer at [Ciné digital services](https://www.cinedigitalservice.com/cds/), I have 4 years of practice in webapps development. I am currently doing [Ciné boutique](https://leplessisrobinsonmaisondesarts.cine.boutique/),
-a webapp in React / Typescript / Redux, NodeJs and occasionaly doing a cinema cash register, a webapp in ExtJS and Java`
+            title: 'A passionate and versatile developer with expertise in software and the GNU/Linux environment.',
+            introduction: `I am a passionate developer with a strong interest in software and the GNU/Linux environment. I have extensive experience in various domains. I have worked on web development projects using React, Typescript, and Sass, mobile applications using Flutter, Dart, and Capacitor, and backend development using Node.js and Rust. I am also proficient in working with databases such as PostgreSQL, MongoDB, and MySQL. In addition to that, I have worked on diverse projects including web apps, showcase websites, mobile applications, and customization of my Linux development environment.`
         },
         wood: {
-            title: 'Wood manufacturing and CAD engineering',
-            introduction: `In another life...
-I studied wood processing and CAD drawing. I have the basics of manual wood working, the use of woodworking machines, the theory of industrial productique and the practice of drawind and CAD and engineering. I did the job of technician (drawer, R&D project manager) in domains like industrial joinery, furniture layout, engineering of bathrooms in composite materials and folded sheet. See my [portfolio](https://www.cyprientaque.com/portfolio) for examples of project I did in this domain.`
+            title: 'Academic and Professional Background in Woodworking Trades',
+            introduction: `My academic and professional background in the field of woodworking has provided me with strong practical skills such as woodworking craftsmanship and the operation of woodworking machinery. I have also gained theoretical knowledge in production management as well as skills in drawing and computer-aided design (CAD). Throughout my career, I have held the position of technician, taking on roles as a draftsman and project manager in research and development. I have worked in the sectors of industrial carpentry, furniture fitting, and the design of bathrooms using composite materials and folded sheet metal.`
         }
     },
     skills: {
