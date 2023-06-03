@@ -536,6 +536,7 @@ nav.desktop ul li :hover a, nav.desktop ul li.active a {
 }
 .article .content p {
   color: rgba(255, 255, 255, 0.9);
+  font-size: 1.3em;
   text-align: justify;
 }
 .article .content p img {
