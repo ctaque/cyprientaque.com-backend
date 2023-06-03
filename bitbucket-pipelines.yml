@@ -6,7 +6,7 @@
 #
 pipelines:
   branches:
-    dockerfile:
+    master:
       - step:
           name: 'Compile frontend'
           image:
