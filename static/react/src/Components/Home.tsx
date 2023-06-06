@@ -644,48 +644,22 @@ export default connector(
                     />
                 </div>
                 <footer>
-                    <div>
-                        <span>Built with :</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <a href="http://spacemacs.org" style={{ marginRight: '1rem' }}>
-                            <img
-                                alt="Built with Spacemacs"
-                                src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Spacemacs_logo.svg"
-                                style={{ height: '3.5rem' }}
-                            />
-                        </a>
-                        <a href="https://github.com/doomemacs/doomemacs">
-                            <img
-                                alt="And built with Doom Emacs"
-                                src={DOOM_ICON}
-                                style={{ height: '3.5rem' }}
-                            />
-                        </a>
-                    </div>
-                    <div style={{ margin: '1rem' }}>
-                        <span>Built On :</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ display: 'block' }} className="purple regular"><h3>Tools</h3></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
                         <img
-                            alt="Built on macOS"
-                            src="https://upload.wikimedia.org/wikipedia/commons/8/84/Apple_Computer_Logo_rainbow.svg"
-                            style={{ height: '3.5rem', marginRight: '1rem' }}
+                            alt="And built with Doom Emacs"
+                            src={DOOM_ICON}
+                            style={{ height: '3.5rem', marginRight: '1.5rem' }}
                         />
                         <img
-                            alt="And built on Manjaro"
-                            src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Manjaro_logo_text.png"
-                            style={{ height: '3.5rem' }}
+                            alt="And built on Fedora"
+                            src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Fedora_logo.svg"
+                            style={{ height: '3.5rem', marginRight: '1.5rem' }}
                         />
-                    </div>
-                    <div style={{ margin: '1rem' }}>
-                        <span>Hosted On :</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <img
                             alt="Backend hosted on DigitalOcean"
                             src="https://upload.wikimedia.org/wikipedia/commons/f/ff/DigitalOcean_logo.svg"
-                            style={{ height: '3.5rem' }}
+                            style={{ height: '3.5rem', marginRight: '1.5rem' }}
                         />
                     </div>
                 </footer>
