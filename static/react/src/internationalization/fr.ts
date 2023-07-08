@@ -190,13 +190,17 @@ J'ai également réalisé une application de lecture de sous titres en utilisant
                 level: 'J\'ai une expérience de quelques semaines de pratique sur le langage Rust',
                 name: 'Rust',
                 technologies: [{
-                    content: 'En utilisant Rust, le framework Actix, React, Typescript et Elm, j\'ai eu l\'occation de développer le backend ainsi que le front end de ce site, et également d\'automatiser le déploiement en utilisant le Bitbucket CI/CD.',
+                    content: 'En utilisant Rust, le framework Actix, React, Typescript et Elm, j\'ai eu l\'occation de développer le backend ainsi que le front end de ce site, et d\'automatiser le déploiement en utilisant le Bitbucket CI/CD. (projet personnel)',
                     id: 1,
                     name: 'Web'
                 }, {
-                    content: 'J\'ai eu l\'occasion de développer une [librairie](https://ctprods.cyprientaque.com/blog/a-rust-api-pattern-actix) pour le framework Actix',
+                    content: 'J\'ai eu l\'occasion de développer une [librairie](https://ctprods.cyprientaque.com/blog/a-rust-api-pattern-actix) pour le framework Actix (projet personnel)',
                     id: 2,
                     name: 'Librairie'
+                }, {
+                    content: 'J\'ai eu l\'occasion de développer un wrapper autour de l\'api The Movie DB pour faire un [front end](https://red-tomato.cyprientaque.com) de cette API (projet personnel)',
+                    id: 3,
+                    name: 'Api'
                 }]
             },
             {
@@ -209,10 +213,6 @@ J'ai également réalisé une application de lecture de sous titres en utilisant
                     id: 1,
                     name: 'Ciné Boutique',
                 }, {
-                    content: 'J\'ai eu l\'occation de travailler du démarrage à la livraison de deux sites vitrine et d\'un parcours d\'achat de billets de cinéma [www.cineum.fr](https://www.cineum.fr) (Cannes), [www.cineplanet.fr](https://www.cineplanet.fr)',
-                    id: 2,
-                    name: 'Cineum.fr - Cineplanet.fr'
-                }, {
                     content: 'J\'ai eu l\'occation de travailler sur le démarrage d\'un projet d\'un tableau de bord d\'un système de gestion de cinéma (TMS, Theater Management System) en m\'interfaçant avec un backend en Java.',
                     id: 3,
                     name: 'Hyperviseur de TMS'
@@ -220,6 +220,29 @@ J'ai également réalisé une application de lecture de sous titres en utilisant
                     content: 'J\'ai eu l\'occasion de participer au développement web et à la maintenance d\'un logiciel en ExtJS. (22 millions de tickets délivrés).',
                     id: 4,
                     name: 'Ciné office',
+                }]
+            }, 
+            {
+                icon: 'https://s3.eu-west-1.amazonaws.com/ctaque.logos/nomad-icon.svg',
+                id: 4,
+                level: 'N/A',
+                name: 'Système et réseau',
+                technologies: [{
+                    content: 'J\'ai eu l\'occasion de containeriser un backend d\'une API web en Rust et un site Next.js en utilisant Docker, ainsi que la gestion de l\'environnement de développement d\'un projet professionel avec docker-compose',
+                    id: 1,
+                    name: 'Docker'
+                }, {
+                    content: 'J\'ai eu l\'occasion de mettre en place l\'ochestration des services Web de mon serveur avec Hashicorp Nomad',
+                    id: 2,
+                    name: 'Hashicorp Nomad'
+                }, {
+                    content: 'J\'ai eu l\'occasion d\'installer Nginx et Apache comme reverse proxy avec cache varnish',
+                    id: 3,
+                    name: 'Nginx, Apache, Varnish Cache'
+                }, {
+                    content: 'J\'ai eu l\'occasion de configurer le déploiement automatisé de l\'environnement de développement d\'applicatins (projet profossionnel, Gitlab), ainsi que le déploiement de services docker par le biais de l\'orchestrateur Nomad dans le cadre de projets personnels (Bitbucket pipelines)',
+                    id: 4,
+                    name: 'Déploiement et intégration continue'   
                 }]
             }
         ],
@@ -258,7 +281,7 @@ J'ai également réalisé une application de lecture de sous titres en utilisant
             id: 3,
             name: 'Tourisme, voyages',
             content: [{
-                content: 'J\'ai eu l\'occasion de voyager en Mer en bateau, à la montagne, au Canada et aux Etat Unis à l\'occasion d\'un stage de 5 mois en 2010, j\'ai également voyagé en Europe et en Afrique du nord. J\'apprécie de m\'avader dans la nature à l\'occasion d\'une bonne marche.',
+                content: 'J\'ai eu l\'occasion de voyager en Mer en bateau, à la montagne, au Canada et aux Etat Unis à l\'occasion d\'un stage de 5 mois en 2010, j\'ai également voyagé en Europe et en Afrique du nord.',
                 id: 1,
             }]
         }, {
