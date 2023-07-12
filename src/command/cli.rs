@@ -523,7 +523,7 @@ impl HandleCmd {
                 .app_data(app_data.clone())
                 .route("/blog/{slug}", web::get().to(Project::http_blog_detail))
                 .route("/blog", web::get().to(Project::http_blog_index))
-                .route("/about", web::get().to(Project::http_about))
+                // .route("/about", web::get().to(Project::http_about))
                 .route("/projects", web::get().to(Project::http_all))
                 .route("/projects", web::post().to(NewProject::http_create))
                 .route(
