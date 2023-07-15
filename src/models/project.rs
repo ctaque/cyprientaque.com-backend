@@ -836,7 +836,7 @@ impl Project {
         data.insert("base".to_string(), json!("base".to_string()));
         data.insert(
             "title".to_string(),
-            json!("Blog de Cyprien Taque".to_string()),
+            json!("Code&Coffee".to_string()),
         );
         let result = app_data.handlebars.render("blog_index", &data);
         match result {
