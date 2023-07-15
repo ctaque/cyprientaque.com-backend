@@ -5,38 +5,9 @@ $grey: #eee;
 $dark-grey: #555;
 $bg-color: rgb(20,19,22);
 
-@font-face {
-    font-family: "JetBrainsMono-Bold";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Bold.woff2") format("woff2"),
-}
-
-@font-face {
-    font-family: "JetBrainsMono-Italic";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Italic.woff2") format("woff2"),
-}
-
-@font-face {
-    font-family: "JetBrainsMono-Light";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Light.woff2") format("woff2"),
-}
-
-@font-face {
-    font-family: "JetBrainsMono-Medium";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Medium.woff2") format("woff2"),
-}
-
-@font-face {
-    font-family: "JetBrainsMono-Regular";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Regular.woff2") format("woff2"),
-}
-
-@font-face {
-    font-family: "JetBrainsMono-Thin";
-    src: url("./fonts/Jetbrains-mono/JetBrainsMono-Thin.woff2") format("woff2"),
-}
-
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200;300;400;500;600;700;800;900&display=swap&family=Lato');
 @import url('https://fonts.googleapis.com/css2?family=Alata&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Montserrat:ital,wght@0,200;0,300;0,500;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 *{
     box-sizing: border-box;
@@ -83,19 +54,23 @@ body {
 }
 
 h1{
-    font-family: "JetBrainsMono-Bold";
+    font-family: "JetBrains Mono";
+    font-weight: 700 !important;
 }
 
 h2{
-    font-family: "JetBrainsMono-Regular";
+    font-family: "JetBrains Mono";
+    font-weight: 500 !important;
 }
 
 h3{
-    font-family: "JetBrainsMono-Medium";
+    font-family: "JetBrains Mono";
+    font-weight: 400 !important;
 }
 
 h4{
-    font-family: "JetBrainsMono-Light";
+    font-family: "JetBrains Mono";
+    font-weight: 300 !important;
 }
 
 span, p, li, a{
