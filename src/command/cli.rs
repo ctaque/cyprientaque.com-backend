@@ -516,7 +516,6 @@ impl HandleCmd {
                             http::header::ACCEPT,
                             http::header::CONTENT_TYPE,
                         ])
-                        .max_age(3600),
                 )
                 .service(web::resource("/static/{_:.*}").route(web::get().to(static_files)))
                 .app_data(web::PayloadConfig::new(900000000000000000))
