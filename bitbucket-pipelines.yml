@@ -26,6 +26,9 @@ pipelines:
             - echo "Compiling rust backend..."; cargo build  --release
           artifacts:
             - target/release/ctprods
+          caches:
+            - cargo
+            - rust-target
 
       - step:
           name: 'Create Docker image...'
@@ -54,6 +57,9 @@ pipelines:
                     NOMAD_TOKEN=${NOMAD_TOKEN}
 
 definitions:
+  caches:
+    cargo: /usr/local/cargo
+    rust-target: $BITBUCKET_CLONE_DIR/target
   services:
     docker:
       memory: 4096
