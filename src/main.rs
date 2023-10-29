@@ -51,7 +51,8 @@ fn get_template_string(path: &str) -> String {
     String::from_utf8(Asset::get(path).unwrap().into_owned()).unwrap()
 }
 
-#[tokio::main]
+
+#[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let connection = establish_connection();

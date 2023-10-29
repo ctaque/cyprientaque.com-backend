@@ -1,4 +1,5 @@
 use crate::middleware::auth_middleware;
+use crate::middleware::location_middleware;
 use crate::models::{
     Bitbucket, NewProject, NewProjectImage, Project, ProjectCategory, ProjectImage,
     ProjectImageCategory, UpdatableProject,
@@ -490,8 +491,6 @@ impl HandleCmd {
         env::set_var("RUST_LOG", "actix_web=debug");
         env::set_var("RUST_BACKTRACE", "full");
         env_logger::init();
-        let local = tokio::task::LocalSet::new();
-        let sys = actix_rt::System::run_in_tokio("server", &local);
         println!("Running server on address : {}", addr);
 
         let app_data = Data::new(AppData { handlebars: hb });
@@ -499,6 +498,7 @@ impl HandleCmd {
         let server = HttpServer::new(move || {
             App::new()
                 .wrap(auth_middleware::Authentication)
+                .wrap(location_middleware::Location)
                 .wrap(Logger::default())
                 .wrap(
                     Cors::default() // <- Construct CORS middleware builder
@@ -620,7 +620,6 @@ impl HandleCmd {
         .bind(&addr)?
         .run()
         .await?;
-        sys.await?;
         Ok(server)
     }
 }

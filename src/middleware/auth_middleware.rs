@@ -11,7 +11,7 @@ use futures::{
 };
 use std::{
     pin::Pin,
-    task::{Context, Poll},
+    task::{Context, Poll}, env,
 };
 use actix_web::http::header::{HeaderName, HeaderValue};
 
@@ -54,6 +54,7 @@ where
     }
 
     fn call(&mut self, mut req: ServiceRequest) -> Self::Future {
+
 
         // Bypass some account routes
         let headers = req.headers_mut();

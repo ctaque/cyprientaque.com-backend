@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: cyprien
       POSTGRES_PASSWORD: toto
-      POSTGRES_DB: ctprods
+      POSTGRES_DB: ctprods_dev
       PGDATA: /data/postgres
     volumes:
        - postgres:/data/postgres
