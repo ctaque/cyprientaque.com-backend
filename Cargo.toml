@@ -1,6 +1,6 @@
 [package]
 name = "ctprods"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Cyprien Taque <cyprien.taque@gmail.com>"]
 edition = "2018"
 
