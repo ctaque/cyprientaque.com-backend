@@ -21,7 +21,7 @@ pipelines:
           name: 'Compile backend...'
           size: 2x
           image:
-            name: rust@1.67
+            name: rust:1.67
           script:
             - echo "Compiling rust backend..."; cargo build  --release
           artifacts:
