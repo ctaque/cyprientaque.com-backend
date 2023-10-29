@@ -34,7 +34,7 @@ pipelines:
           name: 'Create Docker image...'
           size: 2x
           image:
-            name: rust@sha256:80f2e747f4d6b572e79b845df87b47dd9102f236113efd8921a115f4515b7df1
+            name: rust:1.67
           script:
             - docker login --username=ctaque --password=$DOCKER_PASS
             - docker build -t ctaque/ctprods:latest .
