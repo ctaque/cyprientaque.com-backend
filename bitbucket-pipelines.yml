@@ -51,7 +51,7 @@ pipelines:
               variables:
                 SSH_USER: $PADOUK_USER
                 SERVER: $PADOUK_IP
-                COMMAND: 'nomad job restart ctprods'
+                COMMAND: 'yes | nomad jobs stop ctprods && nomad job run /home/cyprien/projets/nomad-jobs/jobs/ctprods.hcl'
                 MODE: 'command'
                 ENV_VARS: >-
                     NOMAD_TOKEN=${NOMAD_TOKEN}
