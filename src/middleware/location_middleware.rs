@@ -139,41 +139,25 @@ where
                     <body>
                     <main>
                         <h1>Cyprien Taque, Développeur web</h1>
-                        <h3>Adepte de la programmation fonctionnelle, de l'automatisation et de l'optimisation. J'aime les sites jolis, fiables et rapides.</h3>
                         <h3>Quelques projets :</h3>
                         <ul>
                             <li>
                                 Billetterie de cinéma : <a href="https://www.cineoffice.com" target="_blank">La suite cinéoffice</a>.
                             </li>
                             <li>
-                                Billetterie de cinéma (vad) : <a href="https://guerandecinepresquile.cine.boutique" target="_blank"> La billetterie Ciné Boutique</a>.
+                                Billetterie de cinéma (vad) : <a href="https://nantesleconcorde.cine.boutique" target="_blank"> La billetterie Ciné Boutique</a>.
                             </li>
                         </ul>
                         <h3>Je travaille avec ces outils :</h3>
                         <ul>
                             <li>
-                                <p>5 ans d'expérience en Typescript • React • Redux • Nodejs • Sql • Postgres • MongoDB • Mysql • Préprocesseurs css • ExtJs</p>
+                                <p>Typescript • React • Redux • Nodejs • Postgresql • ExtJs</p>
                             </li>
                             <li>
-                                <p>Fedora • Docker • Git • TDD</p>
+                                <p>Fedora • Docker • Git • TDD + divers</p>
                             </li>
                         </ul>
-                        <h3>En dehors de celà, je travaille avec :</h3>
-                        <ul>
-                            <li>
-                                <p>Rust • Next.js • Actix • Elm • Postgis • Meilisearch, Nomad</p>
-                            </li>
-                        </ul>
-                        <h3>Dans ces projets parallèles :</h3>
-                        <ul>
-                            <li>
-                                <a href="https://www.red-tomato.tv" target="_blank">red-tomato.tv</a>.
-                            </li>
-                            <li>
-                                <a href="https://www.open-events.app" target="_blank">open-events.app</a>.
-                            </li>
-                        </ul>
-                        <br/>
+                        <p>Side project: <a href="https://www.red-tomato.tv" target="_blank">red-tomato.tv</a></p>
                         <footer><span style="font-size: 1.5em;">💻️🤓🤖</span></footer>
                         <footer><span>Hello, world !</span></footer>
                         </main>
