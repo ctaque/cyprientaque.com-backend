@@ -1,24 +1,26 @@
 use super::super::utils::token_utils;
 use actix_service::{Service, Transform};
+use actix_web::http::header::{HeaderName, HeaderValue};
 use actix_web::{
-    http::{Method},
     dev::{ServiceRequest, ServiceResponse},
+    http::Method,
     Error, HttpResponse,
 };
 use futures::{
     future::{ok, Ready},
     Future, FutureExt,
 };
-use std::{
-    pin::Pin,
-    task::{Context, Poll}, env, rc::Rc, cell::RefCell,
-};
-use actix_web::http::header::{HeaderName, HeaderValue};
-use reqwest::{ Client };
+use reqwest::Client;
 use serde;
+use std::{
+    cell::RefCell,
+    env,
+    pin::Pin,
+    rc::Rc,
+    task::{Context, Poll},
+};
 
 pub struct Location;
-
 
 #[derive(serde::Deserialize)]
 struct IpDataResponse {
@@ -43,7 +45,9 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(LocationMiddleware { service: Rc::new(RefCell::new(service)) })
+        ok(LocationMiddleware {
+            service: Rc::new(RefCell::new(service)),
+        })
     }
 }
 pub struct LocationMiddleware<S> {
@@ -66,10 +70,10 @@ where
     }
 
     fn call(&mut self, mut req: ServiceRequest) -> Self::Future {
-
         // 5c6011abdbb5bdf3ab8c794680f285d8ddd7b2461845ea4ab264af17
 
-        let is_prod = env::var("ENVIRONMENT").unwrap_or("development".to_string()) == "production".to_string();
+        let is_prod = env::var("ENVIRONMENT").unwrap_or("development".to_string())
+            == "production".to_string();
 
         let mut srv = self.service.clone();
 
@@ -77,11 +81,10 @@ where
 
         let access_allowed = match qp {
             Some(_) => true,
-            None => false
+            None => false,
         };
 
-        let  contains_static = req.path().contains("/static");
-
+        let contains_static = req.path().contains("/static");
 
         async move {
             let client = reqwest::Client::new();
@@ -151,7 +154,7 @@ where
                         <h3>Je travaille avec ces outils :</h3>
                         <ul>
                             <li>
-                                <p>Typescript • React • Redux • Nodejs • Postgresql • ExtJs</p>
+                                <p>Rust • Typescript • React • Redux • Nodejs • Postgresql • ExtJs</p>
                             </li>
                             <li>
                                 <p>Fedora • Docker • Git • TDD + divers</p>
